@@ -17,8 +17,7 @@ type Conn struct {
 	id           int64
 	raw          net.Conn
 	writeQueue   chan writeMessage
-	close        chan struct{}
-	closeOnce    sync.Once
+	done         chan struct{}
 	bufPool      sync.Pool
 	lastPongTime int64 // 上次pong时间
 }
@@ -35,7 +34,7 @@ func newConn(id int64, conn net.Conn, opts *Options) *Conn {
 		id:         id,
 		raw:        conn,
 		writeQueue: make(chan writeMessage, opts.WriteQueueSize),
-		close:      make(chan struct{}),
+		done:       make(chan struct{}),
 		bufPool: sync.Pool{
 			New: func() any {
 				return make([]byte, 4*1024)
@@ -57,7 +56,7 @@ func (c *Conn) WriteMessage(op ws.OpCode, msg []byte) error {
 func (c *Conn) writeCloseFrame() {
 	frame := ws.NewCloseFrame(ws.NewCloseFrameBody(ws.StatusNormalClosure, ""))
 	if err := ws.WriteFrame(c.raw, frame); err != nil {
-		c.opts.handleError(fmt.Errorf("write close-frame failed: %v", err))
+		c.opts.handleError(fmt.Errorf("write done-frame failed: %v", err))
 	}
 }
 
@@ -82,7 +81,7 @@ func (c *Conn) writePump() {
 
 	for {
 		select {
-		case <-c.close:
+		case <-c.done:
 			return
 		case <-ticker.C:
 			c.writePingFrame() // heartbeat
@@ -119,11 +118,11 @@ func (c *Conn) writePump() {
 
 func (c *Conn) readPump() {
 
-	defer c.Close()
+	defer c.close()
 
 	for {
 		select {
-		case <-c.close:
+		case <-c.done:
 			return
 		default:
 			header, err := ws.ReadHeader(c.raw)
@@ -163,12 +162,15 @@ func (c *Conn) readPump() {
 }
 
 func (c *Conn) Close() {
-	var err error
-	c.closeOnce.Do(func() {
-		close(c.close)
-		err = c.raw.Close()
-	})
-	if err != nil {
-		c.opts.handleError(fmt.Errorf("conn close failed: %v", err))
+	c.done <- struct{}{}
+}
+
+func (c *Conn) close() {
+
+	close(c.done)
+	close(c.writeQueue)
+
+	if err := c.raw.Close(); err != nil {
+		c.opts.handleError(fmt.Errorf("conn done failed: %v", err))
 	}
 }

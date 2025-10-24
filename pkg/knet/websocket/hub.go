@@ -44,6 +44,8 @@ func (h *hub) shutdown() error {
 	}
 	h.mux.RUnlock()
 
+	clear(h.conns)
+
 	return nil
 }
 
