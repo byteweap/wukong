@@ -107,28 +107,28 @@ func (s *Server) Run() {
 	if err != nil {
 		s.opts.handleError(fmt.Errorf("http serve error: %v", err))
 	}
-
 	s.opts.handleStop()
 
 }
 
 // Shutdown 优雅关闭
-func (s *Server) Shutdown() error {
+func (s *Server) Shutdown() {
 
 	// http
-	if s.httpServer == nil {
+	if s.httpServer != nil {
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 		if err := s.httpServer.Shutdown(shutdownCtx); err != nil {
-			return err
+			s.opts.handleError(fmt.Errorf("http shutdown error: %v", err))
+			return
 		}
 	}
 
 	// hub
 	if s.hub != nil {
 		if err := s.hub.shutdown(); err != nil {
-			return err
+			s.opts.handleError(fmt.Errorf("hub shutdown error: %v", err))
+			return
 		}
 	}
-	return nil
 }

@@ -32,14 +32,24 @@ func (h *hub) closed() bool {
 }
 
 func (h *hub) shutdown() error {
-	// todo
+
+	if h.closed() {
+		return ErrHubClosed
+	}
 	h.open.Store(false)
+
+	h.mux.RLock()
+	for conn, _ := range h.conns {
+		conn.Close()
+	}
+	h.mux.RUnlock()
+
 	return nil
 }
 
 func (h *hub) allocate(netConn net.Conn) error {
 	if h.closed() {
-		return ErrConnClosed
+		return ErrHubClosed
 	}
 	if h.totalConns.Load() >= int64(h.opts.MaxConnections) {
 		return ErrMaxConns
