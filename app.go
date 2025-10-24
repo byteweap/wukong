@@ -6,8 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/byteweap/wukong/pkg/knet/websocket"
 	"github.com/gobwas/ws"
+
+	"github.com/byteweap/wukong/pkg/knet/websocket"
 )
 
 func main() {
