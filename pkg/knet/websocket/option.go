@@ -2,8 +2,6 @@ package websocket
 
 import (
 	"time"
-
-	"github.com/gobwas/ws"
 )
 
 // Options 定义WebSocket服务器的配置选项
@@ -60,17 +58,26 @@ type Options struct {
 	// 建议设置合理的超时，避免连接断开
 	PongTimeout time.Duration
 
-	// onMessageHandler 处理消息的回调函数
-	// 可以为空，为空时默认不处理消息
-	onMessageHandler func(*Conn, ws.OpCode, []byte)
+	// startHandler 服务启动处理器
+	startHandler StartHandler
 
-	// onDisconnectHandler 连接断开回调函数
-	// 可以为空，为空时默认不处理断开事件
-	onDisconnectHandler func(*Conn)
+	// stopHandler 服务停止处理器
+	stopHandler StopHandler
 
-	// onCloseHandler 关闭回调函数
-	// 可以为空，为空时默认不处理关闭事件
-	onCloseHandler func(*Conn, ws.StatusCode, string)
+	// messageHandler 文本消息处理器
+	messageHandler MessageHandler
+
+	// binaryMessageHandler 二进制消息处理器
+	binaryMessageHandler MessageHandler
+
+	// connectHandler 建立链接处理器
+	connectHandler ConnectHandler
+
+	// disconnectHandler 连接断开处理器
+	disconnectHandler DisconnectHandler
+
+	// errorHandler 错误处理器,可用于打印日志
+	errorHandler ErrorHandler
 }
 
 // Option 定义选项函数类型
@@ -99,6 +106,48 @@ func newOptions(options ...Option) *Options {
 	}
 
 	return opts
+}
+
+func (o Options) handleStart(addr, pattern string) {
+	if o.startHandler != nil {
+		o.startHandler(addr, pattern)
+	}
+}
+
+func (o Options) handleStop() {
+	if o.stopHandler != nil {
+		o.stopHandler()
+	}
+}
+
+func (o Options) handleMessage(conn *Conn, message []byte) {
+	if o.messageHandler != nil {
+		o.messageHandler(conn, message)
+	}
+}
+
+func (o Options) handleBinaryMessage(conn *Conn, message []byte) {
+	if o.binaryMessageHandler != nil {
+		o.binaryMessageHandler(conn, message)
+	}
+}
+
+func (o Options) handleConnect(conn *Conn) {
+	if o.connectHandler != nil {
+		o.connectHandler(conn)
+	}
+}
+
+func (o Options) handleDisconnect(conn *Conn) {
+	if o.disconnectHandler != nil {
+		o.disconnectHandler(conn)
+	}
+}
+
+func (o Options) handleError(err error) {
+	if o.errorHandler != nil {
+		o.errorHandler(err)
+	}
 }
 
 // WithAddr 监听地址

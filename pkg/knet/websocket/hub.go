@@ -20,7 +20,6 @@ func newHub(opts *Options) *hub {
 	h := &hub{
 		opts:       opts,
 		nextConnID: 0,
-		mux:        sync.RWMutex{},
 		conns:      make(map[*Conn]struct{}),
 	}
 	h.open.Store(true)

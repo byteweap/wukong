@@ -1,8 +1,8 @@
 package websocket
 
 import (
+	"fmt"
 	"io"
-	"log"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -56,17 +56,23 @@ func (c *Conn) WriteMessage(op ws.OpCode, msg []byte) error {
 
 func (c *Conn) writeCloseFrame() {
 	frame := ws.NewCloseFrame(ws.NewCloseFrameBody(ws.StatusNormalClosure, ""))
-	_ = ws.WriteFrame(c.raw, frame)
+	if err := ws.WriteFrame(c.raw, frame); err != nil {
+		c.opts.handleError(fmt.Errorf("write close-frame failed: %v", err))
+	}
 }
 
 func (c *Conn) writePongFrame() {
 	frame := ws.NewPongFrame(nil)
-	_ = ws.WriteFrame(c.raw, frame)
+	if err := ws.WriteFrame(c.raw, frame); err != nil {
+		c.opts.handleError(fmt.Errorf("write pong-frame failed: %v", err))
+	}
 }
 
 func (c *Conn) writePingFrame() {
 	frame := ws.NewPingFrame(nil)
-	_ = ws.WriteFrame(c.raw, frame)
+	if err := ws.WriteFrame(c.raw, frame); err != nil {
+		c.opts.handleError(fmt.Errorf("write ping-frame failed: %v", err))
+	}
 }
 
 func (c *Conn) writePump() {
@@ -88,20 +94,25 @@ func (c *Conn) writePump() {
 			w := wsutil.GetWriter(c.raw, ws.StateServerSide, msg.op, len(msg.data))
 			w.Reset(c.raw, ws.StateServerSide, msg.op)
 
-			_ = c.raw.SetWriteDeadline(time.Now().Add(c.opts.WriteTimeout)) // 可选：设置写超时，避免网络卡死
+			// 可选：设置写超时，避免网络卡死
+			if err := c.raw.SetWriteDeadline(time.Now().Add(c.opts.WriteTimeout)); err != nil {
+				c.opts.handleError(fmt.Errorf("set write deadline failed: %v", err))
+			}
 
 			if _, err := w.Write(msg.data); err != nil {
-				_ = c.Close()
+				c.Close()
 				wsutil.PutWriter(w)
+				c.opts.handleError(fmt.Errorf("write message failed: %v", err))
 				return
 			}
+
 			if err := w.Flush(); err != nil {
-				_ = c.Close()
+				c.Close()
 				wsutil.PutWriter(w)
+				c.opts.handleError(fmt.Errorf("write flush failed: %v", err))
 				return
 			}
 			wsutil.PutWriter(w)
-
 		}
 	}
 }
@@ -120,41 +131,44 @@ func (c *Conn) readPump() {
 				return
 			}
 			switch header.OpCode {
-			case ws.OpClose:
-				c.writeCloseFrame()
-				return
+			case ws.OpContinuation:
+				continue
 			case ws.OpPing:
 				c.writePongFrame()
 			case ws.OpPong:
 				atomic.StoreInt64(&c.lastPongTime, time.Now().UnixNano())
+			case ws.OpClose:
+				c.writeCloseFrame()
+				return
 			case ws.OpText, ws.OpBinary:
-
-				if c.opts.MaxMessageSize > 0 && header.Length > int64(c.opts.MaxMessageSize) {
-					log.Printf("message too large: %d > %d", header.Length, c.opts.MaxMessageSize)
+				if c.opts.MaxMessageSize > 0 && header.Length > c.opts.MaxMessageSize {
+					c.opts.handleError(fmt.Errorf("message too large: %d > %d", header.Length, c.opts.MaxMessageSize))
 					return
 				}
 				payload := c.bufPool.Get().([]byte)[:header.Length]
 				if _, err = io.ReadFull(c.raw, payload); err != nil {
 					c.bufPool.Put(payload)
+					c.opts.handleError(fmt.Errorf("read message read full failed: %v", err))
 					return
 				}
-				if c.opts.onMessageHandler != nil {
-					c.opts.onMessageHandler(c, header.OpCode, payload)
+				if header.OpCode == ws.OpText {
+					c.opts.handleMessage(c, payload)
+				} else if header.OpCode == ws.OpBinary {
+					c.opts.handleBinaryMessage(c, payload)
 				}
 				c.bufPool.Put(payload)
-
-			default:
-				continue
 			}
 		}
 	}
 }
 
-func (c *Conn) Close() error {
+func (c *Conn) Close() {
 	var err error
 	c.closeOnce.Do(func() {
 		close(c.close)
 		err = c.raw.Close()
 	})
-	return err
+	if err != nil {
+		c.opts.handleError(fmt.Errorf("conn close failed: %v", err))
+	}
 }

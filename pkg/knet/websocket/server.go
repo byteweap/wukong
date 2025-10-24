@@ -2,9 +2,10 @@ package websocket
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"net"
 	"net/http"
+	"sync/atomic"
 	"time"
 
 	"github.com/gobwas/ws"
@@ -18,6 +19,7 @@ type Server struct {
 	opts       *Options
 	hub        *hub
 	httpServer *http.Server
+	state      atomic.Value
 }
 
 func NewServer(opts ...Option) *Server {
@@ -28,16 +30,51 @@ func NewServer(opts ...Option) *Server {
 	}
 }
 
+// OnStart 监听服务启动
+func (s *Server) OnStart(handler StartHandler) {
+	s.opts.startHandler = handler
+}
+
+// OnStop 监听服务停止
+func (s *Server) OnStop(handler StopHandler) {
+	s.opts.stopHandler = handler
+}
+
+// OnConnect 监听建立链接
+func (s *Server) OnConnect(handler ConnectHandler) {
+	s.opts.connectHandler = handler
+}
+
+// OnDisconnect 监听断开链接
+func (s *Server) OnDisconnect(handler DisconnectHandler) {
+	s.opts.disconnectHandler = handler
+}
+
+// OnMessage 监听文本消息
+func (s *Server) OnMessage(handler MessageHandler) {
+	s.opts.messageHandler = handler
+}
+
+// OnBinaryMessage 监听二进制消息
+func (s *Server) OnBinaryMessage(handler MessageHandler) {
+	s.opts.binaryMessageHandler = handler
+}
+
+// ErrorHandler 错误处理函数
+func (s *Server) ErrorHandler(handler ErrorHandler) {
+	s.opts.errorHandler = handler
+}
+
 // HandleRequest 处理请求
 func (s *Server) HandleRequest(w http.ResponseWriter, r *http.Request) {
 	netConn, _, _, err := ws.UpgradeHTTP(r, w)
 	if err != nil {
-		log.Printf("[WebSocket] UpgradeHTTP error: %v", err)
+		s.opts.errorHandler(fmt.Errorf("upgrade http error: %v", err))
 		return
 	}
 	// allocate connection
 	if err = s.hub.allocate(netConn); err != nil {
-		log.Printf("[WebSocket] allocate error: %v", err)
+		s.opts.handleError(fmt.Errorf("allocate error: %v", err))
 		return
 	}
 }
@@ -47,7 +84,7 @@ func (s *Server) Run() {
 
 	ln, err := net.Listen("tcp", s.opts.Addr)
 	if err != nil {
-		log.Fatalf("[WebSocket] net.Listen error: %v", err)
+		s.opts.errorHandler(fmt.Errorf("net listen error: %v", err))
 		return
 	}
 	s.httpServer = &http.Server{
@@ -60,7 +97,7 @@ func (s *Server) Run() {
 		}),
 	}
 
-	log.Printf("[WebSocket] http server listening at %v%s\n", ln.Addr(), s.opts.Pattern)
+	s.opts.handleStart(s.opts.Addr, s.opts.Pattern)
 
 	if s.opts.CertFile != "" && s.opts.KeyFile != "" {
 		err = s.httpServer.ServeTLS(ln, s.opts.CertFile, s.opts.KeyFile)
@@ -68,22 +105,30 @@ func (s *Server) Run() {
 		err = s.httpServer.Serve(ln)
 	}
 	if err != nil {
-		log.Printf("[WebSocket] http Serve error: %v\n", err)
+		s.opts.handleError(fmt.Errorf("http serve error: %v", err))
 	}
+
+	s.opts.handleStop()
+
 }
 
 // Shutdown 优雅关闭
 func (s *Server) Shutdown() error {
 
 	// http
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-	if err := s.httpServer.Shutdown(shutdownCtx); err != nil {
-		return err
+	if s.httpServer == nil {
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		if err := s.httpServer.Shutdown(shutdownCtx); err != nil {
+			return err
+		}
 	}
+
 	// hub
-	if err := s.hub.shutdown(); err != nil {
-		return err
+	if s.hub != nil {
+		if err := s.hub.shutdown(); err != nil {
+			return err
+		}
 	}
 	return nil
 }
