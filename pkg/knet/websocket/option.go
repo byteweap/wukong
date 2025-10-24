@@ -11,6 +11,20 @@ import (
 // 所有参数都有合理的默认值，适合游戏等高频场景
 type Options struct {
 
+	// Addr 监听地址
+	// 使用 Run() 启动时有效, HandleRequest() 时无效
+	Addr string
+
+	// Pattern 监听路径
+	// 使用 Run() 启动时有效, HandleRequest() 时无效
+	Pattern string
+
+	// 证书文件
+	CertFile string
+
+	// 秘钥文件
+	KeyFile string
+
 	// MaxMessageSize 最大消息大小
 	// 0表示不限制
 	// 建议根据应用的消息大小调整此参数，防止内存溢出
@@ -67,6 +81,10 @@ type Option func(*Options)
 func newOptions(options ...Option) *Options {
 	// 设置默认值
 	opts := &Options{
+		CertFile:       "",               // 证书文件
+		KeyFile:        "",               // 密钥文件
+		Addr:           ":8000",          // 监听地址
+		Pattern:        "/",              // 监听路径
 		MaxMessageSize: 1024,             // 默认最大消息大小1KB，适合一般游戏消息
 		WriteQueueSize: 1024,             // 默认队列大小为1024，适合中等规模应用
 		ReadTimeout:    30 * time.Second, // 默认读超时30秒
@@ -83,6 +101,33 @@ func newOptions(options ...Option) *Options {
 	return opts
 }
 
+// WithAddr 监听地址
+// 默认 :8000, 在使用 Run() 启动时有效
+func WithAddr(addr string) Option {
+	return func(o *Options) {
+		o.Addr = addr
+	}
+}
+
+// WithPattern 监听路径
+// 默认 /, 在使用 Run() 启动时有效
+func WithPattern(pattern string) Option {
+	return func(o *Options) {
+		o.Pattern = pattern
+	}
+}
+
+// WithSSL ssl安全配置
+// 默认无
+func WithSSL(certFile, keyFile string) Option {
+	return func(o *Options) {
+		o.CertFile = certFile
+		o.KeyFile = keyFile
+	}
+}
+
+// WithMaxMessageSize 最大消息尺寸
+// 默认 1KB (1024B)
 func WithMaxMessageSize(size int64) Option {
 	return func(o *Options) {
 		o.MaxMessageSize = size
@@ -90,8 +135,7 @@ func WithMaxMessageSize(size int64) Option {
 }
 
 // WithWriteQueueSize 设置写入队列大小
-// 增大队列可以提高写入吞吐量，但会增加内存使用
-// 建议根据应用的消息频率和大小调整此参数
+// 默认 1024
 func WithWriteQueueSize(size int) Option {
 	return func(o *Options) {
 		o.WriteQueueSize = size
@@ -100,7 +144,6 @@ func WithWriteQueueSize(size int) Option {
 
 // WithReadTimeout 设置读取超时时间
 // 0表示不超时
-// 建议设置合理的超时，避免空闲连接占用资源
 func WithReadTimeout(timeout time.Duration) Option {
 	return func(o *Options) {
 		o.ReadTimeout = timeout
@@ -109,7 +152,6 @@ func WithReadTimeout(timeout time.Duration) Option {
 
 // WithWriteTimeout 设置写入超时时间
 // 0表示不超时
-// 建议设置合理的超时,避免网络阻塞,适合不稳定网络环境
 func WithWriteTimeout(timeout time.Duration) Option {
 	return func(o *Options) {
 		o.WriteTimeout = timeout
@@ -118,7 +160,6 @@ func WithWriteTimeout(timeout time.Duration) Option {
 
 // WithMaxConnections 设置最大并发连接数
 // 0表示无链接数限制
-// 限制并发连接数可以防止资源耗尽,适合资源受限的环境
 func WithMaxConnections(max int) Option {
 	return func(o *Options) {
 		o.MaxConnections = max

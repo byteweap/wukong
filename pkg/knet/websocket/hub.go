@@ -32,9 +32,10 @@ func (h *hub) closed() bool {
 	return !h.open.Load()
 }
 
-func (h *hub) close() {
+func (h *hub) shutdown() error {
 	// todo
 	h.open.Store(false)
+	return nil
 }
 
 func (h *hub) allocate(netConn net.Conn) error {
