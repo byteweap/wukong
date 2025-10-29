@@ -10,11 +10,11 @@ import (
 type Options struct {
 
 	// Addr 监听地址
-	// 使用 Run() 启动时有效, HandleRequest() 时无效
+	// 使用 Start() 启动时有效, HandleRequest() 时无效
 	Addr string
 
 	// Pattern 监听路径
-	// 使用 Run() 启动时有效, HandleRequest() 时无效
+	// 使用 Start() 启动时有效, HandleRequest() 时无效
 	Pattern string
 
 	// 证书文件
@@ -151,7 +151,7 @@ func (o Options) handleError(err error) {
 }
 
 // WithAddr 监听地址
-// 默认 :8000, 在使用 Run() 启动时有效
+// 默认 :8000, 在使用 Start() 启动时有效
 func WithAddr(addr string) Option {
 	return func(o *Options) {
 		o.Addr = addr
@@ -159,7 +159,7 @@ func WithAddr(addr string) Option {
 }
 
 // WithPattern 监听路径
-// 默认 /, 在使用 Run() 启动时有效
+// 默认 /, 在使用 Start() 启动时有效
 func WithPattern(pattern string) Option {
 	return func(o *Options) {
 		o.Pattern = pattern

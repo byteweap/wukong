@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/byteweap/wukong/pkg/knet/websocket"
+	"github.com/byteweap/wukong/pkg/wnet/websocket"
 )
 
 func TestServer_HandleRequest(t *testing.T) {

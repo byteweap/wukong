@@ -29,7 +29,7 @@ type writeMessage struct {
 
 func newConn(id int64, conn net.Conn, opts *Options) *Conn {
 
-	c := &Conn{
+	return &Conn{
 		opts:       opts,
 		id:         id,
 		raw:        conn,
@@ -41,7 +41,18 @@ func newConn(id int64, conn net.Conn, opts *Options) *Conn {
 			},
 		},
 	}
-	return c
+}
+
+func (c *Conn) ID() int64 {
+	return c.id
+}
+
+func (c *Conn) LocalAddr() net.Addr {
+	return c.raw.LocalAddr()
+}
+
+func (c *Conn) RemoteAddr() net.Addr {
+	return c.raw.RemoteAddr()
 }
 
 func (c *Conn) WriteMessage(op ws.OpCode, msg []byte) error {

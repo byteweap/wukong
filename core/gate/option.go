@@ -21,18 +21,16 @@ type Options struct {
 
 type Option func(*Options)
 
-var defaultOptions = Options{
-	Addr:           "0.0.0.0",
-	Port:           8080,
-	MaxConnections: 1024,
-}
-
-func newOptions(opts ...Option) Options {
-	options := defaultOptions
-	for _, opt := range opts {
-		opt(&options)
+func defaultOptions() *Options {
+	return &Options{
+		Addr:           "0.0.0.0",
+		Port:           8080,
+		MaxConnections: 10000,
+		MaxMessageSize: 4 * 1024, // 4KB
+		ReadTimeout:    0,
+		WriteTimeout:   0,
+		WriteQueueSize: 0,
 	}
-	return options
 }
 
 func WithAddr(addr string) Option {

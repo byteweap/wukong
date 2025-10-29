@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/gobwas/ws"
+
+	"github.com/byteweap/wukong/pkg/wos"
 )
 
 // Server websocket server
@@ -97,18 +99,22 @@ func (s *Server) Run() {
 		}),
 	}
 
-	s.opts.handleStart(s.opts.Addr, s.opts.Pattern)
+	go func() {
+		s.opts.handleStart(s.opts.Addr, s.opts.Pattern)
 
-	if s.opts.CertFile != "" && s.opts.KeyFile != "" {
-		err = s.httpServer.ServeTLS(ln, s.opts.CertFile, s.opts.KeyFile)
-	} else {
-		err = s.httpServer.Serve(ln)
-	}
-	if err != nil {
-		s.opts.handleError(fmt.Errorf("http serve error: %v", err))
-	}
+		if s.opts.CertFile != "" && s.opts.KeyFile != "" {
+			err = s.httpServer.ServeTLS(ln, s.opts.CertFile, s.opts.KeyFile)
+		} else {
+			err = s.httpServer.Serve(ln)
+		}
+		if err != nil {
+			s.opts.handleError(fmt.Errorf("http serve error: %v", err))
+		}
+	}()
+
+	wos.WaitSignal()
+
 	s.opts.handleStop()
-
 }
 
 // Shutdown 优雅关闭
