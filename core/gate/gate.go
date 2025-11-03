@@ -21,6 +21,8 @@ func New(opts ...Option) *Gate {
 
 	// websocket server
 	ws := websocket.NewServer(
+		websocket.WithAddr(options.Addr),
+		websocket.WithPattern(options.Pattern),
 		websocket.WithMaxMessageSize(options.MaxMessageSize),
 		websocket.WithMaxConnections(options.MaxConnections),
 		websocket.WithReadTimeout(options.ReadTimeout),

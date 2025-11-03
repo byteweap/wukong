@@ -5,8 +5,8 @@ import "time"
 type Options struct {
 	// Addr is the address to listen on.
 	Addr string
-	// Port is the port to listen on.
-	Port int
+	// Pattern is the pattern to listen on.
+	Pattern string
 	// MaxMessageSize is the maximum message size.
 	MaxMessageSize int64
 	// MaxConnections is the maximum number of connections.
@@ -24,7 +24,7 @@ type Option func(*Options)
 func defaultOptions() *Options {
 	return &Options{
 		Addr:           "0.0.0.0",
-		Port:           8080,
+		Pattern:        "/",
 		MaxConnections: 10000,
 		MaxMessageSize: 4 * 1024, // 4KB
 		ReadTimeout:    0,
@@ -39,14 +39,18 @@ func WithAddr(addr string) Option {
 	}
 }
 
-func WithPort(port int) Option {
+func WithPattern(pattern string) Option {
 	return func(o *Options) {
-		o.Port = port
+		if o.Pattern != "" {
+			o.Pattern = pattern
+		}
 	}
 }
 
 func WithMaxConnections(maxConnections int) Option {
 	return func(o *Options) {
-		o.MaxConnections = maxConnections
+		if o.MaxConnections > 0 {
+			o.MaxConnections = maxConnections
+		}
 	}
 }
