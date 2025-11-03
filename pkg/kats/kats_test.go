@@ -8,7 +8,7 @@ import (
 	"github.com/byteweap/wukong/pkg/kats"
 )
 
-func TestWats(t *testing.T) {
+func TestKats(t *testing.T) {
 
 	cli, err := kats.Connect(
 		[]string{"nats://localhost:4222", "nats://localhost:4223", "nats://localhost:4224"},
