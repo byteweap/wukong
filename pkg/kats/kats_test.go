@@ -11,7 +11,11 @@ import (
 func TestKats(t *testing.T) {
 
 	cli, err := kats.Connect(
-		[]string{"nats://localhost:4222", "nats://localhost:4223", "nats://localhost:4224"},
+		[]string{
+			"nats://localhost:4222",
+			"nats://localhost:4223",
+			"nats://localhost:4224",
+		},
 		kats.WithNats(
 			nats.Name("aaaaa"),
 		),
