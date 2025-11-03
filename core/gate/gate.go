@@ -3,7 +3,7 @@ package gate
 import (
 	"fmt"
 
-	"github.com/byteweap/wukong/pkg/wnet/websocket"
+	"github.com/byteweap/wukong/pkg/knet/websocket"
 )
 
 type Gate struct {

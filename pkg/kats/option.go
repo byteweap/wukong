@@ -1,4 +1,4 @@
-package wats
+package kats
 
 import (
 	"github.com/nats-io/nats.go"

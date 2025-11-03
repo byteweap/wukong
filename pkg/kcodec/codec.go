@@ -1,14 +1,14 @@
-package wcodec
+package kcodec
 
 import (
 	"errors"
 
-	"github.com/byteweap/wukong/pkg/wcodec/json"
-	"github.com/byteweap/wukong/pkg/wcodec/msgpack"
-	"github.com/byteweap/wukong/pkg/wcodec/proto"
-	"github.com/byteweap/wukong/pkg/wcodec/toml"
-	"github.com/byteweap/wukong/pkg/wcodec/xml"
-	"github.com/byteweap/wukong/pkg/wcodec/yml"
+	"github.com/byteweap/wukong/pkg/kcodec/json"
+	"github.com/byteweap/wukong/pkg/kcodec/msgpack"
+	"github.com/byteweap/wukong/pkg/kcodec/proto"
+	"github.com/byteweap/wukong/pkg/kcodec/toml"
+	"github.com/byteweap/wukong/pkg/kcodec/xml"
+	"github.com/byteweap/wukong/pkg/kcodec/yml"
 )
 
 var codecs = make(map[string]Codec)

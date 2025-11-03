@@ -1,4 +1,4 @@
-package wos
+package kos
 
 import (
 	"os"

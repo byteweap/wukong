@@ -10,7 +10,7 @@ import (
 
 	"github.com/gobwas/ws"
 
-	"github.com/byteweap/wukong/pkg/wos"
+	"github.com/byteweap/wukong/pkg/kos"
 )
 
 // Server websocket server
@@ -112,7 +112,7 @@ func (s *Server) Run() {
 		}
 	}()
 
-	wos.WaitSignal()
+	kos.WaitSignal()
 
 	s.opts.handleStop()
 }
