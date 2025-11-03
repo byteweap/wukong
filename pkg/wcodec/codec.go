@@ -1,14 +1,14 @@
-package wencode
+package wcodec
 
 import (
 	"errors"
 
-	"github.com/byteweap/wukong/pkg/wencode/json"
-	"github.com/byteweap/wukong/pkg/wencode/msgpack"
-	"github.com/byteweap/wukong/pkg/wencode/proto"
-	"github.com/byteweap/wukong/pkg/wencode/toml"
-	"github.com/byteweap/wukong/pkg/wencode/xml"
-	"github.com/byteweap/wukong/pkg/wencode/yml"
+	"github.com/byteweap/wukong/pkg/wcodec/json"
+	"github.com/byteweap/wukong/pkg/wcodec/msgpack"
+	"github.com/byteweap/wukong/pkg/wcodec/proto"
+	"github.com/byteweap/wukong/pkg/wcodec/toml"
+	"github.com/byteweap/wukong/pkg/wcodec/xml"
+	"github.com/byteweap/wukong/pkg/wcodec/yml"
 )
 
 var codecs = make(map[string]Codec)
