@@ -35,7 +35,7 @@ func (g *Gate) Start() {
 
 // Stop gate server
 func (g *Gate) Stop() {
-	g.netServer.Shutdown()
+	g.netServer.Stop()
 }
 
 // setupNetwork setup network
@@ -57,8 +57,8 @@ func (g *Gate) setupNetwork() {
 		fmt.Println("Gate start success, addr: ", addr, ", pattern: ", pattern)
 	})
 
-	ws.OnStop(func(err error) {
-		fmt.Println("Gate websocket stopped, error: ", err)
+	ws.OnStop(func() {
+		fmt.Println("Gate websocket stopped")
 	})
 	ws.OnConnect(func(conn knet.Conn) {
 		fmt.Println("Gate connect success, id: ", conn.ID(), ", localAddr: ", conn.LocalAddr(), ", remoteAddr: ", conn.RemoteAddr())

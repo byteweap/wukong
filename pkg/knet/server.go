@@ -2,7 +2,7 @@ package knet
 
 type (
 	StartHandler       func(addr, pattern string)
-	StopHandler        func(err error)
+	StopHandler        func()
 	ConnectHandler     func(conn Conn)
 	ConnMessageHandler func(conn Conn, msg []byte)
 	ErrorHandler       func(err error)
@@ -15,8 +15,8 @@ type Server interface {
 	Protocol() string
 	// Start starts the server.
 	Start()
-	// Shutdown graceful stop the server.
-	Shutdown()
+	// Stop graceful stop the server.
+	Stop()
 	// OnStart set the handler to be called when the server starts.
 	OnStart(StartHandler)
 	// OnStop set the handler to be called when the server stops.

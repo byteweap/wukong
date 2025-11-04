@@ -116,9 +116,9 @@ func (o Options) handleStart(addr, pattern string) {
 	}
 }
 
-func (o Options) handleStop(err error) {
+func (o Options) handleStop() {
 	if o.stopHandler != nil {
-		o.stopHandler(err)
+		o.stopHandler()
 	}
 }
 

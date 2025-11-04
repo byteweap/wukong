@@ -28,8 +28,8 @@ func TestServer_Run(t *testing.T) {
 	ws.OnStart(func(addr, pattern string) {
 		t.Logf("server start success, addr: %s, pattern: %s", addr, pattern)
 	})
-	ws.OnStop(func(err error) {
-		t.Logf("server stop success, err: %v", err)
+	ws.OnStop(func() {
+		t.Logf("server stop success")
 	})
 
 	ws.OnConnect(func(conn knet.Conn) {
