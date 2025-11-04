@@ -14,9 +14,9 @@ import (
 	"github.com/byteweap/wukong/pkg/knet"
 )
 
-// Conn 实现WebSocket连接的具体结构体
+// wsConn 实现WebSocket连接的具体结构体
 // 实现knet.Conn接口，管理单个WebSocket连接的生命周期和消息处理
-type Conn struct {
+type wsConn struct {
 	opts         *Options          // 连接配置选项
 	id           int64             // 连接唯一标识符
 	raw          net.Conn          // 底层网络连接
@@ -33,11 +33,11 @@ type writeMessage struct {
 }
 
 // 确保Conn实现了knet.Conn接口
-var _ knet.Conn = (*Conn)(nil)
+var _ knet.Conn = (*wsConn)(nil)
 
 // newConn 创建新的WebSocket连接实例
-func newConn(id int64, conn net.Conn, opts *Options) *Conn {
-	return &Conn{
+func newConn(id int64, conn net.Conn, opts *Options) *wsConn {
+	return &wsConn{
 		opts:       opts,
 		id:         id,
 		raw:        conn,
@@ -52,22 +52,22 @@ func newConn(id int64, conn net.Conn, opts *Options) *Conn {
 }
 
 // ID 返回连接的唯一标识符
-func (c *Conn) ID() int64 {
+func (c *wsConn) ID() int64 {
 	return c.id
 }
 
 // LocalAddr 返回连接的本地地址
-func (c *Conn) LocalAddr() net.Addr {
+func (c *wsConn) LocalAddr() net.Addr {
 	return c.raw.LocalAddr()
 }
 
 // RemoteAddr 返回连接的远程地址
-func (c *Conn) RemoteAddr() net.Addr {
+func (c *wsConn) RemoteAddr() net.Addr {
 	return c.raw.RemoteAddr()
 }
 
 // WriteBinaryMessage 向连接写入二进制消息
-func (c *Conn) WriteBinaryMessage(msg []byte) error {
+func (c *wsConn) WriteBinaryMessage(msg []byte) error {
 	select {
 	case c.writeQueue <- writeMessage{ws.OpBinary, msg}:
 		return nil
@@ -77,7 +77,7 @@ func (c *Conn) WriteBinaryMessage(msg []byte) error {
 }
 
 // WriteTextMessage 向连接写入文本消息
-func (c *Conn) WriteTextMessage(msg []byte) error {
+func (c *wsConn) WriteTextMessage(msg []byte) error {
 	select {
 	case c.writeQueue <- writeMessage{ws.OpText, msg}:
 		return nil
@@ -87,7 +87,7 @@ func (c *Conn) WriteTextMessage(msg []byte) error {
 }
 
 // writeCloseFrame 发送关闭帧
-func (c *Conn) writeCloseFrame() {
+func (c *wsConn) writeCloseFrame() {
 	frame := ws.NewCloseFrame(ws.NewCloseFrameBody(ws.StatusNormalClosure, ""))
 	if err := ws.WriteFrame(c.raw, frame); err != nil {
 		c.opts.handleError(fmt.Errorf("write done-frame failed: %v", err))
@@ -95,7 +95,7 @@ func (c *Conn) writeCloseFrame() {
 }
 
 // writePongFrame 发送pong帧
-func (c *Conn) writePongFrame() {
+func (c *wsConn) writePongFrame() {
 	frame := ws.NewPongFrame(nil)
 	if err := ws.WriteFrame(c.raw, frame); err != nil {
 		c.opts.handleError(fmt.Errorf("write pong-frame failed: %v", err))
@@ -103,7 +103,7 @@ func (c *Conn) writePongFrame() {
 }
 
 // writePingFrame 发送ping帧
-func (c *Conn) writePingFrame() {
+func (c *wsConn) writePingFrame() {
 	frame := ws.NewPingFrame(nil)
 	if err := ws.WriteFrame(c.raw, frame); err != nil {
 		c.opts.handleError(fmt.Errorf("write ping-frame failed: %v", err))
@@ -111,7 +111,7 @@ func (c *Conn) writePingFrame() {
 }
 
 // writePump 处理连接的异步写入操作
-func (c *Conn) writePump() {
+func (c *wsConn) writePump() {
 	// 创建心跳定时器
 	ticker := time.NewTicker(c.opts.PingInterval)
 	defer ticker.Stop() // 确保定时器被停止
@@ -157,7 +157,7 @@ func (c *Conn) writePump() {
 }
 
 // readPump 处理连接的读取操作
-func (c *Conn) readPump() {
+func (c *wsConn) readPump() {
 	defer c.close() // 确保连接正确关闭
 
 	// 主循环处理读取操作
@@ -215,19 +215,19 @@ func (c *Conn) readPump() {
 
 // Close 关闭连接的外部方法
 // 向done通道发送信号，通知读写协程退出
-func (c *Conn) Close() {
+func (c *wsConn) Close() {
 	c.done <- struct{}{}
 }
 
 // close 连接内部的关闭方法
 // 关闭通道和底层连接，释放资源
-func (c *Conn) close() {
+func (c *wsConn) close() {
 	// 关闭done通道和写入队列
 	close(c.done)
 	close(c.writeQueue)
 
 	// 关闭底层网络连接
 	if err := c.raw.Close(); err != nil {
-		c.opts.handleError(fmt.Errorf("conn done failed: %v", err))
+		c.opts.handleError(fmt.Errorf("wsConn done failed: %v", err))
 	}
 }

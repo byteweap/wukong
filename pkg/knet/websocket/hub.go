@@ -13,9 +13,9 @@ type hub struct {
 	nextConnID int64       // 下一个连接ID
 	open       atomic.Bool // 是否打开（原子操作）
 
-	mux     sync.RWMutex       // 读写锁，保护conns映射
-	connNum atomic.Int64       // 当前连接数（原子操作）
-	conns   map[*Conn]struct{} // 所有活跃连接映射
+	mux     sync.RWMutex         // 读写锁，保护conns映射
+	connNum atomic.Int64         // 当前连接数（原子操作）
+	conns   map[*wsConn]struct{} // 所有活跃连接映射
 }
 
 // newHub 创建新的连接管理器实例
@@ -25,7 +25,7 @@ func newHub(opts *Options) *hub {
 	h := &hub{
 		opts:       opts,
 		nextConnID: 0,
-		conns:      make(map[*Conn]struct{}),
+		conns:      make(map[*wsConn]struct{}),
 	}
 	h.open.Store(true) // 初始状态为打开
 	h.connNum.Store(0) // 初始连接数为0

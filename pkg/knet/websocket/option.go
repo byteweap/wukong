@@ -122,25 +122,25 @@ func (o Options) handleStop() {
 	}
 }
 
-func (o Options) handleMessage(conn *Conn, message []byte) {
+func (o Options) handleMessage(conn *wsConn, message []byte) {
 	if o.messageHandler != nil {
 		o.messageHandler(conn, message)
 	}
 }
 
-func (o Options) handleBinaryMessage(conn *Conn, message []byte) {
+func (o Options) handleBinaryMessage(conn *wsConn, message []byte) {
 	if o.binaryMessageHandler != nil {
 		o.binaryMessageHandler(conn, message)
 	}
 }
 
-func (o Options) handleConnect(conn *Conn) {
+func (o Options) handleConnect(conn *wsConn) {
 	if o.connectHandler != nil {
 		o.connectHandler(conn)
 	}
 }
 
-func (o Options) handleDisconnect(conn *Conn) {
+func (o Options) handleDisconnect(conn *wsConn) {
 	if o.disconnectHandler != nil {
 		o.disconnectHandler(conn)
 	}
