@@ -23,7 +23,7 @@ type Option func(*Options)
 
 func defaultOptions() *Options {
 	return &Options{
-		Addr:           "0.0.0.0",
+		Addr:           "0.0.0.0:8000",
 		Pattern:        "/",
 		MaxConnections: 10000,
 		MaxMessageSize: 4 * 1024, // 4KB

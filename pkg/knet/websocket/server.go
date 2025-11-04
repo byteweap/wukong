@@ -10,68 +10,80 @@ import (
 
 	"github.com/gobwas/ws"
 
+	"github.com/byteweap/wukong/pkg/knet"
 	"github.com/byteweap/wukong/pkg/kos"
 )
 
 // Server websocket server
-// 两种方式二选一,使用示例参考 websocket_test
-//  1. HandleRequest()
-//  2. Run()
-type Server struct {
+type Server interface {
+	knet.Server
+	HandleRequest(w http.ResponseWriter, r *http.Request)
+}
+type server struct {
 	opts       *Options
 	hub        *hub
 	httpServer *http.Server
 	state      atomic.Value
 }
 
-func NewServer(opts ...Option) *Server {
+var _ Server = (*server)(nil)
+
+func NewServer(opts ...Option) Server {
 	options := newOptions(opts...)
-	return &Server{
+	return &server{
 		opts: options,
 		hub:  newHub(options),
 	}
 }
 
+func (s *server) Addr() string {
+	return s.opts.Addr
+}
+
+func (s *server) Protocol() string {
+	return "websocket"
+}
+
 // OnStart 监听服务启动
-func (s *Server) OnStart(handler StartHandler) {
+func (s *server) OnStart(handler knet.StartHandler) {
 	s.opts.startHandler = handler
 }
 
 // OnStop 监听服务停止
-func (s *Server) OnStop(handler StopHandler) {
+func (s *server) OnStop(handler knet.StopHandler) {
 	s.opts.stopHandler = handler
 }
 
 // OnConnect 监听建立链接
-func (s *Server) OnConnect(handler ConnectHandler) {
+func (s *server) OnConnect(handler knet.ConnectHandler) {
 	s.opts.connectHandler = handler
 }
 
 // OnDisconnect 监听断开链接
-func (s *Server) OnDisconnect(handler DisconnectHandler) {
+func (s *server) OnDisconnect(handler knet.ConnectHandler) {
 	s.opts.disconnectHandler = handler
 }
 
-// OnMessage 监听文本消息
-func (s *Server) OnMessage(handler MessageHandler) {
+// OnTextMessage 监听文本消息
+func (s *server) OnTextMessage(handler knet.ConnMessageHandler) {
 	s.opts.messageHandler = handler
 }
 
 // OnBinaryMessage 监听二进制消息
-func (s *Server) OnBinaryMessage(handler MessageHandler) {
+func (s *server) OnBinaryMessage(handler knet.ConnMessageHandler) {
 	s.opts.binaryMessageHandler = handler
 }
 
-// ErrorHandler 错误处理函数
-func (s *Server) ErrorHandler(handler ErrorHandler) {
+// OnError 错误处理函数
+func (s *server) OnError(handler knet.ErrorHandler) {
 	s.opts.errorHandler = handler
 }
 
 // HandleRequest 处理请求
-func (s *Server) HandleRequest(w http.ResponseWriter, r *http.Request) {
+func (s *server) HandleRequest(w http.ResponseWriter, r *http.Request) {
 	netConn, _, _, err := ws.UpgradeHTTP(r, w)
 	if err != nil {
-		s.opts.errorHandler(fmt.Errorf("upgrade http error: %v", err))
+		s.opts.handleError(fmt.Errorf("upgrade http error: %v", err))
 		return
 	}
 	// allocate connection
@@ -81,12 +93,12 @@ func (s *Server) HandleRequest(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Run 运行
-func (s *Server) Run() {
+// Start server
+func (s *server) Start() {
 
 	ln, err := net.Listen("tcp", s.opts.Addr)
 	if err != nil {
-		s.opts.errorHandler(fmt.Errorf("net listen error: %v", err))
+		s.opts.handleError(fmt.Errorf("net listen error: %v", err))
 		return
 	}
 	s.httpServer = &http.Server{
@@ -114,11 +126,11 @@ func (s *Server) Run() {
 
 	kos.WaitSignal()
 
-	s.opts.handleStop()
+	s.opts.handleStop(nil)
 }
 
 // Shutdown 优雅关闭
-func (s *Server) Shutdown() {
+func (s *server) Shutdown() {
 
 	// http
 	if s.httpServer != nil {

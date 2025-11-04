@@ -10,6 +10,8 @@ import (
 
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
+
+	"github.com/byteweap/wukong/pkg/knet"
 )
 
 type Conn struct {
@@ -26,6 +28,8 @@ type writeMessage struct {
 	op   ws.OpCode
 	data []byte
 }
+
+var _ knet.Conn = (*Conn)(nil)
 
 func newConn(id int64, conn net.Conn, opts *Options) *Conn {
 
@@ -55,9 +59,18 @@ func (c *Conn) RemoteAddr() net.Addr {
 	return c.raw.RemoteAddr()
 }
 
-func (c *Conn) WriteMessage(op ws.OpCode, msg []byte) error {
+func (c *Conn) WriteBinaryMessage(msg []byte) error {
 	select {
-	case c.writeQueue <- writeMessage{op, msg}:
+	case c.writeQueue <- writeMessage{ws.OpBinary, msg}:
+		return nil
+	default:
+		return ErrWriteQueueFull
+	}
+}
+
+func (c *Conn) WriteTextMessage(msg []byte) error {
+	select {
+	case c.writeQueue <- writeMessage{ws.OpText, msg}:
 		return nil
 	default:
 		return ErrWriteQueueFull

@@ -3,8 +3,8 @@ package websocket_test
 import (
 	"net/http"
 	"testing"
-	"time"
 
+	"github.com/byteweap/wukong/pkg/knet"
 	"github.com/byteweap/wukong/pkg/knet/websocket"
 )
 
@@ -28,24 +28,23 @@ func TestServer_Run(t *testing.T) {
 	ws.OnStart(func(addr, pattern string) {
 		t.Logf("server start success, addr: %s, pattern: %s", addr, pattern)
 	})
-	ws.OnStop(func() {
-		t.Logf("server stop success")
+	ws.OnStop(func(err error) {
+		t.Logf("server stop success, err: %v", err)
 	})
-	ws.OnConnect(func(conn *websocket.Conn) {
-		t.Logf("connect success")
+
+	ws.OnConnect(func(conn knet.Conn) {
+		t.Logf("connect success, id: %v", conn.ID())
 	})
-	ws.OnMessage(func(conn *websocket.Conn, msg []byte) {
-		t.Logf("recieve message success, len: %d", len(msg))
+	ws.OnTextMessage(func(conn knet.Conn, msg []byte) {
+		t.Logf("recieve text message success, len: %d", len(msg))
 	})
-	ws.ErrorHandler(func(err error) {
+	ws.OnBinaryMessage(func(conn knet.Conn, msg []byte) {
+		t.Logf("recieve binary message success, len: %d", len(msg))
+	})
+	ws.OnError(func(err error) {
 		t.Logf("websocket error: %s", err.Error())
 	})
 
-	go func() {
-		ws.Run()
-	}()
-
-	time.Sleep(time.Second * 10)
-	ws.Shutdown()
+	ws.Start()
 
 }

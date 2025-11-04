@@ -1,8 +1,6 @@
 package main
 
-import (
-	"github.com/byteweap/wukong/core/gate"
-)
+import "github.com/byteweap/wukong/core/gate"
 
 //
 //func main() {
@@ -53,4 +51,5 @@ func main() {
 
 	g := gate.New()
 	g.Start()
+
 }

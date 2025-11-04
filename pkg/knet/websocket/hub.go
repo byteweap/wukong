@@ -41,7 +41,7 @@ func (h *hub) shutdown() error {
 	h.open.Store(false)
 
 	h.mux.RLock()
-	for conn, _ := range h.conns {
+	for conn := range h.conns {
 		conn.Close()
 	}
 	h.mux.RUnlock()
