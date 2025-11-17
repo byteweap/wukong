@@ -21,6 +21,10 @@ func New(logger klog.Logger, opts ...Option) *Gate {
 	for _, opt := range opts {
 		opt(options)
 	}
+
+	if logger == nil {
+		logger = klog.New()
+	}
 	return &Gate{
 		logger: logger.With("module", "gate"),
 		opts:   options,
