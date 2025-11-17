@@ -1,3 +1,0 @@
-package klog
-
-import "time"
