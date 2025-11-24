@@ -10,9 +10,7 @@ import (
 
 func TestServer_HandleRequest(t *testing.T) {
 
-	ws := websocket.NewServer(
-		websocket.WithAddr(":8020"),
-	)
+	ws := websocket.NewServer()
 	http.HandleFunc("/ws", ws.HandleRequest)
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		t.Fatal(err)
