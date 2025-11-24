@@ -1,44 +1,102 @@
+// Package redis implements locator plugin with Redis as backend.
 package redis
 
-import "github.com/byteweap/wukong/plugin/locator"
+import (
+	"context"
+	"fmt"
 
-// Locator TODO
+	"github.com/redis/go-redis/v9"
+
+	"github.com/byteweap/wukong/plugin/locator"
+)
+
+// ID is Redis locator implementation identifier.
+const ID = "redis(hash)"
+
+// Locator implements locator.Locator using Redis hash structures.
 type Locator struct {
+	rc                redis.UniversalClient // Redis client for hash operations
+	keyFormat         string                // Format string for constructing Redis keys
+	gateNodeFieldName string                // Field name for gate node in hash structure
+	gameNodeFieldName string                // Field name for game node in hash structure
 }
 
+// Ensure Locator implements locator.Locator interface
 var _ locator.Locator = (*Locator)(nil)
 
+// New creates Redis locator with specified configuration.
+func New(rc redis.UniversalClient, keyFormat, gateNodeFieldName, gameNodeFieldName string) *Locator {
+	return &Locator{
+		rc:                rc,
+		keyFormat:         keyFormat,
+		gateNodeFieldName: gateNodeFieldName,
+		gameNodeFieldName: gameNodeFieldName,
+	}
+}
+
+// ID returns locator implementation identifier.
 func (l *Locator) ID() string {
-	//TODO implement me
-	panic("implement me")
+	return ID
 }
 
-func (l *Locator) Gate(uid int64) (string, error) {
-	//TODO implement me
-	panic("implement me")
+// Gate returns gate node for user ID.
+func (l *Locator) Gate(ctx context.Context, uid int64) (string, error) {
+
+	key := fmt.Sprintf(l.keyFormat, uid)
+	return l.rc.HGet(ctx, key, l.gateNodeFieldName).Result()
 }
 
-func (l *Locator) BindGate(uid int64, node string) error {
-	//TODO implement me
-	panic("implement me")
+// BindGate associates user ID with gate node.
+func (l *Locator) BindGate(ctx context.Context, uid int64, node string) error {
+
+	key := fmt.Sprintf(l.keyFormat, uid)
+	return l.rc.HMSet(ctx, key, l.gateNodeFieldName, node).Err()
 }
 
-func (l *Locator) UnBindGate(uid int64, node string) error {
-	//TODO implement me
-	panic("implement me")
+// UnBindGate removes user ID's gate node association if node matches.
+func (l *Locator) UnBindGate(ctx context.Context, uid int64, node string) error {
+
+	current, err := l.Gate(ctx, uid)
+	if err != nil {
+		return err
+	}
+
+	if current == node {
+		key := fmt.Sprintf(l.keyFormat, uid)
+		if err = l.rc.HMSet(ctx, key, l.gateNodeFieldName, "").Err(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func (l *Locator) Game(uid int64) (string, error) {
-	//TODO implement me
-	panic("implement me")
+// Game returns game node for user ID.
+func (l *Locator) Game(ctx context.Context, uid int64) (string, error) {
+
+	key := fmt.Sprintf(l.keyFormat, uid)
+	return l.rc.HGet(ctx, key, l.gameNodeFieldName).Result()
 }
 
-func (l *Locator) BindGame(uid int64, node string) error {
-	//TODO implement me
-	panic("implement me")
+// BindGame associates user ID with game node.
+func (l *Locator) BindGame(ctx context.Context, uid int64, node string) error {
+
+	key := fmt.Sprintf(l.keyFormat, uid)
+	return l.rc.HMSet(ctx, key, l.gameNodeFieldName, node).Err()
 }
 
-func (l *Locator) UnBindGame(uid int64, node string) error {
-	//TODO implement me
-	panic("implement me")
+// UnBindGame removes user ID's game node association if node matches.
+func (l *Locator) UnBindGame(ctx context.Context, uid int64, node string) error {
+
+	current, err := l.Game(ctx, uid)
+	if err != nil {
+		return err
+	}
+
+	if current == node {
+		key := fmt.Sprintf(l.keyFormat, uid)
+		if err = l.rc.HMSet(ctx, key, l.gameNodeFieldName, "").Err(); err != nil {
+			return err
+		}
+	}
+	return nil
 }

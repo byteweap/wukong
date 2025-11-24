@@ -1,22 +1,27 @@
 package locator
 
-// Locator player locator
-type Locator interface {
+import "context"
 
-	// ID 标识，区分不同的实现
+// Locator tracks player session locations across nodes.
+type Locator interface {
+	// ID returns the locator implementation identifier.
 	ID() string
 
-	// Gate 获取玩家当前Gate节点
-	Gate(uid int64) (string, error)
-	// BindGate 绑定Gate节点
-	BindGate(uid int64, node string) error
-	// UnBindGate 解绑Gate节点
-	UnBindGate(uid int64, node string) error
+	// Gate returns the gate node for a user ID.
+	Gate(ctx context.Context, uid int64) (string, error)
 
-	// Game 获取玩家当前Game节点
-	Game(uid int64) (string, error)
-	// BindGame 绑定Game节点
-	BindGame(uid int64, node string) error
-	// UnBindGame 解绑Game节点
-	UnBindGame(uid int64, node string) error
+	// BindGate associates a user ID with a gate node.
+	BindGate(ctx context.Context, uid int64, node string) error
+
+	// UnBindGate removes user ID's gate node association.
+	UnBindGate(ctx context.Context, uid int64, node string) error
+
+	// Game returns the game node for a user ID.
+	Game(ctx context.Context, uid int64) (string, error)
+
+	// BindGame associates a user ID with a game node.
+	BindGame(ctx context.Context, uid int64, node string) error
+
+	// UnBindGame removes user ID's game node association.
+	UnBindGame(ctx context.Context, uid int64, node string) error
 }

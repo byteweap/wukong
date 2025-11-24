@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"time"
 	"unsafe"
+
+	"github.com/byteweap/wukong/pkg/kcodec/json"
 )
 
 func String(data any) string {
