@@ -4,7 +4,6 @@ go 1.25.4
 
 require (
 	github.com/BurntSushi/toml v1.5.0
-	github.com/gobwas/ws v1.4.0
 	github.com/nats-io/nats.go v1.47.0
 	github.com/rs/zerolog v1.34.0
 	github.com/vmihailenco/msgpack/v5 v5.4.1
@@ -14,8 +13,6 @@ require (
 )
 
 require (
-	github.com/gobwas/httphead v0.1.0 // indirect
-	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/klauspost/compress v1.18.1 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
