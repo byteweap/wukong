@@ -1,4 +1,4 @@
-package knet
+package network
 
 import "net"
 

@@ -1,3 +1,5 @@
+github.com/byteweap/wukong/contrib/logger/zerolog v0.0.0-20251124053526-f9aa6c5e9738 h1:iW/ma5RWuy3rZjVxFDJoRMY1m6NDpu18xb7R49kpldA=
+github.com/byteweap/wukong/contrib/logger/zerolog v0.0.0-20251124053526-f9aa6c5e9738/go.mod h1:9cUIfnp+/cF0t8tRkwLQGYrRk8P5GTr/bgXw2F8zKbU=
 github.com/coreos/go-systemd/v22 v22.5.0/go.mod h1:Y58oyj3AT4RCenI/lSvhwexgC+NSVTIJ3seZv2GcEnc=
 github.com/gobwas/httphead v0.1.0 h1:exrUm0f4YX0L7EBwZHuCF4GDp8aJfVeBrlLQrs6NqWU=
 github.com/gobwas/httphead v0.1.0/go.mod h1:O/RXo79gxV8G+RqlR/otEwx4Q36zl9rqC5u12GKvMCM=

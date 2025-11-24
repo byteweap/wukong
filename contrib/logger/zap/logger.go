@@ -1,4 +1,4 @@
-package logrus
+package zap
 
 import "github.com/byteweap/wukong/plugin/logger"
 

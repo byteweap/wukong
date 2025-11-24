@@ -3,18 +3,19 @@ package gate
 import (
 	"fmt"
 
-	"github.com/byteweap/wukong/pkg/klog"
-	"github.com/byteweap/wukong/pkg/knet"
-	"github.com/byteweap/wukong/pkg/knet/websocket"
+	"github.com/byteweap/wukong/contrib/logger/zerolog"
+	"github.com/byteweap/wukong/contrib/network/websocket"
+	"github.com/byteweap/wukong/plugin/logger"
+	"github.com/byteweap/wukong/plugin/network"
 )
 
 type Gate struct {
 	opts      *Options
-	logger    klog.Logger
-	netServer knet.Server
+	logger    logger.Logger
+	netServer network.Server
 }
 
-func New(logger klog.Logger, opts ...Option) *Gate {
+func New(logger logger.Logger, opts ...Option) *Gate {
 
 	// options
 	options := defaultOptions()
@@ -23,7 +24,7 @@ func New(logger klog.Logger, opts ...Option) *Gate {
 	}
 
 	if logger == nil {
-		logger = klog.New()
+		logger = zerolog.New()
 	}
 	return &Gate{
 		logger: logger.With("module", "gate"),
@@ -67,16 +68,16 @@ func (g *Gate) setupNetwork() {
 	ws.OnStop(func() {
 		g.logger.Info().Msg("websocket server stop success")
 	})
-	ws.OnConnect(func(conn knet.Conn) {
+	ws.OnConnect(func(conn network.Conn) {
 		g.logger.Info().Msgf("connect success, id: %d, localAddr: %s, remoteAddr: %s", conn.ID(), conn.LocalAddr(), conn.RemoteAddr())
 	})
-	ws.OnDisconnect(func(conn knet.Conn) {
+	ws.OnDisconnect(func(conn network.Conn) {
 		g.logger.Info().Msgf("disconnect success, id: %d, localAddr: %s, remoteAddr: %s", conn.ID(), conn.LocalAddr(), conn.RemoteAddr())
 	})
-	ws.OnTextMessage(func(conn knet.Conn, msg []byte) {
+	ws.OnTextMessage(func(conn network.Conn, msg []byte) {
 		fmt.Println("Gate receive text message: ", string(msg))
 	})
-	ws.OnBinaryMessage(func(conn knet.Conn, msg []byte) {
+	ws.OnBinaryMessage(func(conn network.Conn, msg []byte) {
 		fmt.Println("Gate receive binary message: ", msg)
 	})
 	ws.OnError(func(err error) {

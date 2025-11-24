@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/byteweap/wukong/pkg/knet"
-	"github.com/byteweap/wukong/pkg/knet/websocket"
+	"github.com/byteweap/wukong/contrib/network/websocket"
+	"github.com/byteweap/wukong/plugin/network"
 )
 
 func TestServer_HandleRequest(t *testing.T) {
@@ -32,13 +32,13 @@ func TestServer_Run(t *testing.T) {
 		t.Logf("server stop success")
 	})
 
-	ws.OnConnect(func(conn knet.Conn) {
+	ws.OnConnect(func(conn network.Conn) {
 		t.Logf("connect success, id: %v", conn.ID())
 	})
-	ws.OnTextMessage(func(conn knet.Conn, msg []byte) {
+	ws.OnTextMessage(func(conn network.Conn, msg []byte) {
 		t.Logf("recieve text message success, len: %d", len(msg))
 	})
-	ws.OnBinaryMessage(func(conn knet.Conn, msg []byte) {
+	ws.OnBinaryMessage(func(conn network.Conn, msg []byte) {
 		t.Logf("recieve binary message success, len: %d", len(msg))
 	})
 	ws.OnError(func(err error) {

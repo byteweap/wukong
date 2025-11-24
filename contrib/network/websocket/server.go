@@ -11,14 +11,13 @@ import (
 
 	"github.com/gobwas/ws"
 
-	"github.com/byteweap/wukong/pkg/knet"
 	"github.com/byteweap/wukong/pkg/kos"
+	"github.com/byteweap/wukong/plugin/network"
 )
 
 // Server 定义WebSocket服务器的增强接口
-// 继承自knet.Server，并添加特定于WebSocket的方法
 type Server interface {
-	knet.Server
+	network.Server
 	// HandleRequest 处理HTTP升级到WebSocket的请求
 	HandleRequest(w http.ResponseWriter, r *http.Request)
 }
@@ -58,37 +57,37 @@ func (s *server) Protocol() string {
 }
 
 // OnStart 设置服务启动时的回调函数
-func (s *server) OnStart(handler knet.StartHandler) {
+func (s *server) OnStart(handler network.StartHandler) {
 	s.opts.startHandler = handler
 }
 
 // OnStop 设置服务停止时的回调函数
-func (s *server) OnStop(handler knet.StopHandler) {
+func (s *server) OnStop(handler network.StopHandler) {
 	s.opts.stopHandler = handler
 }
 
 // OnConnect 设置新连接建立时的回调函数
-func (s *server) OnConnect(handler knet.ConnectHandler) {
+func (s *server) OnConnect(handler network.ConnectHandler) {
 	s.opts.connectHandler = handler
 }
 
 // OnDisconnect 设置连接断开时的回调函数
-func (s *server) OnDisconnect(handler knet.ConnectHandler) {
+func (s *server) OnDisconnect(handler network.ConnectHandler) {
 	s.opts.disconnectHandler = handler
 }
 
 // OnTextMessage 设置接收到文本消息时的回调函数
-func (s *server) OnTextMessage(handler knet.ConnMessageHandler) {
+func (s *server) OnTextMessage(handler network.ConnMessageHandler) {
 	s.opts.messageHandler = handler
 }
 
 // OnBinaryMessage 设置接收到二进制消息时的回调函数
-func (s *server) OnBinaryMessage(handler knet.ConnMessageHandler) {
+func (s *server) OnBinaryMessage(handler network.ConnMessageHandler) {
 	s.opts.binaryMessageHandler = handler
 }
 
 // OnError 设置错误发生时的回调函数
-func (s *server) OnError(handler knet.ErrorHandler) {
+func (s *server) OnError(handler network.ErrorHandler) {
 	s.opts.errorHandler = handler
 }
 

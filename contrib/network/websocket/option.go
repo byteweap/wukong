@@ -3,7 +3,7 @@ package websocket
 import (
 	"time"
 
-	"github.com/byteweap/wukong/pkg/knet"
+	"github.com/byteweap/wukong/plugin/network"
 )
 
 // Options 定义WebSocket服务器的配置选项
@@ -61,25 +61,25 @@ type Options struct {
 	PongTimeout time.Duration
 
 	// startHandler 服务启动处理器
-	startHandler knet.StartHandler
+	startHandler network.StartHandler
 
 	// stopHandler 服务停止处理器
-	stopHandler knet.StopHandler
+	stopHandler network.StopHandler
 
 	// messageHandler 文本消息处理器
-	messageHandler knet.ConnMessageHandler
+	messageHandler network.ConnMessageHandler
 
 	// binaryMessageHandler 二进制消息处理器
-	binaryMessageHandler knet.ConnMessageHandler
+	binaryMessageHandler network.ConnMessageHandler
 
 	// connectHandler 建立链接处理器
-	connectHandler knet.ConnectHandler
+	connectHandler network.ConnectHandler
 
 	// disconnectHandler 连接断开处理器
-	disconnectHandler knet.ConnectHandler
+	disconnectHandler network.ConnectHandler
 
 	// errorHandler 错误处理器,可用于打印日志
-	errorHandler knet.ErrorHandler
+	errorHandler network.ErrorHandler
 }
 
 // Option 定义选项函数类型

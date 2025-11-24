@@ -11,7 +11,7 @@ import (
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 
-	"github.com/byteweap/wukong/pkg/knet"
+	"github.com/byteweap/wukong/plugin/network"
 )
 
 // wsConn 实现WebSocket连接的具体结构体
@@ -33,7 +33,7 @@ type writeMessage struct {
 }
 
 // 确保Conn实现了knet.Conn接口
-var _ knet.Conn = (*wsConn)(nil)
+var _ network.Conn = (*wsConn)(nil)
 
 // newConn 创建新的WebSocket连接实例
 func newConn(id int64, conn net.Conn, opts *Options) *wsConn {

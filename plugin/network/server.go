@@ -1,4 +1,4 @@
-package knet
+package network
 
 // 服务器事件处理器类型定义
 type (

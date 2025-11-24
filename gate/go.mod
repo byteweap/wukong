@@ -7,6 +7,7 @@ replace github.com/byteweap/wukong => ../
 require github.com/byteweap/wukong v0.0.0-20251124035220-3bc46ee05f78
 
 require (
+	github.com/byteweap/wukong/contrib/logger/zerolog v0.0.0-20251124053526-f9aa6c5e9738 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/gobwas/ws v1.4.0 // indirect

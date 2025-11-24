@@ -1,4 +1,4 @@
-package logrus
+package zerolog
 
 import (
 	"time"
