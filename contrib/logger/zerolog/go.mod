@@ -1,6 +1,6 @@
 module github.com/byteweap/wukong/contrib/logger/zerolog
 
-go 1.25.3
+go 1.25.4
 
 replace github.com/byteweap/wukong => ../../../
 

@@ -3,7 +3,7 @@ package gate_test
 import (
 	"testing"
 
-	"github.com/byteweap/wukong/core/gate"
+	"github.com/byteweap/wukong/gate"
 	"github.com/byteweap/wukong/pkg/klog"
 )
 
