@@ -4,10 +4,14 @@ github.com/byteweap/wukong/contrib/logger/zerolog v0.0.0-20251124060403-d385de08
 github.com/byteweap/wukong/contrib/logger/zerolog v0.0.0-20251124060403-d385de084d4b/go.mod h1:9cUIfnp+/cF0t8tRkwLQGYrRk8P5GTr/bgXw2F8zKbU=
 github.com/byteweap/wukong/contrib/logger/zerolog v0.0.0-20251124062958-668f656c990b h1:CXN1vijndP+Gl5fOuVIAMIfbSsWqLJAB4QfZV5Jchio=
 github.com/byteweap/wukong/contrib/logger/zerolog v0.0.0-20251124062958-668f656c990b/go.mod h1:YTVJUs33reIdN9Ze1LAkUFu52EUxn4VIDlLAokfa2LM=
+github.com/byteweap/wukong/contrib/logger/zerolog v0.0.0-20251124080543-a142f476f77e h1:bqLNhrU+gx8m+CRkbZVf4jyFE8t3TE0HUBNOuML3N5o=
+github.com/byteweap/wukong/contrib/logger/zerolog v0.0.0-20251124080543-a142f476f77e/go.mod h1:Hdfa2zMFe99dOPobfJ4tY4ZCd3V+LBaSaX1EKc1DmfI=
 github.com/byteweap/wukong/contrib/network/websocket v0.0.0-20251124060403-d385de084d4b h1:1b9UQ5rZ/3FZj2aJD2O2UvOI9CTunNoxqpR5BWr1XFE=
 github.com/byteweap/wukong/contrib/network/websocket v0.0.0-20251124060403-d385de084d4b/go.mod h1:0AXgiGyVabcPGU82AbgHMVujuqGpeTqzgvvmD7YaY6Q=
 github.com/byteweap/wukong/contrib/network/websocket v0.0.0-20251124062958-668f656c990b h1:lh3q9LNtehtQQhdETx9vPkbdsRKd5SpT4XqdWXzFxac=
 github.com/byteweap/wukong/contrib/network/websocket v0.0.0-20251124062958-668f656c990b/go.mod h1:0AXgiGyVabcPGU82AbgHMVujuqGpeTqzgvvmD7YaY6Q=
+github.com/byteweap/wukong/contrib/network/websocket v0.0.0-20251124080543-a142f476f77e h1:9TS6e8Qs01yiBqFZUarhd7VvdaR4KYzHmhxnNZfudrw=
+github.com/byteweap/wukong/contrib/network/websocket v0.0.0-20251124080543-a142f476f77e/go.mod h1:UhOeby0spOr2PaQGe1mj/On3x4s+DSfPP0MH9Uy9q+c=
 github.com/gobwas/httphead v0.1.0 h1:exrUm0f4YX0L7EBwZHuCF4GDp8aJfVeBrlLQrs6NqWU=
 github.com/gobwas/httphead v0.1.0/go.mod h1:O/RXo79gxV8G+RqlR/otEwx4Q36zl9rqC5u12GKvMCM=
 github.com/gobwas/pool v0.2.1 h1:xfeeEhW7pwmX8nuLVlqbzVc7udMDrwetjEv+TZIz1og=

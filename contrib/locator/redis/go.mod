@@ -5,7 +5,7 @@ go 1.25.4
 replace github.com/byteweap/wukong => ../../../
 
 require (
-	github.com/byteweap/wukong v0.0.0-20251121092935-0821f549de54
+	github.com/byteweap/wukong v0.0.0-20251124080543-a142f476f77e
 	github.com/redis/go-redis/v9 v9.17.0
 )
 

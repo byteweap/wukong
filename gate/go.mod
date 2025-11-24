@@ -3,9 +3,9 @@ module github.com/byteweap/wukong/gate
 go 1.25.4
 
 require (
-	github.com/byteweap/wukong v0.0.0-20251124062958-668f656c990b
-	github.com/byteweap/wukong/contrib/logger/zerolog v0.0.0-20251124062958-668f656c990b
-	github.com/byteweap/wukong/contrib/network/websocket v0.0.0-20251124062958-668f656c990b
+	github.com/byteweap/wukong v0.0.0-20251124080543-a142f476f77e
+	github.com/byteweap/wukong/contrib/logger/zerolog v0.0.0-20251124080543-a142f476f77e
+	github.com/byteweap/wukong/contrib/network/websocket v0.0.0-20251124080543-a142f476f77e
 )
 
 require (
