@@ -10,9 +10,10 @@ import (
 )
 
 type Gate struct {
-	opts      *Options
-	logger    logger.Logger
-	netServer network.Server
+	opts           *Options
+	logger         logger.Logger
+	netServer      network.Server
+	sessionManager *SessionManager
 }
 
 func New(logger logger.Logger, opts ...Option) *Gate {
@@ -27,8 +28,9 @@ func New(logger logger.Logger, opts ...Option) *Gate {
 		logger = zerolog.New()
 	}
 	return &Gate{
-		logger: logger.With("module", "gate"),
-		opts:   options,
+		logger:         logger.With("module", "gate"),
+		opts:           options,
+		sessionManager: NewSessionManager(),
 	}
 }
 
@@ -74,14 +76,16 @@ func (g *Gate) setupNetwork() {
 	ws.OnDisconnect(func(conn network.Conn) {
 		g.logger.Info().Msgf("disconnect success, id: %d, localAddr: %s, remoteAddr: %s", conn.ID(), conn.LocalAddr(), conn.RemoteAddr())
 	})
-	ws.OnTextMessage(func(conn network.Conn, msg []byte) {
-		fmt.Println("Gate receive text message: ", string(msg))
-	})
 	ws.OnBinaryMessage(func(conn network.Conn, msg []byte) {
-		fmt.Println("Gate receive binary message: ", msg)
+		g.handlerBinaryMessage(conn, msg)
 	})
 	ws.OnError(func(err error) {
 		g.logger.Error().Err(err).Msg("websocket server err")
 	})
 	g.netServer = ws
+}
+
+// 处理二进制消息
+func (g *Gate) handlerBinaryMessage(_ network.Conn, msg []byte) {
+	fmt.Println("Gate receive binary message: ", msg)
 }
