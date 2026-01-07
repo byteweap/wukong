@@ -3,14 +3,13 @@ package gate_test
 import (
 	"testing"
 
-	"github.com/byteweap/wukong/contrib/logger/zerolog"
 	"github.com/byteweap/wukong/gate"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGate(t *testing.T) {
 
-	logger := zerolog.New()
-
-	g := gate.New(logger)
+	g, err := gate.New()
+	assert.Nil(t, err)
 	g.Start()
 }

@@ -24,8 +24,13 @@ type Locator struct {
 // Ensure Locator implements locator.Locator interface
 var _ locator.Locator = (*Locator)(nil)
 
-// New creates Redis locator with specified configuration.
-func New(rc redis.UniversalClient, keyFormat, gateNodeFieldName, gameNodeFieldName string) *Locator {
+// New creates Redis locator with redis client configuration.
+func New(opts redis.UniversalOptions, keyFormat, gateNodeFieldName, gameNodeFieldName string) *Locator {
+	return NewWith(redis.NewUniversalClient(&opts), keyFormat, gateNodeFieldName, gameNodeFieldName)
+}
+
+// New creates Redis locator with redis client.
+func NewWith(rc redis.UniversalClient, keyFormat, gateNodeFieldName, gameNodeFieldName string) *Locator {
 	return &Locator{
 		rc:                rc,
 		keyFormat:         keyFormat,

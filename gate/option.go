@@ -1,6 +1,10 @@
 package gate
 
-import "time"
+import (
+	"time"
+
+	"github.com/redis/go-redis/v9"
+)
 
 type Options struct {
 	// Addr is the address to listen on.
@@ -17,19 +21,39 @@ type Options struct {
 	WriteTimeout time.Duration
 	// WriteQueueSize is the write queue size.
 	WriteQueueSize int
+
+	// LocatorKeyFormat is the key format for the locator.
+	LocatorKeyFormat string // e.g. "gate:%d"
+	// LocatorGateFieldName is the field name for the gate in the locator.
+	LocatorGateFieldName string // e.g. "gate"
+	// LocatorGameFieldName is the field name for the game in the locator.
+	LocatorGameFieldName string // e.g. "game"
+
+	// RedisOptions is the Redis options.
+	RedisOptions *redis.UniversalOptions
 }
 
 type Option func(*Options)
 
 func defaultOptions() *Options {
 	return &Options{
-		Addr:           "0.0.0.0:8000",
-		Pattern:        "/",
-		MaxConnections: 10000,
-		MaxMessageSize: 4 * 1024, // 4KB
-		ReadTimeout:    0,
-		WriteTimeout:   0,
-		WriteQueueSize: 0,
+		Addr:                 "0.0.0.0:8000",
+		Pattern:              "/",
+		MaxConnections:       10000,
+		MaxMessageSize:       4 * 1024, // 4KB
+		ReadTimeout:          0,
+		WriteTimeout:         0,
+		WriteQueueSize:       0,
+		LocatorKeyFormat:     "gate:%d",
+		LocatorGateFieldName: "gate",
+		LocatorGameFieldName: "game",
+		RedisOptions: &redis.UniversalOptions{
+			Addrs:      []string{"localhost:6379"},
+			Username:   "",
+			Password:   "",
+			DB:         0,
+			ClientName: "wukong-gate",
+		},
 	}
 }
 

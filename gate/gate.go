@@ -3,8 +3,10 @@ package gate
 import (
 	"fmt"
 
+	"github.com/byteweap/wukong/contrib/locator/redis"
 	"github.com/byteweap/wukong/contrib/logger/zerolog"
 	"github.com/byteweap/wukong/contrib/network/websocket"
+	"github.com/byteweap/wukong/plugin/locator"
 	"github.com/byteweap/wukong/plugin/logger"
 	"github.com/byteweap/wukong/plugin/network"
 )
@@ -14,9 +16,10 @@ type Gate struct {
 	logger         logger.Logger
 	netServer      network.Server
 	sessionManager *SessionManager
+	locator        locator.Locator
 }
 
-func New(logger logger.Logger, opts ...Option) *Gate {
+func New(opts ...Option) (*Gate, error) {
 
 	// options
 	options := defaultOptions()
@@ -24,14 +27,16 @@ func New(logger logger.Logger, opts ...Option) *Gate {
 		opt(options)
 	}
 
-	if logger == nil {
-		logger = zerolog.New()
-	}
+	logger := zerolog.New()
+
+	locator := redis.New(options.RedisOptions, options.LocatorKeyFormat, options.LocatorGateFieldName, options.LocatorGameFieldName)
+
 	return &Gate{
 		logger:         logger.With("module", "gate"),
 		opts:           options,
 		sessionManager: NewSessionManager(),
-	}
+		locator:        locator,
+	}, nil
 }
 
 // Start gate server
