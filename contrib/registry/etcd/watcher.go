@@ -7,17 +7,17 @@ type Watcher struct {
 
 var _ registry.Watcher = (*Watcher)(nil)
 
-func (w Watcher) ID() string {
+func (w *Watcher) ID() string {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (w Watcher) Next() ([]*registry.ServiceInstance, error) {
+func (w *Watcher) Next() ([]*registry.ServiceInstance, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (w Watcher) Stop() error {
+func (w *Watcher) Stop() error {
 	//TODO implement me
 	panic("implement me")
 }
