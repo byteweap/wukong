@@ -6,48 +6,52 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type Options struct {
-	// Addr is the address to listen on.
-	Addr string
-	// Pattern is the pattern to listen on.
-	Pattern string
-	// MaxMessageSize is the maximum message size.
-	MaxMessageSize int64
-	// MaxConnections is the maximum number of connections.
-	MaxConnections int
-	// ReadTimeout is the read timeout.
-	ReadTimeout time.Duration
-	// WriteTimeout is the write timeout.
-	WriteTimeout time.Duration
-	// WriteQueueSize is the write queue size.
-	WriteQueueSize int
+type (
+	// NetworkOptions is the options for the network.
+	NetworkOptions struct {
+		Addr           string
+		Pattern        string
+		MaxMessageSize int64
+		MaxConnections int
+		ReadTimeout    time.Duration
+		WriteTimeout   time.Duration
+		WriteQueueSize int
+	}
 
-	// LocatorKeyFormat is the key format for the locator.
-	LocatorKeyFormat string // e.g. "gate:%d"
-	// LocatorGateFieldName is the field name for the gate in the locator.
-	LocatorGateFieldName string // e.g. "gate"
-	// LocatorGameFieldName is the field name for the game in the locator.
-	LocatorGameFieldName string // e.g. "game"
+	// LocatorOptions is the options for the locator.
+	LocatorOptions struct {
+		KeyFormat     string
+		GateFieldName string
+		GameFieldName string
+	}
 
-	// RedisOptions is the Redis options.
-	RedisOptions *redis.UniversalOptions
-}
+	// Options is the options for the gate.
+	Options struct {
+		NetworkOptions NetworkOptions
+		LocatorOptions LocatorOptions
+		RedisOptions   redis.UniversalOptions
+	}
+)
 
 type Option func(*Options)
 
 func defaultOptions() *Options {
 	return &Options{
-		Addr:                 "0.0.0.0:8000",
-		Pattern:              "/",
-		MaxConnections:       10000,
-		MaxMessageSize:       4 * 1024, // 4KB
-		ReadTimeout:          0,
-		WriteTimeout:         0,
-		WriteQueueSize:       0,
-		LocatorKeyFormat:     "gate:%d",
-		LocatorGateFieldName: "gate",
-		LocatorGameFieldName: "game",
-		RedisOptions: &redis.UniversalOptions{
+		NetworkOptions: NetworkOptions{
+			Addr:           "0.0.0.0:8000",
+			Pattern:        "/",
+			MaxConnections: 10000,
+			MaxMessageSize: 4 * 1024, // 4KB
+			ReadTimeout:    0,
+			WriteTimeout:   0,
+			WriteQueueSize: 0,
+		},
+		LocatorOptions: LocatorOptions{
+			KeyFormat:     "gate:%d",
+			GateFieldName: "gate",
+			GameFieldName: "game",
+		},
+		RedisOptions: redis.UniversalOptions{
 			Addrs:      []string{"localhost:6379"},
 			Username:   "",
 			Password:   "",
@@ -59,22 +63,30 @@ func defaultOptions() *Options {
 
 func WithAddr(addr string) Option {
 	return func(o *Options) {
-		o.Addr = addr
+		o.NetworkOptions.Addr = addr
 	}
 }
 
 func WithPattern(pattern string) Option {
 	return func(o *Options) {
-		if o.Pattern != "" {
-			o.Pattern = pattern
+		if o.NetworkOptions.Pattern != "" {
+			o.NetworkOptions.Pattern = pattern
 		}
 	}
 }
 
 func WithMaxConnections(maxConnections int) Option {
 	return func(o *Options) {
-		if o.MaxConnections > 0 {
-			o.MaxConnections = maxConnections
+		if o.NetworkOptions.MaxConnections > 0 {
+			o.NetworkOptions.MaxConnections = maxConnections
 		}
+	}
+}
+
+func WithLocator(keyFormat, gateFieldName, gameFieldName string) Option {
+	return func(o *Options) {
+		o.LocatorOptions.KeyFormat = keyFormat
+		o.LocatorOptions.GateFieldName = gateFieldName
+		o.LocatorOptions.GameFieldName = gameFieldName
 	}
 }

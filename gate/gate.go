@@ -11,14 +11,21 @@ import (
 	"github.com/byteweap/wukong/plugin/network"
 )
 
+// Gate is the websocket gate server.
 type Gate struct {
-	opts           *Options
-	logger         logger.Logger
-	netServer      network.Server
+	// opts is the options.
+	opts *Options
+	// logger is the logger.
+	logger logger.Logger
+	// netServer is the network server for websocket/kcp/tcp.
+	netServer network.Server
+	// sessionManager is the session manager.
 	sessionManager *SessionManager
-	locator        locator.Locator
+	// locator is the locator for player location.
+	locator locator.Locator
 }
 
+// New creates a new gate server.
 func New(opts ...Option) (*Gate, error) {
 
 	// options
@@ -29,7 +36,9 @@ func New(opts ...Option) (*Gate, error) {
 
 	logger := zerolog.New()
 
-	locator := redis.New(options.RedisOptions, options.LocatorKeyFormat, options.LocatorGateFieldName, options.LocatorGameFieldName)
+	redisOpts, locatorOpts := options.RedisOptions, options.LocatorOptions
+
+	locator := redis.New(redisOpts, locatorOpts.KeyFormat, locatorOpts.GateFieldName, locatorOpts.GameFieldName)
 
 	return &Gate{
 		logger:         logger.With("module", "gate"),
@@ -56,7 +65,7 @@ func (g *Gate) Stop() {
 // setupNetwork setup network
 func (g *Gate) setupNetwork() {
 
-	options := g.opts
+	options := g.opts.NetworkOptions
 
 	// websocket server
 	ws := websocket.NewServer(
