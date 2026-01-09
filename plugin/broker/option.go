@@ -5,6 +5,7 @@ type PublishOption func(*PublishOptions)
 
 type PublishOptions struct {
 	Header Header
+	Reply  string // 可选的回复地址（reply subject），用于异步 request-reply
 }
 
 // SubscribeOption 订阅选项。
@@ -53,5 +54,12 @@ type ReplyOptions struct {
 func WithReplyHeader(h Header) ReplyOption {
 	return func(o *ReplyOptions) {
 		o.Header = h
+	}
+}
+
+// WithPublishReply 设置发布消息的回复地址（用于异步 request-reply）。
+func WithPublishReply(reply string) PublishOption {
+	return func(o *PublishOptions) {
+		o.Reply = reply
 	}
 }

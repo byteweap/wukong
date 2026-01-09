@@ -55,6 +55,9 @@ func (b *Broker) Publish(ctx context.Context, subject string, data []byte, opts 
 	if len(po.Header) > 0 {
 		m.Header = toNatsHeader(po.Header)
 	}
+	if po.Reply != "" {
+		m.Reply = po.Reply
+	}
 	return b.nc.PublishMsg(m)
 }
 
