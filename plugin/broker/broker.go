@@ -11,11 +11,11 @@ type Broker interface {
 	// ID 返回实现标识（例如 "nats(core)"）。
 	ID() string
 
-	// Publish 发布一条消息（fire-and-forget）。
-	Publish(ctx context.Context, subject string, data []byte, opts ...PublishOption) error
+	// Pub 发布一条消息（fire-and-forget）。
+	Pub(ctx context.Context, subject string, data []byte, opts ...PublishOption) error
 
-	// Subscribe 订阅主题。需要队列组（Queue Group）时请使用 SubscribeOption。
-	Subscribe(ctx context.Context, subject string, handler Handler, opts ...SubscribeOption) (Subscription, error)
+	// Sub 订阅主题。需要队列组（Queue Group）时请使用 SubscribeOption。
+	Sub(ctx context.Context, subject string, handler Handler, opts ...SubscribeOption) (Subscription, error)
 
 	// Request 发送请求并等待响应（request-reply）。
 	Request(ctx context.Context, subject string, data []byte, opts ...RequestOption) (*Message, error)
@@ -24,8 +24,8 @@ type Broker interface {
 	// msg.Reply 字段包含请求方指定的回复地址（通常是自动生成的 inbox）。
 	Reply(ctx context.Context, msg *Message, data []byte, opts ...ReplyOption) error
 
-	// Drain 优雅关闭：停止收新，尽量完成未处理工作后退出。
-	Drain() error
+	// Shutdown 优雅关闭：停止收新，尽量完成未处理工作后退出。
+	Shutdown() error
 
 	// Close 立即关闭连接。
 	Close()
@@ -37,7 +37,7 @@ type Handler func(ctx context.Context, msg *Message)
 // Subscription 表示一次订阅。
 type Subscription interface {
 	Unsubscribe() error
-	Drain() error
+	Shutdown() error
 }
 
 // Message 是 Broker 层的通用消息结构。

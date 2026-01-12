@@ -41,7 +41,7 @@ func NewWith(nc *nats.Conn) *Broker {
 
 func (b *Broker) ID() string { return ID }
 
-func (b *Broker) Publish(ctx context.Context, subject string, data []byte, opts ...broker.PublishOption) error {
+func (b *Broker) Pub(ctx context.Context, subject string, data []byte, opts ...broker.PublishOption) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func (b *Broker) Publish(ctx context.Context, subject string, data []byte, opts 
 	return b.nc.PublishMsg(m)
 }
 
-func (b *Broker) Subscribe(ctx context.Context, subject string, handler broker.Handler, opts ...broker.SubscribeOption) (broker.Subscription, error) {
+func (b *Broker) Sub(ctx context.Context, subject string, handler broker.Handler, opts ...broker.SubscribeOption) (broker.Subscription, error) {
 	var so broker.SubscribeOptions
 	for _, opt := range opts {
 		opt(&so)
@@ -157,7 +157,7 @@ func (b *Broker) Reply(ctx context.Context, msg *broker.Message, data []byte, op
 	return b.nc.PublishMsg(reply)
 }
 
-func (b *Broker) Drain() error {
+func (b *Broker) Shutdown() error {
 	if b.nc == nil {
 		return nil
 	}
@@ -176,7 +176,7 @@ type subscription struct {
 }
 
 func (s *subscription) Unsubscribe() error { return s.sub.Unsubscribe() }
-func (s *subscription) Drain() error       { return s.sub.Drain() }
+func (s *subscription) Shutdown() error    { return s.sub.Drain() }
 
 func buildNatsOptions(o *options) []nats.Option {
 	opts := []nats.Option{
