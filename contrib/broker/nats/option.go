@@ -2,6 +2,7 @@ package nats
 
 import (
 	"crypto/tls"
+	"strings"
 	"time"
 
 	"github.com/nats-io/nats.go"
@@ -10,7 +11,7 @@ import (
 const (
 	// default values (偏稳定与低延迟的折中)
 	defaultURLs                = nats.DefaultURL
-	defaultName                = "wukong-broker"
+	defaultName                = "wk-nats-broker"
 	defaultConnectTimeout      = 3 * time.Second
 	defaultReconnectWait       = 250 * time.Millisecond
 	defaultMaxReconnects       = -1 // 无限重连
@@ -53,16 +54,16 @@ func defaultOptions() *options {
 	}
 }
 
-// WithURLs 设置 NATS 服务地址（可传逗号分隔的多个 URL）。
-func WithURLs(urls string) Option {
+// WithURLs 设置 NATS 服务地址.
+func WithURLs(urls ...string) Option {
 	return func(o *options) {
-		if urls != "" {
-			o.urls = urls
+		if len(urls) > 0 {
+			o.urls = strings.Join(urls, ",")
 		}
 	}
 }
 
-// WithName 设置连接名称。
+// WithName 设置连接名称.
 func WithName(name string) Option {
 	return func(o *options) {
 		if name != "" {
@@ -71,14 +72,14 @@ func WithName(name string) Option {
 	}
 }
 
-// WithToken 使用 token 认证。
+// WithToken 使用 token 认证.
 func WithToken(token string) Option {
 	return func(o *options) {
 		o.token = token
 	}
 }
 
-// WithUserPass 使用用户名/密码认证。
+// WithUserPass 使用用户名/密码认证.
 func WithUserPass(user, pass string) Option {
 	return func(o *options) {
 		o.user = user
@@ -86,14 +87,14 @@ func WithUserPass(user, pass string) Option {
 	}
 }
 
-// WithTLSConfig 设置 TLS 配置。
+// WithTLSConfig 设置 TLS 配置.
 func WithTLSConfig(cfg *tls.Config) Option {
 	return func(o *options) {
 		o.tlsCfg = cfg
 	}
 }
 
-// WithConnectTimeout 设置连接超时。
+// WithConnectTimeout 设置连接超时.
 func WithConnectTimeout(d time.Duration) Option {
 	return func(o *options) {
 		if d > 0 {
@@ -102,7 +103,7 @@ func WithConnectTimeout(d time.Duration) Option {
 	}
 }
 
-// WithReconnect 设置重连策略。
+// WithReconnect 设置重连策略.
 func WithReconnect(wait time.Duration, max int) Option {
 	return func(o *options) {
 		if wait > 0 {
@@ -112,7 +113,7 @@ func WithReconnect(wait time.Duration, max int) Option {
 	}
 }
 
-// WithPing 设置心跳参数。
+// WithPing 设置心跳参数.
 func WithPing(interval time.Duration, maxOutstanding int) Option {
 	return func(o *options) {
 		if interval > 0 {
