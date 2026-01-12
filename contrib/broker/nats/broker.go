@@ -175,8 +175,8 @@ type subscription struct {
 	sub *nats.Subscription
 }
 
-func (s *subscription) Unsubscribe() error { return s.sub.Unsubscribe() }
-func (s *subscription) Shutdown() error    { return s.sub.Drain() }
+func (s *subscription) Unsub() error    { return s.sub.Unsubscribe() }
+func (s *subscription) Shutdown() error { return s.sub.Drain() }
 
 func buildNatsOptions(o *options) []nats.Option {
 	opts := []nats.Option{

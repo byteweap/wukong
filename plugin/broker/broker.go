@@ -36,7 +36,7 @@ type Handler func(ctx context.Context, msg *Message)
 
 // Subscription 表示一次订阅。
 type Subscription interface {
-	Unsubscribe() error
+	Unsub() error
 	Shutdown() error
 }
 

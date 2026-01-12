@@ -11,17 +11,18 @@
 import (
   "context"
   "time"
-  bnats "github.com/byteweap/wukong/contrib/broker/nats"
+  nb "github.com/byteweap/wukong/contrib/broker/nats"
   "github.com/byteweap/wukong/plugin/broker"
 )
 
 func example() error {
-  b, err := bnats.New(bnats.WithURLs("nats://127.0.0.1:4222"))
+
+  b, err := nb.New(nb.WithURLs("nats://127.0.0.1:4222"))
   if err != nil { return err }
   defer b.Close()
 
   // Queue Group：水平扩展的竞争消费者
-  sub, err := b.Subscribe(context.Background(),
+  sub, err := b.Sub(context.Background(),
     "wk.game.cmd.route.001.v1",
     func(ctx context.Context, msg *broker.Message) {
       // 处理 msg.Data
@@ -30,7 +31,7 @@ func example() error {
     broker.WithQueue("game-route-001"),
   )
   if err != nil { return err }
-  defer sub.Unsubscribe()
+  defer sub.Unsub()
 
   // request-reply
   ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*100)
