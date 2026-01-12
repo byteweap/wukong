@@ -125,7 +125,7 @@ func WithPing(interval time.Duration, maxOutstanding int) Option {
 	}
 }
 
-// WithNatsOptions 透传底层 nats.Option（高级用法）。
+// WithNatsOptions 透传底层 nats.Option (高级用法).
 func WithNatsOptions(opts ...nats.Option) Option {
 	return func(o *options) {
 		if len(opts) > 0 {
