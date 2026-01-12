@@ -3,12 +3,12 @@ package gate
 import (
 	"fmt"
 
+	"github.com/byteweap/wukong/component/locator"
+	"github.com/byteweap/wukong/component/logger"
+	"github.com/byteweap/wukong/component/network"
 	"github.com/byteweap/wukong/contrib/locator/redis"
 	"github.com/byteweap/wukong/contrib/logger/zerolog"
 	"github.com/byteweap/wukong/contrib/network/websocket"
-	"github.com/byteweap/wukong/plugin/locator"
-	"github.com/byteweap/wukong/plugin/logger"
-	"github.com/byteweap/wukong/plugin/network"
 )
 
 // Gate is the websocket gate server.

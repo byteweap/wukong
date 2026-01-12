@@ -7,7 +7,7 @@ import (
 
 	"github.com/redis/go-redis/v9"
 
-	"github.com/byteweap/wukong/plugin/locator"
+	"github.com/byteweap/wukong/component/locator"
 )
 
 // ID is Redis locator implementation identifier.

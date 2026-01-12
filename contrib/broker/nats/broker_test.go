@@ -11,7 +11,7 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
 
-	"github.com/byteweap/wukong/plugin/broker"
+	"github.com/byteweap/wukong/component/broker"
 )
 
 func runNatsServer(t *testing.T) *natssrv.Server {

@@ -4,7 +4,7 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/byteweap/wukong/plugin/network"
+	"github.com/byteweap/wukong/component/network"
 )
 
 type Session struct {

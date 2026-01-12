@@ -11,7 +11,7 @@ import (
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 
-	"github.com/byteweap/wukong/plugin/network"
+	"github.com/byteweap/wukong/component/network"
 )
 
 // wsConn 实现WebSocket连接的具体结构体

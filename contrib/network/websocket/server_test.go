@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/byteweap/wukong/component/network"
 	"github.com/byteweap/wukong/contrib/network/websocket"
-	"github.com/byteweap/wukong/plugin/network"
 )
 
 func TestServer_HandleRequest(t *testing.T) {

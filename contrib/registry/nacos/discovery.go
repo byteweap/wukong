@@ -3,7 +3,7 @@ package nacos
 import (
 	"context"
 
-	"github.com/byteweap/wukong/plugin/registry"
+	"github.com/byteweap/wukong/component/registry"
 )
 
 type Discovery struct {

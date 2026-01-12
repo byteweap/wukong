@@ -7,7 +7,7 @@ import (
 	"github.com/rs/zerolog"
 	"gopkg.in/natefinch/lumberjack.v2"
 
-	"github.com/byteweap/wukong/plugin/logger"
+	"github.com/byteweap/wukong/component/logger"
 )
 
 type Log struct {

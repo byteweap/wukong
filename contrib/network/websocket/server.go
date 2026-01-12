@@ -9,10 +9,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/gobwas/ws"
-
+	"github.com/byteweap/wukong/component/network"
 	"github.com/byteweap/wukong/pkg/kos"
-	"github.com/byteweap/wukong/plugin/network"
+
+	"github.com/gobwas/ws"
 )
 
 // Server 定义WebSocket服务器的增强接口

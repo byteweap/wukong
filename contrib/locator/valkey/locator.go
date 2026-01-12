@@ -3,7 +3,7 @@ package valkey
 import (
 	"context"
 
-	"github.com/byteweap/wukong/plugin/locator"
+	"github.com/byteweap/wukong/component/locator"
 )
 
 type Locator struct {

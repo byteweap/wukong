@@ -5,7 +5,7 @@ import (
 
 	"github.com/nats-io/nats.go"
 
-	"github.com/byteweap/wukong/plugin/broker"
+	"github.com/byteweap/wukong/component/broker"
 )
 
 // ID is NATS broker implementation identifier.

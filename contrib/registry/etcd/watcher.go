@@ -1,6 +1,6 @@
 package etcd
 
-import "github.com/byteweap/wukong/plugin/registry"
+import "github.com/byteweap/wukong/component/registry"
 
 type Watcher struct {
 }

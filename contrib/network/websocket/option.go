@@ -3,7 +3,7 @@ package websocket
 import (
 	"time"
 
-	"github.com/byteweap/wukong/plugin/network"
+	"github.com/byteweap/wukong/component/network"
 )
 
 // Options 定义WebSocket服务器的配置选项

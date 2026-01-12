@@ -5,7 +5,7 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/byteweap/wukong/plugin/logger"
+	"github.com/byteweap/wukong/component/logger"
 )
 
 type Entry struct {
