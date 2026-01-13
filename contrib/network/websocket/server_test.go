@@ -20,8 +20,8 @@ func TestServer_HandleRequest(t *testing.T) {
 func TestServer_Run(t *testing.T) {
 
 	ws := websocket.NewServer(
-		websocket.WithAddr(":8020"),
-		websocket.WithPattern("/ws"),
+		websocket.Addr(":8020"),
+		websocket.Pattern("/ws"),
 	)
 	ws.OnStart(func(addr, pattern string) {
 		t.Logf("server start success, addr: %s, pattern: %s", addr, pattern)

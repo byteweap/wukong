@@ -25,11 +25,26 @@ type (
 		GameFieldName string
 	}
 
+	// BrokerOptions is the options for the broker.
+	BrokerOptions struct {
+		Name                string        // 名称, 默认 "gate"
+		URLs                []string      // 连接地址,
+		Token               string        // 认证 token
+		User                string        // 认证用户名
+		Password            string        // 认证密码
+		ConnectTimeout      time.Duration // 连接超时时间, 默认 3 秒
+		ReconnectWait       time.Duration // 重连等待时间, 默认 250 毫秒, 无限重连
+		MaxReconnects       int           // 最大重连次数, 默认 0, 无限重连
+		PingInterval        time.Duration // 心跳间隔时间, 默认 20 秒, 3 个心跳未响应则认为连接异常
+		MaxPingsOutstanding int           // 最大心跳未响应次数, 默认 0, 无限重连
+	}
+
 	// Options is the options for the gate.
 	Options struct {
 		NetworkOptions NetworkOptions
 		LocatorOptions LocatorOptions
 		RedisOptions   redis.UniversalOptions
+		BrokerOptions  BrokerOptions
 	}
 )
 
@@ -58,16 +73,28 @@ func defaultOptions() *Options {
 			DB:         0,
 			ClientName: "wukong-gate",
 		},
+		BrokerOptions: BrokerOptions{
+			Name:                "gate",
+			URLs:                []string{"localhost:4222"},
+			Token:               "",
+			User:                "",
+			Password:            "",
+			ConnectTimeout:      3 * time.Second,
+			ReconnectWait:       250 * time.Millisecond,
+			MaxReconnects:       -1,
+			PingInterval:        20 * time.Second,
+			MaxPingsOutstanding: 3,
+		},
 	}
 }
 
-func WithAddr(addr string) Option {
+func Addr(addr string) Option {
 	return func(o *Options) {
 		o.NetworkOptions.Addr = addr
 	}
 }
 
-func WithPattern(pattern string) Option {
+func Pattern(pattern string) Option {
 	return func(o *Options) {
 		if o.NetworkOptions.Pattern != "" {
 			o.NetworkOptions.Pattern = pattern
@@ -75,7 +102,7 @@ func WithPattern(pattern string) Option {
 	}
 }
 
-func WithMaxConnections(maxConnections int) Option {
+func MaxConnections(maxConnections int) Option {
 	return func(o *Options) {
 		if o.NetworkOptions.MaxConnections > 0 {
 			o.NetworkOptions.MaxConnections = maxConnections
@@ -83,10 +110,22 @@ func WithMaxConnections(maxConnections int) Option {
 	}
 }
 
-func WithLocator(keyFormat, gateFieldName, gameFieldName string) Option {
+func Locator(keyFormat, gateFieldName, gameFieldName string) Option {
 	return func(o *Options) {
 		o.LocatorOptions.KeyFormat = keyFormat
 		o.LocatorOptions.GateFieldName = gateFieldName
 		o.LocatorOptions.GameFieldName = gameFieldName
+	}
+}
+
+func Redis(opts redis.UniversalOptions) Option {
+	return func(o *Options) {
+		o.RedisOptions = opts
+	}
+}
+
+func Broker(opts BrokerOptions) Option {
+	return func(o *Options) {
+		o.BrokerOptions = opts
 	}
 }

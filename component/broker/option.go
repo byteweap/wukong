@@ -22,22 +22,22 @@ type RequestOptions struct {
 	Header Header
 }
 
-// WithHeader 设置消息头 (Publish/Request).
-func WithHeader(h Header) PublishOption {
+// PubHeader 设置消息头 (Publish/Request).
+func PubHeader(h Header) PublishOption {
 	return func(o *PublishOptions) {
 		o.Header = h
 	}
 }
 
-// WithRequestHeader 设置消息头 (Request).
-func WithRequestHeader(h Header) RequestOption {
+// RequestHeader 设置消息头 (Request).
+func RequestHeader(h Header) RequestOption {
 	return func(o *RequestOptions) {
 		o.Header = h
 	}
 }
 
-// WithQueue 设置订阅的 Queue Group (用于水平扩展的竞争消费者).
-func WithQueue(queue string) SubscribeOption {
+// SubQueue 设置订阅的 Queue Group (用于水平扩展的竞争消费者).
+func SubQueue(queue string) SubscribeOption {
 	return func(o *SubscribeOptions) {
 		o.Queue = queue
 	}
@@ -50,15 +50,15 @@ type ReplyOptions struct {
 	Header Header
 }
 
-// WithReplyHeader 设置回复消息头.
-func WithReplyHeader(h Header) ReplyOption {
+// ReplyHeader 设置回复消息头.
+func ReplyHeader(h Header) ReplyOption {
 	return func(o *ReplyOptions) {
 		o.Header = h
 	}
 }
 
-// WithPublishReply 设置发布消息的回复地址 (用于异步 request-reply).
-func WithPublishReply(reply string) PublishOption {
+// PublishReply 设置发布消息的回复地址 (用于异步 request-reply).
+func PublishReply(reply string) PublishOption {
 	return func(o *PublishOptions) {
 		o.Reply = reply
 	}

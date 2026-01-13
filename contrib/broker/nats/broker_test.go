@@ -38,7 +38,7 @@ func runNatsServer(t *testing.T) *natssrv.Server {
 func TestPublishSubscribe_HeaderRoundTrip(t *testing.T) {
 	s := runNatsServer(t)
 
-	b, err := New(WithURLs(s.ClientURL()))
+	b, err := New(URLs(s.ClientURL()))
 	require.NoError(t, err)
 	t.Cleanup(b.Close)
 
@@ -56,7 +56,7 @@ func TestPublishSubscribe_HeaderRoundTrip(t *testing.T) {
 	h := broker.Header{
 		"X-Trace-Id": {"abc"},
 	}
-	err = b.Pub(context.Background(), subject, data, broker.WithHeader(h))
+	err = b.Pub(context.Background(), subject, data, broker.PubHeader(h))
 	require.NoError(t, err)
 
 	select {
@@ -77,7 +77,7 @@ func TestPublishSubscribe_HeaderRoundTrip(t *testing.T) {
 func TestQueueSubscribe_ExactlyOnce(t *testing.T) {
 	s := runNatsServer(t)
 
-	b, err := New(WithURLs(s.ClientURL()))
+	b, err := New(URLs(s.ClientURL()))
 	require.NoError(t, err)
 	t.Cleanup(b.Close)
 
@@ -92,12 +92,12 @@ func TestQueueSubscribe_ExactlyOnce(t *testing.T) {
 
 	_, err = b.Sub(ctx, subject, func(_ context.Context, _ *broker.Message) {
 		atomic.AddInt32(&c1, 1)
-	}, broker.WithQueue(queue))
+	}, broker.SubQueue(queue))
 	require.NoError(t, err)
 
 	_, err = b.Sub(ctx, subject, func(_ context.Context, _ *broker.Message) {
 		atomic.AddInt32(&c2, 1)
-	}, broker.WithQueue(queue))
+	}, broker.SubQueue(queue))
 	require.NoError(t, err)
 
 	// Give subscriptions a tiny moment to propagate.
@@ -115,7 +115,7 @@ func TestQueueSubscribe_ExactlyOnce(t *testing.T) {
 func TestRequestReply(t *testing.T) {
 	s := runNatsServer(t)
 
-	b, err := New(WithURLs(s.ClientURL()))
+	b, err := New(URLs(s.ClientURL()))
 	require.NoError(t, err)
 	t.Cleanup(b.Close)
 
@@ -127,7 +127,7 @@ func TestRequestReply(t *testing.T) {
 
 	_, err = b.Sub(context.Background(), subject, func(ctx context.Context, msg *broker.Message) {
 		// 使用 Reply 方法回复请求（更语义化）
-		_ = b.Reply(ctx, msg, pong, broker.WithReplyHeader(broker.Header{
+		_ = b.Reply(ctx, msg, pong, broker.ReplyHeader(broker.Header{
 			"X-From": {"server"},
 		}))
 	})
@@ -140,7 +140,7 @@ func TestRequestReply(t *testing.T) {
 		ctx,
 		subject,
 		ping,
-		broker.WithRequestHeader(broker.Header{
+		broker.RequestHeader(broker.Header{
 			"X-From": {"client"},
 		}))
 	require.NoError(t, err)
@@ -151,7 +151,7 @@ func TestRequestReply(t *testing.T) {
 func TestSubscribe_ContextCancelAutoUnsubscribe(t *testing.T) {
 	s := runNatsServer(t)
 
-	b, err := New(WithURLs(s.ClientURL()))
+	b, err := New(URLs(s.ClientURL()))
 	require.NoError(t, err)
 	t.Cleanup(b.Close)
 
@@ -189,7 +189,7 @@ func TestSubscribe_ContextCancelAutoUnsubscribe(t *testing.T) {
 func TestContextErrFastFail(t *testing.T) {
 	s := runNatsServer(t)
 
-	b, err := New(WithURLs(s.ClientURL()))
+	b, err := New(URLs(s.ClientURL()))
 	require.NoError(t, err)
 	t.Cleanup(b.Close)
 
@@ -205,14 +205,14 @@ func TestContextErrFastFail(t *testing.T) {
 func TestReply(t *testing.T) {
 	s := runNatsServer(t)
 
-	b, err := New(WithURLs(s.ClientURL()))
+	b, err := New(URLs(s.ClientURL()))
 	require.NoError(t, err)
 	t.Cleanup(b.Close)
 
 	// 测试：正常 reply
 	var gotReply bool
 	_, err = b.Sub(context.Background(), "t.reply.v1", func(ctx context.Context, msg *broker.Message) {
-		err := b.Reply(ctx, msg, []byte("ok"), broker.WithReplyHeader(broker.Header{
+		err := b.Reply(ctx, msg, []byte("ok"), broker.ReplyHeader(broker.Header{
 			"X-Status": {"success"},
 		}))
 		require.NoError(t, err)

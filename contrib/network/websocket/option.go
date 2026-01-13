@@ -152,74 +152,74 @@ func (o Options) handleError(err error) {
 	}
 }
 
-// WithAddr 监听地址
+// Addr 监听地址
 // 默认 :8000, 在使用 Start() 启动时有效
-func WithAddr(addr string) Option {
+func Addr(addr string) Option {
 	return func(o *Options) {
 		o.Addr = addr
 	}
 }
 
-// WithPattern 监听路径
+// Pattern 监听路径
 // 默认 /, 在使用 Start() 启动时有效
-func WithPattern(pattern string) Option {
+func Pattern(pattern string) Option {
 	return func(o *Options) {
 		o.Pattern = pattern
 	}
 }
 
-// WithSSL ssl安全配置
+// SSL ssl安全配置
 // 默认无
-func WithSSL(certFile, keyFile string) Option {
+func SSL(certFile, keyFile string) Option {
 	return func(o *Options) {
 		o.CertFile = certFile
 		o.KeyFile = keyFile
 	}
 }
 
-// WithMaxMessageSize 最大消息尺寸
+// MaxMessageSize 最大消息尺寸
 // 默认 1KB (1024B)
-func WithMaxMessageSize(size int64) Option {
+func MaxMessageSize(size int64) Option {
 	return func(o *Options) {
 		o.MaxMessageSize = size
 	}
 }
 
-// WithWriteQueueSize 设置写入队列大小
+// WriteQueueSize 设置写入队列大小
 // 默认 1024
-func WithWriteQueueSize(size int) Option {
+func WriteQueueSize(size int) Option {
 	return func(o *Options) {
 		o.WriteQueueSize = size
 	}
 }
 
-// WithReadTimeout 设置读取超时时间
+// ReadTimeout 设置读取超时时间
 // 0表示不超时
-func WithReadTimeout(timeout time.Duration) Option {
+func ReadTimeout(timeout time.Duration) Option {
 	return func(o *Options) {
 		o.ReadTimeout = timeout
 	}
 }
 
-// WithWriteTimeout 设置写入超时时间
+// WriteTimeout 设置写入超时时间
 // 0表示不超时
-func WithWriteTimeout(timeout time.Duration) Option {
+func WriteTimeout(timeout time.Duration) Option {
 	return func(o *Options) {
 		o.WriteTimeout = timeout
 	}
 }
 
-// WithMaxConnections 设置最大并发连接数
+// MaxConnections 设置最大并发连接数
 // 0表示无链接数限制
-func WithMaxConnections(max int) Option {
+func MaxConnections(max int) Option {
 	return func(o *Options) {
 		o.MaxConnections = max
 	}
 }
 
-// WithPingInterval 设置心跳间隔时间
+// PingInterval 设置心跳间隔时间
 // 设置0则默认为2秒
-func WithPingInterval(interval time.Duration) Option {
+func PingInterval(interval time.Duration) Option {
 	return func(o *Options) {
 		if interval <= 0 {
 			interval = 2 * time.Second

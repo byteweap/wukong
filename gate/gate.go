@@ -3,9 +3,11 @@ package gate
 import (
 	"fmt"
 
+	"github.com/byteweap/wukong/component/broker"
 	"github.com/byteweap/wukong/component/locator"
 	"github.com/byteweap/wukong/component/logger"
 	"github.com/byteweap/wukong/component/network"
+	"github.com/byteweap/wukong/contrib/broker/nats"
 	"github.com/byteweap/wukong/contrib/locator/redis"
 	"github.com/byteweap/wukong/contrib/logger/zerolog"
 	"github.com/byteweap/wukong/contrib/network/websocket"
@@ -23,6 +25,8 @@ type Gate struct {
 	sessionManager *SessionManager
 	// locator is the locator for player location.
 	locator locator.Locator
+	// broker is the broker for message transmission.
+	broker broker.Broker
 }
 
 // New creates a new gate server.
@@ -36,15 +40,29 @@ func New(opts ...Option) (*Gate, error) {
 
 	logger := zerolog.New()
 
-	redisOpts, locatorOpts := options.RedisOptions, options.LocatorOptions
+	redisOpts, locatorOpts, brokerOpts := options.RedisOptions, options.LocatorOptions, options.BrokerOptions
 
 	locator := redis.New(redisOpts, locatorOpts.KeyFormat, locatorOpts.GateFieldName, locatorOpts.GameFieldName)
+
+	broker, err := nats.New(
+		nats.Name(brokerOpts.Name),
+		nats.URLs(brokerOpts.URLs...),
+		nats.Token(brokerOpts.Token),
+		nats.UserPass(brokerOpts.User, brokerOpts.Password),
+		nats.ConnectTimeout(brokerOpts.ConnectTimeout),
+		nats.Reconnect(brokerOpts.ReconnectWait, brokerOpts.MaxReconnects),
+		nats.Ping(brokerOpts.PingInterval, brokerOpts.MaxPingsOutstanding),
+	)
+	if err != nil {
+		return nil, err
+	}
 
 	return &Gate{
 		logger:         logger.With("module", "gate"),
 		opts:           options,
 		sessionManager: NewSessionManager(),
 		locator:        locator,
+		broker:         broker,
 	}, nil
 }
 
@@ -69,13 +87,13 @@ func (g *Gate) setupNetwork() {
 
 	// websocket server
 	ws := websocket.NewServer(
-		websocket.WithAddr(options.Addr),
-		websocket.WithPattern(options.Pattern),
-		websocket.WithMaxMessageSize(options.MaxMessageSize),
-		websocket.WithMaxConnections(options.MaxConnections),
-		websocket.WithReadTimeout(options.ReadTimeout),
-		websocket.WithWriteTimeout(options.WriteTimeout),
-		websocket.WithWriteQueueSize(options.WriteQueueSize),
+		websocket.Addr(options.Addr),
+		websocket.Pattern(options.Pattern),
+		websocket.MaxMessageSize(options.MaxMessageSize),
+		websocket.MaxConnections(options.MaxConnections),
+		websocket.ReadTimeout(options.ReadTimeout),
+		websocket.WriteTimeout(options.WriteTimeout),
+		websocket.WriteQueueSize(options.WriteQueueSize),
 	)
 	ws.OnStart(func(addr, pattern string) {
 		g.logger.Info().Msgf("websocket server start success, listening on %s%s", addr, pattern)

@@ -55,7 +55,7 @@ func defaultOptions() *options {
 }
 
 // WithURLs 设置 NATS 服务地址.
-func WithURLs(urls ...string) Option {
+func URLs(urls ...string) Option {
 	return func(o *options) {
 		if len(urls) > 0 {
 			o.urls = strings.Join(urls, ",")
@@ -63,8 +63,8 @@ func WithURLs(urls ...string) Option {
 	}
 }
 
-// WithName 设置连接名称.
-func WithName(name string) Option {
+// Name 设置连接名称.
+func Name(name string) Option {
 	return func(o *options) {
 		if name != "" {
 			o.name = name
@@ -72,30 +72,23 @@ func WithName(name string) Option {
 	}
 }
 
-// WithToken 使用 token 认证.
-func WithToken(token string) Option {
+// Token 使用 token 认证.
+func Token(token string) Option {
 	return func(o *options) {
 		o.token = token
 	}
 }
 
-// WithUserPass 使用用户名/密码认证.
-func WithUserPass(user, pass string) Option {
+// UserPass 使用用户名/密码认证.
+func UserPass(user, pass string) Option {
 	return func(o *options) {
 		o.user = user
 		o.password = pass
 	}
 }
 
-// WithTLSConfig 设置 TLS 配置.
-func WithTLSConfig(cfg *tls.Config) Option {
-	return func(o *options) {
-		o.tlsCfg = cfg
-	}
-}
-
-// WithConnectTimeout 设置连接超时.
-func WithConnectTimeout(d time.Duration) Option {
+// ConnectTimeout 设置连接超时. 默认 3 秒
+func ConnectTimeout(d time.Duration) Option {
 	return func(o *options) {
 		if d > 0 {
 			o.connectTimeout = d
@@ -103,8 +96,8 @@ func WithConnectTimeout(d time.Duration) Option {
 	}
 }
 
-// WithReconnect 设置重连策略.
-func WithReconnect(wait time.Duration, max int) Option {
+// Reconnect 设置重连策略. 默认 250 毫秒, 无限重连
+func Reconnect(wait time.Duration, max int) Option {
 	return func(o *options) {
 		if wait > 0 {
 			o.reconnectWait = wait
@@ -113,23 +106,14 @@ func WithReconnect(wait time.Duration, max int) Option {
 	}
 }
 
-// WithPing 设置心跳参数.
-func WithPing(interval time.Duration, maxOutstanding int) Option {
+// Ping 设置心跳参数. 默认 20 秒, 3 个心跳未响应则认为连接异常
+func Ping(interval time.Duration, maxOutstanding int) Option {
 	return func(o *options) {
 		if interval > 0 {
 			o.pingInterval = interval
 		}
 		if maxOutstanding > 0 {
 			o.maxPingsOutstanding = maxOutstanding
-		}
-	}
-}
-
-// WithNatsOptions 透传底层 nats.Option (高级用法).
-func WithNatsOptions(opts ...nats.Option) Option {
-	return func(o *options) {
-		if len(opts) > 0 {
-			o.natsOptions = append(o.natsOptions, opts...)
 		}
 	}
 }

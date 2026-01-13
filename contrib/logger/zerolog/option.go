@@ -75,7 +75,7 @@ func defaultOptions() *options {
 }
 
 // WithLevel 指定日志等级, 默认debug, 可选: debug,info,warn,error
-func WithLevel(level string) Option {
+func Level(level string) Option {
 	return func(o *options) {
 		if level == LevelDebug ||
 			level == LevelInfo ||
@@ -86,8 +86,8 @@ func WithLevel(level string) Option {
 	}
 }
 
-// WithMode 指定输出模式, 默认console, 可选: console, file
-func WithMode(mode string) Option {
+// Mode 指定输出模式, 默认console, 可选: console, file
+func Mode(mode string) Option {
 	return func(o *options) {
 		if mode == ModeConsole || mode == ModeFile {
 			o.mode = mode
@@ -95,8 +95,8 @@ func WithMode(mode string) Option {
 	}
 }
 
-// WithLevelFieldName 指定日志等级字段名, 默认: level
-func WithLevelFieldName(v string) Option {
+// LevelFieldName 指定日志等级字段名, 默认: level
+func LevelFieldName(v string) Option {
 	return func(o *options) {
 		if v != "" {
 			o.levelFieldName = v
@@ -104,8 +104,8 @@ func WithLevelFieldName(v string) Option {
 	}
 }
 
-// WithTimeFieldName 指定时间字段名, 默认: time
-func WithTimeFieldName(v string) Option {
+// TimeFieldName 指定时间字段名, 默认: time
+func TimeFieldName(v string) Option {
 	return func(o *options) {
 		if v != "" {
 			o.timeFieldName = v
@@ -113,8 +113,8 @@ func WithTimeFieldName(v string) Option {
 	}
 }
 
-// WithTimeFormat 指定时间格式, 默认: 2006-01-02T15:04:05Z07:00 (time.RFC3339)
-func WithTimeFormat(v string) Option {
+// TimeFormat 指定时间格式, 默认: 2006-01-02T15:04:05Z07:00 (time.RFC3339)
+func TimeFormat(v string) Option {
 	return func(o *options) {
 		if v != "" {
 			o.timeFormat = v
@@ -122,8 +122,8 @@ func WithTimeFormat(v string) Option {
 	}
 }
 
-// WithMessageFieldName 指定日志内容字段名, 默认: message
-func WithMessageFieldName(v string) Option {
+// MessageFieldName 指定日志内容字段名, 默认: message
+func MessageFieldName(v string) Option {
 	return func(o *options) {
 		if v != "" {
 			o.messageFieldName = v
@@ -131,8 +131,8 @@ func WithMessageFieldName(v string) Option {
 	}
 }
 
-// WithFile 指定日志文件相关配置, 默认: ./logs.log, 10MB, 10个文件, 10天, 不压缩, UTC时间
-func WithFile(filename string, maxSize, maxBackups, maxAge int, compress, localTime bool) Option {
+// File 指定日志文件相关配置, 默认: ./logs.log, 10MB, 10个文件, 10天, 不压缩, UTC时间
+func File(filename string, maxSize, maxBackups, maxAge int, compress, localTime bool) Option {
 	return func(o *options) {
 		if filename != "" {
 			o.fileOpts.filename = filename
