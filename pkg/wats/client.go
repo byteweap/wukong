@@ -1,4 +1,4 @@
-package kats
+package wats
 
 import (
 	"strings"

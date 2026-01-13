@@ -1,25 +1,25 @@
-package kats_test
+package wats_test
 
 import (
 	"testing"
 
 	"github.com/nats-io/nats.go"
 
-	"github.com/byteweap/wukong/pkg/kats"
+	"github.com/byteweap/wukong/pkg/wats"
 )
 
 func TestKats(t *testing.T) {
 
-	cli, err := kats.Connect(
+	cli, err := wats.Connect(
 		[]string{
 			"nats://localhost:4222",
 			"nats://localhost:4223",
 			"nats://localhost:4224",
 		},
-		kats.WithNats(
+		wats.WithNats(
 			nats.Name("aaaaa"),
 		),
-		kats.WithJetStream(),
+		wats.WithJetStream(),
 	)
 	if err != nil {
 		t.Fatal(err)
