@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/byteweap/wukong/component/network"
-	"github.com/byteweap/wukong/pkg/kos"
+	"github.com/byteweap/wukong/pkg/wos"
 
 	"github.com/gobwas/ws"
 )
@@ -152,7 +152,7 @@ func (s *server) Start() {
 
 	// 等待退出信号
 	select {
-	case <-kos.Signal():
+	case <-wos.Signal():
 		// 接收到系统信号
 	case <-s.done:
 		// Stop方法被调用
