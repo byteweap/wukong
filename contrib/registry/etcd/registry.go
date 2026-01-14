@@ -2,26 +2,209 @@ package etcd
 
 import (
 	"context"
+	"fmt"
+	"path"
+	"sync"
+	"time"
+
+	clientv3 "go.etcd.io/etcd/client/v3"
 
 	"github.com/byteweap/wukong/component/registry"
+	"github.com/byteweap/wukong/pkg/kcodec"
 )
 
+// ID etcd 注册器实现标识符
+const RegistryID = "etcd(registry)"
+
+// Registry 使用 etcd 实现服务注册
 type Registry struct {
+	client            *clientv3.Client
+	namespace         string
+	ttl               time.Duration
+	keepAliveInterval time.Duration
+	leases            sync.Map // map[string]*leaseInfo 存储实例ID对应的租约信息
 }
 
 var _ registry.Registrar = (*Registry)(nil)
 
+type leaseInfo struct {
+	leaseID clientv3.LeaseID
+	cancel  context.CancelFunc
+}
+
+// New 创建 etcd 注册器并立即连接
+func NewRegistry(opts ...Option) (*Registry, error) {
+	o := defaultOptions()
+	for _, opt := range opts {
+		opt(o)
+	}
+
+	cfg := clientv3.Config{
+		Endpoints:   o.endpoints,
+		DialTimeout: o.dialTimeout,
+		Username:    o.username,
+		Password:    o.password,
+		TLS:         o.tlsConfig,
+	}
+
+	client, err := clientv3.New(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create etcd client: %w", err)
+	}
+
+	return &Registry{
+		client:            client,
+		namespace:         o.namespace,
+		ttl:               o.ttl,
+		keepAliveInterval: o.keepAliveInterval,
+	}, nil
+}
+
+// NewWith 使用现有的 etcd 客户端创建注册器（调用者负责其生命周期）
+func NewRegistryWith(client *clientv3.Client, opts ...Option) *Registry {
+	o := defaultOptions()
+	for _, opt := range opts {
+		opt(o)
+	}
+
+	return &Registry{
+		client:            client,
+		namespace:         o.namespace,
+		ttl:               o.ttl,
+		keepAliveInterval: o.keepAliveInterval,
+	}
+}
+
+// ID 返回实现标识符
 func (r *Registry) ID() string {
-	//TODO implement me
-	panic("implement me")
+	return RegistryID
 }
 
+// Register 注册服务实例
 func (r *Registry) Register(ctx context.Context, service *registry.ServiceInstance) error {
-	//TODO implement me
-	panic("implement me")
+	if service == nil {
+		return fmt.Errorf("service instance is nil")
+	}
+	if service.ID == "" || service.Name == "" {
+		return fmt.Errorf("service ID and Name are required")
+	}
+
+	// 序列化服务实例
+	data, err := kcodec.Invoke("json")
+	if err != nil {
+		return fmt.Errorf("failed to get json codec: %w", err)
+	}
+	value, err := data.Marshal(service)
+	if err != nil {
+		return fmt.Errorf("failed to marshal service instance: %w", err)
+	}
+
+	// 构建 key
+	key := r.buildKey(service.Name, service.ID)
+
+	// 创建租约
+	leaseResp, err := r.client.Grant(ctx, int64(r.ttl.Seconds()))
+	if err != nil {
+		return fmt.Errorf("failed to create lease: %w", err)
+	}
+
+	// 存储 key-value，并绑定租约
+	_, err = r.client.Put(ctx, key, string(value), clientv3.WithLease(leaseResp.ID))
+	if err != nil {
+		return fmt.Errorf("failed to put key-value: %w", err)
+	}
+
+	// 启动续租 goroutine
+	keepAliveCtx, cancel := context.WithCancel(context.Background())
+	keepAliveResp, err := r.client.KeepAlive(keepAliveCtx, leaseResp.ID)
+	if err != nil {
+		cancel()
+		// KeepAlive 失败，撤销租约并删除 key
+		_, _ = r.client.Revoke(context.Background(), leaseResp.ID)
+		return fmt.Errorf("failed to start keepalive: %w", err)
+	}
+
+	// 存储租约信息
+	r.leases.Store(service.ID, &leaseInfo{
+		leaseID: leaseResp.ID,
+		cancel:  cancel,
+	})
+
+	// 启动 goroutine 处理续租响应（避免 channel 阻塞）
+	go func() {
+		for {
+			select {
+			case <-keepAliveCtx.Done():
+				return
+			case resp, ok := <-keepAliveResp:
+				if !ok {
+					// channel 关闭，可能是 etcd 连接断开
+					return
+				}
+				if resp == nil {
+					// 续租失败
+					return
+				}
+				// 续租成功，继续等待下一次
+			}
+		}
+	}()
+
+	return nil
 }
 
+// Deregister 注销服务实例
 func (r *Registry) Deregister(ctx context.Context, service *registry.ServiceInstance) error {
-	//TODO implement me
-	panic("implement me")
+	if service == nil {
+		return fmt.Errorf("service instance is nil")
+	}
+	if service.ID == "" || service.Name == "" {
+		return fmt.Errorf("service ID and Name are required")
+	}
+
+	// 获取租约信息
+	info, ok := r.leases.LoadAndDelete(service.ID)
+	if !ok {
+		// 如果没有租约信息，直接删除 key
+		key := r.buildKey(service.Name, service.ID)
+		_, err := r.client.Delete(ctx, key)
+		return err
+	}
+
+	leaseInfo := info.(*leaseInfo)
+
+	// 停止续租
+	leaseInfo.cancel()
+
+	// 撤销租约（会自动删除关联的 key）
+	_, err := r.client.Revoke(ctx, leaseInfo.leaseID)
+	if err != nil {
+		// 如果撤销失败，尝试直接删除 key
+		key := r.buildKey(service.Name, service.ID)
+		_, _ = r.client.Delete(ctx, key)
+		return fmt.Errorf("failed to revoke lease: %w", err)
+	}
+
+	return nil
+}
+
+// Close 关闭注册器并释放资源
+func (r *Registry) Close() error {
+	// 停止所有续租
+	r.leases.Range(func(key, value interface{}) bool {
+		info := value.(*leaseInfo)
+		info.cancel()
+		return true
+	})
+
+	// 关闭 etcd 客户端
+	if r.client != nil {
+		return r.client.Close()
+	}
+	return nil
+}
+
+// buildKey 构建 etcd key
+func (r *Registry) buildKey(serviceName, instanceID string) string {
+	return path.Join(r.namespace, serviceName, instanceID)
 }
