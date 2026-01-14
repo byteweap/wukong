@@ -26,5 +26,5 @@ func TestKats(t *testing.T) {
 		return
 	}
 	t.Log("connect success!")
-	cli.Shutdown()
+	cli.Close()
 }
