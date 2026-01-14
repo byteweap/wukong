@@ -24,4 +24,7 @@ type Locator interface {
 
 	// UnBindGame removes user ID's game node association.
 	UnBindGame(ctx context.Context, uid int64, node string) error
+
+	// Close closes the locator.
+	Close() error
 }

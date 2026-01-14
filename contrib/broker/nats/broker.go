@@ -162,20 +162,16 @@ func (b *Broker) Reply(ctx context.Context, msg *broker.Message, data []byte, op
 	return b.nc.PublishMsg(reply)
 }
 
-// Shutdown 优雅关闭: 停止接收新消息，完成处理中的消息后退出.
-func (b *Broker) Shutdown() error {
+// Close 立即关闭连接.
+func (b *Broker) Close() error {
 	if b.nc == nil {
 		return nil
 	}
-	return b.nc.Drain()
-}
-
-// Close 立即关闭连接.
-func (b *Broker) Close() {
-	if b.nc == nil {
-		return
+	if err := b.nc.Drain(); err != nil {
+		b.nc.Close()
+		return err
 	}
-	b.nc.Close()
+	return nil
 }
 
 type subscription struct {

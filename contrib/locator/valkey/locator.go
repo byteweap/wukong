@@ -46,3 +46,8 @@ func (l *Locator) UnBindGame(ctx context.Context, uid int64, node string) error 
 	//TODO implement me
 	panic("implement me")
 }
+
+func (l *Locator) Close() error {
+	//TODO implement me
+	panic("implement me")
+}

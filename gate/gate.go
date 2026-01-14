@@ -13,14 +13,14 @@ import (
 	"github.com/byteweap/wukong/contrib/network/websocket"
 )
 
-// Gate WebSocket 网关服务器
+// Gate websocket 网关
 type Gate struct {
 	opts           *Options        // 配置选项
-	logger         logger.Logger   // 日志记录器
-	netServer      network.Server  // 网络服务器（WebSocket/KCP/TCP）
-	sessionManager *SessionManager // 会话管理器
+	logger         logger.Logger   // 日志
+	netServer      network.Server  // 网络服务器（WebSocket）
 	locator        locator.Locator // 玩家位置定位器
 	broker         broker.Broker   // 消息传输代理
+	sessionManager *SessionManager // 会话管理器
 }
 
 // New 创建新的网关服务器实例
@@ -31,13 +31,25 @@ func New(opts ...Option) (*Gate, error) {
 		opt(options)
 	}
 
+	// 选项
+	var (
+		redisOpts   = options.RedisOptions
+		locatorOpts = options.LocatorOptions
+		brokerOpts  = options.BrokerOptions
+	)
+
+	// logger
 	logger := zerolog.New()
 
-	// 初始化定位器和消息代理
-	redisOpts, locatorOpts, brokerOpts := options.RedisOptions, options.LocatorOptions, options.BrokerOptions
+	// 定位器
+	locator := redis.New(
+		redisOpts,
+		locatorOpts.KeyFormat,
+		locatorOpts.GateFieldName,
+		locatorOpts.GameFieldName,
+	)
 
-	locator := redis.New(redisOpts, locatorOpts.KeyFormat, locatorOpts.GateFieldName, locatorOpts.GameFieldName)
-
+	// 消息代理
 	broker, err := nats.New(
 		nats.Name(brokerOpts.Name),
 		nats.URLs(brokerOpts.URLs...),
@@ -60,17 +72,34 @@ func New(opts ...Option) (*Gate, error) {
 	}, nil
 }
 
-// Start 启动网关服务器
-func (g *Gate) Start() {
+// Serve 启动网关服务器
+func (g *Gate) Serve() {
+
 	// 初始化网络配置
 	g.setupNetwork()
+
 	// 启动网络服务器
 	g.netServer.Start()
 }
 
-// Stop 停止网关服务器
-func (g *Gate) Stop() {
+// Close 关闭网关服务器
+func (g *Gate) Close() {
+
 	g.netServer.Stop()
+
+	if err := g.broker.Close(); err != nil {
+		g.logger.Error().Err(err).Msg("broker close error")
+	}
+
+	if err := g.locator.Close(); err != nil {
+		g.logger.Error().Err(err).Msg("locator close error")
+	}
+
+	if err := g.sessionManager.Close(); err != nil {
+		g.logger.Error().Err(err).Msg("session manager close error")
+	}
+
+	g.logger.Info().Msg("gate server shutdown success")
 }
 
 // setupNetwork 初始化网络服务器配置

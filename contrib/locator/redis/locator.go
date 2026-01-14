@@ -26,11 +26,11 @@ var _ locator.Locator = (*Locator)(nil)
 
 // New creates Redis locator with redis client configuration.
 func New(opts redis.UniversalOptions, keyFormat, gateNodeFieldName, gameNodeFieldName string) *Locator {
-	return NewWith(redis.NewUniversalClient(&opts), keyFormat, gateNodeFieldName, gameNodeFieldName)
+	return newWith(redis.NewUniversalClient(&opts), keyFormat, gateNodeFieldName, gameNodeFieldName)
 }
 
-// New creates Redis locator with redis client.
-func NewWith(rc redis.UniversalClient, keyFormat, gateNodeFieldName, gameNodeFieldName string) *Locator {
+// newWith creates Redis locator with redis client.
+func newWith(rc redis.UniversalClient, keyFormat, gateNodeFieldName, gameNodeFieldName string) *Locator {
 	return &Locator{
 		rc:                rc,
 		keyFormat:         keyFormat,
@@ -104,4 +104,8 @@ func (l *Locator) UnBindGame(ctx context.Context, uid int64, node string) error 
 		}
 	}
 	return nil
+}
+
+func (l *Locator) Close() error {
+	return l.rc.Close()
 }

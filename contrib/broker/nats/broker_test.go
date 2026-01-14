@@ -40,7 +40,7 @@ func TestPublishSubscribe_HeaderRoundTrip(t *testing.T) {
 
 	b, err := New(URLs(s.ClientURL()))
 	require.NoError(t, err)
-	t.Cleanup(b.Close)
+	t.Cleanup(func() { require.NoError(t, b.Close()) })
 
 	var (
 		subject = "t.pubsub.v1"
@@ -79,7 +79,7 @@ func TestQueueSubscribe_ExactlyOnce(t *testing.T) {
 
 	b, err := New(URLs(s.ClientURL()))
 	require.NoError(t, err)
-	t.Cleanup(b.Close)
+	t.Cleanup(func() { require.NoError(t, b.Close()) })
 
 	const (
 		subject = "t.queue.v1"
@@ -117,7 +117,7 @@ func TestRequestReply(t *testing.T) {
 
 	b, err := New(URLs(s.ClientURL()))
 	require.NoError(t, err)
-	t.Cleanup(b.Close)
+	t.Cleanup(func() { require.NoError(t, b.Close()) })
 
 	var (
 		subject = "t.req.v1"
@@ -153,7 +153,7 @@ func TestSubscribe_ContextCancelAutoUnsubscribe(t *testing.T) {
 
 	b, err := New(URLs(s.ClientURL()))
 	require.NoError(t, err)
-	t.Cleanup(b.Close)
+	t.Cleanup(func() { require.NoError(t, b.Close()) })
 
 	var (
 		subject = "t.cancel.v1"
@@ -191,7 +191,7 @@ func TestContextErrFastFail(t *testing.T) {
 
 	b, err := New(URLs(s.ClientURL()))
 	require.NoError(t, err)
-	t.Cleanup(b.Close)
+	t.Cleanup(func() { require.NoError(t, b.Close()) })
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
@@ -207,7 +207,7 @@ func TestReply(t *testing.T) {
 
 	b, err := New(URLs(s.ClientURL()))
 	require.NoError(t, err)
-	t.Cleanup(b.Close)
+	t.Cleanup(func() { require.NoError(t, b.Close()) })
 
 	// 测试：正常 reply
 	var gotReply bool

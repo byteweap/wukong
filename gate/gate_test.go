@@ -11,5 +11,10 @@ func TestGate(t *testing.T) {
 
 	g, err := gate.New()
 	assert.Nil(t, err)
-	g.Start()
-}                                                                                         
+
+	t.Cleanup(func() {
+		g.Close()
+	})
+
+	g.Serve()
+}

@@ -75,11 +75,13 @@ func (sm *SessionManager) Remove(uid int64) {
 }
 
 // Close 关闭所有会话
-func (sm *SessionManager) Close() {
+func (sm *SessionManager) Close() error {
 	sm.mux.Lock()
 	defer sm.mux.Unlock()
 
 	for _, session := range sm.sessions {
 		session.conn.Close()
 	}
+
+	return nil
 }

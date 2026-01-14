@@ -24,11 +24,8 @@ type Broker interface {
 	// msg.Reply 字段包含请求方指定的回复地址 (通常是自动生成的 inbox).
 	Reply(ctx context.Context, msg *Message, data []byte, opts ...ReplyOption) error
 
-	// Shutdown 优雅关闭：停止收新，尽量完成未处理工作后退出.
-	Shutdown() error
-
 	// Close 立即关闭连接.
-	Close()
+	Close() error
 }
 
 // Handler 是订阅回调。Broker 不负责并发与背压控制；handler 内部应自行处理队列/worker.
