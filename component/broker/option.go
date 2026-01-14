@@ -57,8 +57,8 @@ func ReplyHeader(h Header) ReplyOption {
 	}
 }
 
-// PublishReply 设置发布消息的回复地址 (用于异步 request-reply).
-func PublishReply(reply string) PublishOption {
+// PubReply 设置发布消息的回复地址 (用于异步 request-reply).
+func PubReply(reply string) PublishOption {
 	return func(o *PublishOptions) {
 		o.Reply = reply
 	}

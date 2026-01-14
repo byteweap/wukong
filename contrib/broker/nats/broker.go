@@ -8,10 +8,10 @@ import (
 	"github.com/byteweap/wukong/component/broker"
 )
 
-// ID is NATS broker implementation identifier.
+// ID 是 NATS broker 实现标识符。
 const ID = "nats(core)"
 
-// Broker implements broker.Broker with NATS Core.
+// Broker 使用 NATS Core 实现 broker.Broker。
 type Broker struct {
 	opts *options
 	nc   *nats.Conn
@@ -19,7 +19,7 @@ type Broker struct {
 
 var _ broker.Broker = (*Broker)(nil)
 
-// New creates a NATS Core broker and connects immediately.
+// New 创建 NATS Core broker 并立即连接.
 func New(opts ...Option) (*Broker, error) {
 	o := defaultOptions()
 	for _, opt := range opts {
@@ -34,13 +34,15 @@ func New(opts ...Option) (*Broker, error) {
 	return &Broker{opts: o, nc: nc}, nil
 }
 
-// NewWith creates broker with existing *nats.Conn (caller owns its lifecycle).
+// NewWith 使用现有的 *nats.Conn 创建 broker(调用者负责其生命周期).
 func NewWith(nc *nats.Conn) *Broker {
 	return &Broker{opts: defaultOptions(), nc: nc}
 }
 
+// ID 返回实现标识.
 func (b *Broker) ID() string { return ID }
 
+// Pub 发布一条消息(fire-and-forget).
 func (b *Broker) Pub(ctx context.Context, subject string, data []byte, opts ...broker.PublishOption) error {
 	if err := ctx.Err(); err != nil {
 		return err
@@ -61,6 +63,7 @@ func (b *Broker) Pub(ctx context.Context, subject string, data []byte, opts ...b
 	return b.nc.PublishMsg(m)
 }
 
+// Sub 订阅主题. 支持队列组订阅，上下文取消时自动退订.
 func (b *Broker) Sub(ctx context.Context, subject string, handler broker.Handler, opts ...broker.SubscribeOption) (broker.Subscription, error) {
 	var so broker.SubscribeOptions
 	for _, opt := range opts {
@@ -105,6 +108,7 @@ func (b *Broker) Sub(ctx context.Context, subject string, handler broker.Handler
 	return &subscription{sub: sub}, nil
 }
 
+// Request 发送请求并等待响应(request-reply).
 func (b *Broker) Request(ctx context.Context, subject string, data []byte, opts ...broker.RequestOption) (*broker.Message, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -136,6 +140,7 @@ func (b *Broker) Request(ctx context.Context, subject string, data []byte, opts 
 	return out, nil
 }
 
+// Reply 回复一条请求消息.
 func (b *Broker) Reply(ctx context.Context, msg *broker.Message, data []byte, opts ...broker.ReplyOption) error {
 	if err := ctx.Err(); err != nil {
 		return err
@@ -157,6 +162,7 @@ func (b *Broker) Reply(ctx context.Context, msg *broker.Message, data []byte, op
 	return b.nc.PublishMsg(reply)
 }
 
+// Shutdown 优雅关闭: 停止接收新消息，完成处理中的消息后退出.
 func (b *Broker) Shutdown() error {
 	if b.nc == nil {
 		return nil
@@ -164,6 +170,7 @@ func (b *Broker) Shutdown() error {
 	return b.nc.Drain()
 }
 
+// Close 立即关闭连接.
 func (b *Broker) Close() {
 	if b.nc == nil {
 		return
@@ -175,9 +182,13 @@ type subscription struct {
 	sub *nats.Subscription
 }
 
-func (s *subscription) Unsub() error    { return s.sub.Unsubscribe() }
+// Unsub 立即取消订阅.
+func (s *subscription) Unsub() error { return s.sub.Unsubscribe() }
+
+// Shutdown 优雅关闭订阅: 完成处理中的消息后退出.
 func (s *subscription) Shutdown() error { return s.sub.Drain() }
 
+// buildNatsOptions 根据配置构建 NATS 连接选项。
 func buildNatsOptions(o *options) []nats.Option {
 	opts := []nats.Option{
 		nats.Name(o.name),
@@ -203,6 +214,7 @@ func buildNatsOptions(o *options) []nats.Option {
 	return opts
 }
 
+// toNatsHeader 将 broker.Header 转换为 nats.Header.
 func toNatsHeader(h broker.Header) nats.Header {
 	if len(h) == 0 {
 		return nil
@@ -212,7 +224,7 @@ func toNatsHeader(h broker.Header) nats.Header {
 		if len(vals) == 0 {
 			continue
 		}
-		// copy to avoid aliasing slices passed by caller
+		// 复制以避免与调用者传入的切片共享底层数组
 		cp := make([]string, len(vals))
 		copy(cp, vals)
 		nh[k] = cp
@@ -220,6 +232,7 @@ func toNatsHeader(h broker.Header) nats.Header {
 	return nh
 }
 
+// fromNatsHeader 将 nats.Header 转换为 broker.Header.
 func fromNatsHeader(h nats.Header) broker.Header {
 	if len(h) == 0 {
 		return nil

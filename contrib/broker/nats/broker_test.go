@@ -19,7 +19,7 @@ func runNatsServer(t *testing.T) *natssrv.Server {
 
 	opts := &natssrv.Options{
 		Host:   "127.0.0.1",
-		Port:   -1, // random available port
+		Port:   -1, // 随机可用端口
 		NoLog:  true,
 		NoSigs: true,
 	}
@@ -100,7 +100,7 @@ func TestQueueSubscribe_ExactlyOnce(t *testing.T) {
 	}, broker.SubQueue(queue))
 	require.NoError(t, err)
 
-	// Give subscriptions a tiny moment to propagate.
+	// 给订阅一点时间完成传播
 	time.Sleep(50 * time.Millisecond)
 
 	for i := 0; i < N; i++ {
@@ -109,7 +109,7 @@ func TestQueueSubscribe_ExactlyOnce(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		return int(atomic.LoadInt32(&c1)+atomic.LoadInt32(&c2)) == N
-	}, 2*time.Second, 10*time.Millisecond, "expected exactly %d messages consumed once across queue group", N)
+	}, 2*time.Second, 10*time.Millisecond, "期望队列组中恰好消费 %d 条消息", N)
 }
 
 func TestRequestReply(t *testing.T) {
@@ -167,22 +167,22 @@ func TestSubscribe_ContextCancelAutoUnsubscribe(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	// cancel -> broker should unsubscribe
+	// 取消上下文 -> broker 应该自动退订
 	cancel()
 
-	// assert underlying nats subscription becomes invalid eventually
+	// 断言底层的 nats 订阅最终会变为无效
 	ns := sub.(*subscription).sub
 	require.Eventually(t, func() bool {
 		return !ns.IsValid()
 	}, 2*time.Second, 10*time.Millisecond)
 
-	// publishing afterwards should not call handler
+	// 之后发布消息不应该调用处理函数
 	_ = b.Pub(context.Background(), subject, []byte("x"))
 	select {
 	case <-called:
-		t.Fatal("handler should not be called after ctx cancel unsubscribe")
+		t.Fatal("上下文取消退订后处理函数不应该被调用")
 	case <-time.After(150 * time.Millisecond):
-		// ok
+		// 正常
 	}
 }
 
