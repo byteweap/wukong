@@ -21,9 +21,9 @@ func TestDiscovery_GetService(t *testing.T) {
 
 	ctx := context.Background()
 	services := []*registry.ServiceInstance{
-		{ID: "instance-1", Name: "service-a", Version: "v1.0.0", Endpoints: []string{"http://127.0.0.1:8080"}},
-		{ID: "instance-2", Name: "service-a", Version: "v1.0.0", Endpoints: []string{"http://127.0.0.1:8081"}},
-		{ID: "instance-3", Name: "service-b", Version: "v1.0.0", Endpoints: []string{"http://127.0.0.1:8082"}},
+		{ID: "instance-1", Name: "service-a", Weight: 10, Version: "v1.0.0", Endpoints: []string{"http://127.0.0.1:8080"}},
+		{ID: "instance-2", Name: "service-a", Weight: 10, Version: "v1.0.0", Endpoints: []string{"http://127.0.0.1:8081"}},
+		{ID: "instance-3", Name: "service-b", Weight: 10, Version: "v1.0.0", Endpoints: []string{"http://127.0.0.1:8082"}},
 	}
 
 	for _, service := range services {
