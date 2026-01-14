@@ -27,8 +27,8 @@ func TestWatcher_Next_InitialLoad(t *testing.T) {
 
 	// 先注册一些服务
 	services := []*registry.ServiceInstance{
-		{ID: "instance-1", Name: "test-service", Endpoints: []string{"http://127.0.0.1:8080"}},
-		{ID: "instance-2", Name: "test-service", Endpoints: []string{"http://127.0.0.1:8081"}},
+		{ID: "instance-1", Name: "test-service", Weight: 10, Endpoints: []string{"http://127.0.0.1:8080"}},
+		{ID: "instance-2", Name: "test-service", Weight: 10, Endpoints: []string{"http://127.0.0.1:8081"}},
 	}
 
 	for _, service := range services {

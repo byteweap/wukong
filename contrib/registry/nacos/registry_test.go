@@ -60,6 +60,7 @@ func TestRegistry_Register(t *testing.T) {
 	service := &registry.ServiceInstance{
 		ID:        "instance-1",
 		Name:      "test-service",
+		Weight:    10,
 		Version:   "v1.0.0",
 		Metadata:  map[string]string{"env": "test"},
 		Endpoints: []string{"http://127.0.0.1:8080"},
@@ -102,6 +103,7 @@ func TestRegistry_Deregister(t *testing.T) {
 	service := &registry.ServiceInstance{
 		ID:        "instance-1",
 		Name:      "test-service",
+		Weight:    10,
 		Version:   "v1.0.0",
 		Endpoints: []string{"http://127.0.0.1:8080"},
 	}
@@ -142,9 +144,9 @@ func TestRegistry_RegisterMultipleInstances(t *testing.T) {
 
 	// 注册多个实例
 	services := []*registry.ServiceInstance{
-		{ID: "instance-1", Name: "test-service", Version: "v1.0.0", Endpoints: []string{"http://127.0.0.1:8080"}},
-		{ID: "instance-2", Name: "test-service", Version: "v1.0.0", Endpoints: []string{"http://127.0.0.1:8081"}},
-		{ID: "instance-3", Name: "test-service", Version: "v1.0.0", Endpoints: []string{"http://127.0.0.1:8082"}},
+		{ID: "instance-1", Name: "test-service", Weight: 10, Version: "v1.0.0", Endpoints: []string{"http://127.0.0.1:8080"}},
+		{ID: "instance-2", Name: "test-service", Weight: 10, Version: "v1.0.0", Endpoints: []string{"http://127.0.0.1:8081"}},
+		{ID: "instance-3", Name: "test-service", Weight: 10, Version: "v1.0.0", Endpoints: []string{"http://127.0.0.1:8082"}},
 	}
 
 	for _, service := range services {
