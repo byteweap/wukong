@@ -7,7 +7,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/nacos-group/nacos-sdk-go/v2/clients"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"
@@ -19,13 +18,12 @@ import (
 )
 
 // ID Nacos 注册器实现标识符
-const RegistryID = "nacos(registry)"
+const RegistryID = "nacos"
 
 // Registry 使用 Nacos 实现服务注册
 type Registry struct {
-	namingClient  naming_client.INamingClient
-	opts          *options
-	beatCancelMap sync.Map // map[string]context.CancelFunc 存储实例ID对应的取消函数
+	namingClient naming_client.INamingClient
+	opts         *options
 }
 
 var _ registry.Registry = (*Registry)(nil)
@@ -154,9 +152,7 @@ func (r *Registry) Register(ctx context.Context, service *registry.ServiceInstan
 	}
 
 	// 注意：对于 Ephemeral=true 的实例，Nacos SDK 会自动处理心跳
-	// 我们只需要存储取消函数用于资源清理（虽然当前不需要，但保留结构以便将来扩展）
-	_, cancel := context.WithCancel(context.Background())
-	r.beatCancelMap.Store(service.ID, cancel)
+	// 无需手动管理心跳相关资源
 
 	return nil
 }
@@ -168,11 +164,6 @@ func (r *Registry) Deregister(ctx context.Context, service *registry.ServiceInst
 	}
 	if service.ID == "" || service.Name == "" {
 		return fmt.Errorf("service ID and Name are required")
-	}
-
-	// 停止心跳
-	if cancel, ok := r.beatCancelMap.LoadAndDelete(service.ID); ok {
-		cancel.(context.CancelFunc)()
 	}
 
 	// 解析第一个 endpoint 获取 IP 和端口
@@ -243,19 +234,10 @@ func (r *Registry) Watch(ctx context.Context, serviceName string) (registry.Watc
 
 // Close 关闭注册器并释放资源
 func (r *Registry) Close() error {
-	// 停止所有心跳
-	r.beatCancelMap.Range(func(key, value interface{}) bool {
-		cancel := value.(context.CancelFunc)
-		cancel()
-		return true
-	})
-
-	// Nacos 客户端没有显式的 Close 方法，这里只清理心跳
+	// Nacos 客户端没有显式的 Close 方法
+	// 对于 Ephemeral=true 的实例，Nacos SDK 会自动处理心跳和清理
 	return nil
 }
-
-// 注意：Nacos SDK 对于 Ephemeral=true 的实例会自动处理心跳
-// 这里保留 keepAlive 和 sendBeat 的占位符，以便将来扩展自定义心跳逻辑
 
 // parseAddr 解析地址，格式: "ip:port" 或 "ip"
 func parseAddr(addr string) (string, uint64) {

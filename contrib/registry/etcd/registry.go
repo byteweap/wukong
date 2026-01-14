@@ -14,7 +14,7 @@ import (
 )
 
 // ID etcd 注册器实现标识符
-const RegistryID = "etcd(registry)"
+const RegistryID = "etcd"
 
 // Registry 使用 etcd 实现服务注册
 type Registry struct {
@@ -23,6 +23,7 @@ type Registry struct {
 	ttl               time.Duration
 	keepAliveInterval time.Duration
 	leases            sync.Map // map[string]*leaseInfo 存储实例ID对应的租约信息
+	ownClient         bool     // 是否由自己管理客户端的生命周期
 }
 
 var _ registry.Registry = (*Registry)(nil)
@@ -57,6 +58,7 @@ func NewRegistry(opts ...Option) (*Registry, error) {
 		namespace:         o.namespace,
 		ttl:               o.ttl,
 		keepAliveInterval: o.keepAliveInterval,
+		ownClient:         true, // NewRegistry 创建的实例自己管理客户端生命周期
 	}, nil
 }
 
@@ -72,6 +74,7 @@ func NewRegistryWith(client *clientv3.Client, opts ...Option) *Registry {
 		namespace:         o.namespace,
 		ttl:               o.ttl,
 		keepAliveInterval: o.keepAliveInterval,
+		ownClient:         false, // NewRegistryWith 创建的实例由上层管理客户端生命周期
 	}
 }
 
@@ -244,8 +247,8 @@ func (r *Registry) Close() error {
 		return true
 	})
 
-	// 关闭 etcd 客户端
-	if r.client != nil {
+	// 只有自己管理的客户端才关闭
+	if r.ownClient && r.client != nil {
 		return r.client.Close()
 	}
 	return nil
