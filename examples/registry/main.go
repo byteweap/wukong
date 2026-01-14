@@ -165,7 +165,7 @@ func runConsumer() {
 	if err != nil {
 		log.Fatalf("创建监听器失败: %v", err)
 	}
-	defer watcher.Stop()
+	defer watcher.Close()
 
 	// 处理服务变更
 	go func() {

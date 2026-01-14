@@ -10,4 +10,6 @@ type Registrar interface {
 	Register(ctx context.Context, service *ServiceInstance) error
 	// Deregister 注销服务
 	Deregister(ctx context.Context, service *ServiceInstance) error
+	// Close 关闭,释放资源
+	Close() error
 }

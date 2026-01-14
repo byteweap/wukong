@@ -25,3 +25,8 @@ func (r *Registry) Deregister(ctx context.Context, service *registry.ServiceInst
 	//TODO implement me
 	panic("implement me")
 }
+
+func (r *Registry) Close() error {
+	//TODO implement me
+	panic("implement me")
+}

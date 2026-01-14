@@ -25,3 +25,8 @@ func (d *Discovery) Watch(ctx context.Context, serviceName string) (registry.Wat
 	//TODO implement me
 	panic("implement me")
 }
+
+func (d *Discovery) Close() error {
+	//TODO implement me
+	panic("implement me")
+}

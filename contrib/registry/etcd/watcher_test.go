@@ -38,7 +38,7 @@ func TestWatcher_Next_InitialLoad(t *testing.T) {
 	// 创建监听器
 	watcher, err := discovery.Watch(ctx, "test-service")
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, watcher.Stop()) })
+	t.Cleanup(func() { require.NoError(t, watcher.Close()) })
 
 	// 首次 Next 应该立即返回当前实例列表
 	instances, err := watcher.Next()
@@ -62,12 +62,12 @@ func TestWatcher_Next_BlockUntilChange(t *testing.T) {
 	// 创建监听器（此时没有服务）
 	watcher, err := discovery.Watch(ctx, "test-service")
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, watcher.Stop()) })
+	t.Cleanup(func() { require.NoError(t, watcher.Close()) })
 
 	// 在另一个 goroutine 中注册服务
 	service := &registry.ServiceInstance{
-		ID:       "instance-1",
-		Name:     "test-service",
+		ID:        "instance-1",
+		Name:      "test-service",
 		Endpoints: []string{"http://127.0.0.1:8080"},
 	}
 
@@ -99,8 +99,8 @@ func TestWatcher_Next_ServiceUpdate(t *testing.T) {
 
 	// 先注册服务
 	service := &registry.ServiceInstance{
-		ID:       "instance-1",
-		Name:     "test-service",
+		ID:        "instance-1",
+		Name:      "test-service",
 		Endpoints: []string{"http://127.0.0.1:8080"},
 	}
 	err = reg.Register(ctx, service)
@@ -109,7 +109,7 @@ func TestWatcher_Next_ServiceUpdate(t *testing.T) {
 	// 创建监听器
 	watcher, err := discovery.Watch(ctx, "test-service")
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, watcher.Stop()) })
+	t.Cleanup(func() { require.NoError(t, watcher.Close()) })
 
 	// 首次获取
 	instances, err := watcher.Next()
@@ -118,8 +118,8 @@ func TestWatcher_Next_ServiceUpdate(t *testing.T) {
 
 	// 更新服务（重新注册，但 endpoints 不同）
 	updatedService := &registry.ServiceInstance{
-		ID:       "instance-1",
-		Name:     "test-service",
+		ID:        "instance-1",
+		Name:      "test-service",
 		Endpoints: []string{"http://127.0.0.1:8080", "grpc://127.0.0.1:9000"},
 	}
 	err = reg.Deregister(ctx, service)
@@ -149,13 +149,13 @@ func TestWatcher_Next_ServiceDelete(t *testing.T) {
 
 	// 注册两个服务
 	service1 := &registry.ServiceInstance{
-		ID:       "instance-1",
-		Name:     "test-service",
+		ID:        "instance-1",
+		Name:      "test-service",
 		Endpoints: []string{"http://127.0.0.1:8080"},
 	}
 	service2 := &registry.ServiceInstance{
-		ID:       "instance-2",
-		Name:     "test-service",
+		ID:        "instance-2",
+		Name:      "test-service",
 		Endpoints: []string{"http://127.0.0.1:8081"},
 	}
 
@@ -167,7 +167,7 @@ func TestWatcher_Next_ServiceDelete(t *testing.T) {
 	// 创建监听器
 	watcher, err := discovery.Watch(ctx, "test-service")
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, watcher.Stop()) })
+	t.Cleanup(func() { require.NoError(t, watcher.Close()) })
 
 	// 首次获取
 	instances, err := watcher.Next()
@@ -185,7 +185,7 @@ func TestWatcher_Next_ServiceDelete(t *testing.T) {
 	require.True(t, instances[0].Equal(service2))
 }
 
-func TestWatcher_Stop(t *testing.T) {
+func TestWatcher_Close(t *testing.T) {
 	_, clientURL := runEtcdServer(t)
 
 	discovery, err := NewDiscovery(Endpoints(clientURL))
@@ -198,11 +198,11 @@ func TestWatcher_Stop(t *testing.T) {
 	require.NoError(t, err)
 
 	// 停止监听器
-	err = watcher.Stop()
+	err = watcher.Close()
 	require.NoError(t, err)
 
 	// 再次停止应该不会出错（幂等）
-	err = watcher.Stop()
+	err = watcher.Close()
 	require.NoError(t, err)
 
 	// 停止后 Next 应该返回错误
@@ -210,7 +210,7 @@ func TestWatcher_Stop(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestWatcher_Stop_WithContextCancel(t *testing.T) {
+func TestWatcher_Close_WithContextCancel(t *testing.T) {
 	_, clientURL := runEtcdServer(t)
 
 	discovery, err := NewDiscovery(Endpoints(clientURL))
@@ -230,8 +230,8 @@ func TestWatcher_Stop_WithContextCancel(t *testing.T) {
 	require.Error(t, err)
 	require.Equal(t, context.Canceled, err)
 
-	// Stop 应该正常工作
-	err = watcher.Stop()
+	// Close 应该正常工作
+	err = watcher.Close()
 	require.NoError(t, err)
 }
 
@@ -245,7 +245,7 @@ func TestWatcher_ID(t *testing.T) {
 	ctx := context.Background()
 	watcher, err := discovery.Watch(ctx, "test-service")
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, watcher.Stop()) })
+	t.Cleanup(func() { require.NoError(t, watcher.Close()) })
 
 	require.Equal(t, WatcherID, watcher.ID())
 }
@@ -265,14 +265,14 @@ func TestWatcher_ConcurrentOperations(t *testing.T) {
 
 	watcher, err := discovery.Watch(ctx, "test-service")
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, watcher.Stop()) })
+	t.Cleanup(func() { require.NoError(t, watcher.Close()) })
 
 	// 并发注册多个服务
 	const numServices = 10
 	for i := 0; i < numServices; i++ {
 		service := &registry.ServiceInstance{
-			ID:       fmt.Sprintf("instance-%d", i),
-			Name:     "test-service",
+			ID:        fmt.Sprintf("instance-%d", i),
+			Name:      "test-service",
 			Endpoints: []string{fmt.Sprintf("http://127.0.0.1:%d", 8080+i)},
 		}
 		go func(s *registry.ServiceInstance) {

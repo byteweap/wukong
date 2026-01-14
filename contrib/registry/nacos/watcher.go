@@ -17,7 +17,7 @@ func (w *Watcher) Next() ([]*registry.ServiceInstance, error) {
 	panic("implement me")
 }
 
-func (w *Watcher) Stop() error {
+func (w *Watcher) Close() error {
 	//TODO implement me
 	panic("implement me")
 }

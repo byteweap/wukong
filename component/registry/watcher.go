@@ -9,6 +9,6 @@ type Watcher interface {
 	// 2.发现任何服务实例变更
 	// 如果以上条件都不满足，将阻塞直到上下文超时或取消
 	Next() ([]*ServiceInstance, error)
-	// Stop 关闭监听器
-	Stop() error
+	// Close 关闭监听器
+	Close() error
 }

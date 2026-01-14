@@ -89,7 +89,7 @@ func TestDiscovery_Watch(t *testing.T) {
 	// 创建监听器
 	watcher, err := discovery.Watch(ctx, "test-service")
 	require.NoError(t, err)
-	t.Cleanup(func() { require.NoError(t, watcher.Stop()) })
+	t.Cleanup(func() { require.NoError(t, watcher.Close()) })
 
 	// 首次 Next 应该立即返回（即使没有实例）
 	// 但由于没有实例，可能会阻塞，所以我们先注册一个
