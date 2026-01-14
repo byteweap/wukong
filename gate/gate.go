@@ -13,26 +13,19 @@ import (
 	"github.com/byteweap/wukong/contrib/network/websocket"
 )
 
-// Gate is the websocket gate server.
+// Gate WebSocket 网关服务器
 type Gate struct {
-	// opts is the options.
-	opts *Options
-	// logger is the logger.
-	logger logger.Logger
-	// netServer is the network server for websocket/kcp/tcp.
-	netServer network.Server
-	// sessionManager is the session manager.
-	sessionManager *SessionManager
-	// locator is the locator for player location.
-	locator locator.Locator
-	// broker is the broker for message transmission.
-	broker broker.Broker
+	opts           *Options        // 配置选项
+	logger         logger.Logger   // 日志记录器
+	netServer      network.Server  // 网络服务器（WebSocket/KCP/TCP）
+	sessionManager *SessionManager // 会话管理器
+	locator        locator.Locator // 玩家位置定位器
+	broker         broker.Broker   // 消息传输代理
 }
 
-// New creates a new gate server.
+// New 创建新的网关服务器实例
 func New(opts ...Option) (*Gate, error) {
-
-	// options
+	// 应用配置选项
 	options := defaultOptions()
 	for _, opt := range opts {
 		opt(options)
@@ -40,6 +33,7 @@ func New(opts ...Option) (*Gate, error) {
 
 	logger := zerolog.New()
 
+	// 初始化定位器和消息代理
 	redisOpts, locatorOpts, brokerOpts := options.RedisOptions, options.LocatorOptions, options.BrokerOptions
 
 	locator := redis.New(redisOpts, locatorOpts.KeyFormat, locatorOpts.GateFieldName, locatorOpts.GameFieldName)
@@ -66,26 +60,24 @@ func New(opts ...Option) (*Gate, error) {
 	}, nil
 }
 
-// Start gate server
+// Start 启动网关服务器
 func (g *Gate) Start() {
-
-	// 1. setup network
+	// 初始化网络配置
 	g.setupNetwork()
-	// 2. start
+	// 启动网络服务器
 	g.netServer.Start()
 }
 
-// Stop gate server
+// Stop 停止网关服务器
 func (g *Gate) Stop() {
 	g.netServer.Stop()
 }
 
-// setupNetwork setup network
+// setupNetwork 初始化网络服务器配置
 func (g *Gate) setupNetwork() {
-
 	options := g.opts.NetworkOptions
 
-	// websocket server
+	// 创建 WebSocket 服务器
 	ws := websocket.NewServer(
 		websocket.Addr(options.Addr),
 		websocket.Pattern(options.Pattern),
@@ -117,7 +109,7 @@ func (g *Gate) setupNetwork() {
 	g.netServer = ws
 }
 
-// 处理二进制消息
+// handlerBinaryMessage 处理接收到的二进制消息
 func (g *Gate) handlerBinaryMessage(_ network.Conn, msg []byte) {
 	fmt.Println("Gate receive binary message: ", msg)
 }
