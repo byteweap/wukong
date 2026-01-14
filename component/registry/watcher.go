@@ -1,14 +1,14 @@
 package registry
 
-// Watcher is service watcher.
+// Watcher 服务监听器接口
 type Watcher interface {
-	// ID return the implement id.
+	// ID 返回实现标识符
 	ID() string
-	// Next returns services in the following two cases:
-	// 1.the first time to watch and the service instance list is not empty.
-	// 2.any service instance changes found.
-	// if the above two conditions are not met, it will block until context deadline exceeded or canceled
+	// Next 在以下两种情况返回服务列表:
+	// 1.首次监听且服务实例列表不为空
+	// 2.发现任何服务实例变更
+	// 如果以上条件都不满足，将阻塞直到上下文超时或取消
 	Next() ([]*ServiceInstance, error)
-	// Stop close the watcher.
+	// Stop 关闭监听器
 	Stop() error
 }

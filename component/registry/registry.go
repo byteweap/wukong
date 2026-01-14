@@ -2,12 +2,12 @@ package registry
 
 import "context"
 
-// Registrar is service registrar.
+// Registrar 服务注册接口
 type Registrar interface {
-	// ID return the implement id.
+	// ID 返回实现标识符
 	ID() string
-	// Register the registration.
+	// Register 注册服务
 	Register(ctx context.Context, service *ServiceInstance) error
-	// Deregister the registration.
+	// Deregister 注销服务
 	Deregister(ctx context.Context, service *ServiceInstance) error
 }

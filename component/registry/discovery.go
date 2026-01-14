@@ -2,12 +2,12 @@ package registry
 
 import "context"
 
-// Discovery is service discovery.
+// Discovery 服务发现接口
 type Discovery interface {
-	// ID return the implement id.
+	// ID 返回实现标识符
 	ID() string
-	// GetService return the service instances in memory according to the service name.
+	// GetService 根据服务名返回内存中的服务实例列表
 	GetService(ctx context.Context, serviceName string) ([]*ServiceInstance, error)
-	// Watch creates a watcher according to the service name.
+	// Watch 根据服务名创建监听器
 	Watch(ctx context.Context, serviceName string) (Watcher, error)
 }
