@@ -1,4 +1,4 @@
-// Package redis implements locator plugin with Redis as backend.
+// Package redis 使用 Redis 作为后端实现定位器插件
 package redis
 
 import (
@@ -10,26 +10,26 @@ import (
 	"github.com/byteweap/wukong/component/locator"
 )
 
-// ID is Redis locator implementation identifier.
+// ID Redis 定位器实现标识符
 const ID = "redis(hash)"
 
-// Locator implements locator.Locator using Redis hash structures.
+// Locator 使用 Redis 哈希结构实现 locator.Locator
 type Locator struct {
-	rc                redis.UniversalClient // Redis client for hash operations
-	keyFormat         string                // Format string for constructing Redis keys
-	gateNodeFieldName string                // Field name for gate node in hash structure
-	gameNodeFieldName string                // Field name for game node in hash structure
+	rc                redis.UniversalClient // Redis 客户端，用于哈希操作
+	keyFormat         string                // Redis 键格式化字符串
+	gateNodeFieldName string                // 哈希结构中网关节点字段名
+	gameNodeFieldName string                // 哈希结构中游戏节点字段名
 }
 
-// Ensure Locator implements locator.Locator interface
+// 确保 Locator 实现 locator.Locator 接口
 var _ locator.Locator = (*Locator)(nil)
 
-// New creates Redis locator with redis client configuration.
+// New 使用 Redis 客户端配置创建 Redis 定位器
 func New(opts redis.UniversalOptions, keyFormat, gateNodeFieldName, gameNodeFieldName string) *Locator {
 	return newWith(redis.NewUniversalClient(&opts), keyFormat, gateNodeFieldName, gameNodeFieldName)
 }
 
-// newWith creates Redis locator with redis client.
+// newWith 使用 Redis 客户端创建 Redis 定位器
 func newWith(rc redis.UniversalClient, keyFormat, gateNodeFieldName, gameNodeFieldName string) *Locator {
 	return &Locator{
 		rc:                rc,
@@ -39,26 +39,26 @@ func newWith(rc redis.UniversalClient, keyFormat, gateNodeFieldName, gameNodeFie
 	}
 }
 
-// ID returns locator implementation identifier.
+// ID 返回定位器实现标识符
 func (l *Locator) ID() string {
 	return ID
 }
 
-// Gate returns gate node for user ID.
+// Gate 返回用户ID对应的网关节点
 func (l *Locator) Gate(ctx context.Context, uid int64) (string, error) {
 
 	key := fmt.Sprintf(l.keyFormat, uid)
 	return l.rc.HGet(ctx, key, l.gateNodeFieldName).Result()
 }
 
-// BindGate associates user ID with gate node.
+// BindGate 绑定用户ID到网关节点
 func (l *Locator) BindGate(ctx context.Context, uid int64, node string) error {
 
 	key := fmt.Sprintf(l.keyFormat, uid)
 	return l.rc.HMSet(ctx, key, l.gateNodeFieldName, node).Err()
 }
 
-// UnBindGate removes user ID's gate node association if node matches.
+// UnBindGate 如果节点匹配则解绑用户ID的网关节点
 func (l *Locator) UnBindGate(ctx context.Context, uid int64, node string) error {
 
 	current, err := l.Gate(ctx, uid)
@@ -75,21 +75,21 @@ func (l *Locator) UnBindGate(ctx context.Context, uid int64, node string) error 
 	return nil
 }
 
-// Game returns game node for user ID.
+// Game 返回用户ID对应的游戏节点
 func (l *Locator) Game(ctx context.Context, uid int64) (string, error) {
 
 	key := fmt.Sprintf(l.keyFormat, uid)
 	return l.rc.HGet(ctx, key, l.gameNodeFieldName).Result()
 }
 
-// BindGame associates user ID with game node.
+// BindGame 绑定用户ID到游戏节点
 func (l *Locator) BindGame(ctx context.Context, uid int64, node string) error {
 
 	key := fmt.Sprintf(l.keyFormat, uid)
 	return l.rc.HMSet(ctx, key, l.gameNodeFieldName, node).Err()
 }
 
-// UnBindGame removes user ID's game node association if node matches.
+// UnBindGame 如果节点匹配则解绑用户ID的游戏节点
 func (l *Locator) UnBindGame(ctx context.Context, uid int64, node string) error {
 
 	current, err := l.Game(ctx, uid)
@@ -106,6 +106,7 @@ func (l *Locator) UnBindGame(ctx context.Context, uid int64, node string) error 
 	return nil
 }
 
+// Close 关闭定位器
 func (l *Locator) Close() error {
 	return l.rc.Close()
 }
