@@ -134,7 +134,7 @@ func runProvider() {
 // runConsumer 运行服务消费者
 func runConsumer() {
 	// 创建服务发现器
-	discovery, err := nacosdiscovery.NewDiscovery(
+	registry, err := nacosdiscovery.NewRegistry(
 		nacosdiscovery.ServerAddrs(*nacosAddr),
 		nacosdiscovery.Namespace(*namespace),
 		nacosdiscovery.Group(*group),
@@ -142,13 +142,13 @@ func runConsumer() {
 	if err != nil {
 		log.Fatalf("创建发现器失败: %v", err)
 	}
-	defer discovery.Close()
+	defer registry.Close()
 
 	ctx := context.Background()
 
 	// 获取服务列表
 	log.Printf("🔍 查找服务: %s (Namespace: %s, Group: %s)", *serviceName, *namespace, *group)
-	instances, err := discovery.GetService(ctx, *serviceName)
+	instances, err := registry.GetService(ctx, *serviceName)
 	if err != nil {
 		log.Fatalf("获取服务失败: %v", err)
 	}
@@ -167,11 +167,11 @@ func runConsumer() {
 
 	// 监听服务变更
 	log.Println("\n👂 开始监听服务变更...")
-	watcher, err := discovery.Watch(ctx, *serviceName)
+	watcher, err := registry.Watch(ctx, *serviceName)
 	if err != nil {
 		log.Fatalf("创建监听器失败: %v", err)
 	}
-	defer watcher.Close()
+	defer watcher.Stop()
 
 	// 处理服务变更
 	go func() {

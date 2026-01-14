@@ -12,6 +12,7 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/v2/clients"
 	"github.com/nacos-group/nacos-sdk-go/v2/clients/naming_client"
 	"github.com/nacos-group/nacos-sdk-go/v2/common/constant"
+	"github.com/nacos-group/nacos-sdk-go/v2/model"
 	"github.com/nacos-group/nacos-sdk-go/v2/vo"
 
 	"github.com/byteweap/wukong/component/registry"
@@ -27,7 +28,7 @@ type Registry struct {
 	beatCancelMap sync.Map // map[string]context.CancelFunc 存储实例ID对应的取消函数
 }
 
-var _ registry.Registrar = (*Registry)(nil)
+var _ registry.Registry = (*Registry)(nil)
 
 // NewRegistry 创建 Nacos 注册器并立即连接
 func NewRegistry(opts ...Option) (*Registry, error) {
@@ -202,6 +203,44 @@ func (r *Registry) Deregister(ctx context.Context, service *registry.ServiceInst
 	return nil
 }
 
+// GetService 根据服务名返回服务实例列表
+func (d *Registry) GetService(ctx context.Context, serviceName string) ([]*registry.ServiceInstance, error) {
+	if serviceName == "" {
+		return nil, fmt.Errorf("service name is required")
+	}
+
+	// 查询参数
+	param := vo.SelectAllInstancesParam{
+		ServiceName: serviceName,
+		GroupName:   d.opts.group,
+		Clusters:    []string{d.opts.clusterName},
+	}
+	// 获取服务实例
+	instances, err := d.namingClient.SelectAllInstances(param)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get services from nacos: %w", err)
+	}
+	// 转换为 ServiceInstance
+	result := make([]*registry.ServiceInstance, 0, len(instances))
+	for _, instance := range instances {
+		si := convertToServiceInstance(instance, serviceName)
+		if si != nil {
+			result = append(result, si)
+		}
+	}
+
+	return result, nil
+}
+
+// Watch 根据服务名创建监听器
+func (r *Registry) Watch(ctx context.Context, serviceName string) (registry.Watcher, error) {
+	if serviceName == "" {
+		return nil, fmt.Errorf("service name is required")
+	}
+
+	return newWatcher(ctx, r.namingClient, serviceName, r.opts)
+}
+
 // Close 关闭注册器并释放资源
 func (r *Registry) Close() error {
 	// 停止所有心跳
@@ -259,4 +298,61 @@ func parseEndpoint(endpoint string) (string, int, error) {
 		return "", 0, fmt.Errorf("invalid port: %s", portStr)
 	}
 	return host, port, nil
+}
+
+// convertToServiceInstance 将 Nacos Instance 转换为 ServiceInstance
+func convertToServiceInstance(instance model.Instance, serviceName string) *registry.ServiceInstance {
+	ip := instance.Ip
+	port := instance.Port
+	metadata := instance.Metadata
+	instanceId := instance.InstanceId
+
+	// 构建 endpoints
+	endpoints := []string{}
+	if metadata != nil {
+		// 优先使用 metadata 中的 endpoints
+		if eps, ok := metadata["endpoints"]; ok && eps != "" {
+			endpoints = strings.Split(eps, ",")
+		}
+	}
+
+	// 如果没有 endpoints，从 IP:Port 构建
+	if len(endpoints) == 0 {
+		// 尝试从 metadata 获取协议
+		protocol := "http"
+		if p, ok := metadata["protocol"]; ok {
+			protocol = p
+		}
+		endpoint := fmt.Sprintf("%s://%s:%d", protocol, ip, port)
+		endpoints = []string{endpoint}
+	}
+
+	// 构建 ServiceInstance
+	si := &registry.ServiceInstance{
+		ID:        instanceId,
+		Name:      serviceName,
+		Endpoints: endpoints,
+		Metadata:  make(map[string]string),
+	}
+
+	// 复制 metadata
+	if metadata != nil {
+		for k, v := range metadata {
+			// 跳过内部使用的字段
+			if k != "endpoints" {
+				si.Metadata[k] = v
+			}
+		}
+		// 提取版本
+		if version, ok := metadata["version"]; ok {
+			si.Version = version
+		}
+	}
+
+	// 如果没有 InstanceId，使用 IP:Port 作为 ID
+	if si.ID == "" {
+		si.ID = fmt.Sprintf("%s:%d", ip, port)
+	}
+
+	return si
 }

@@ -11,9 +11,6 @@ import (
 	"github.com/byteweap/wukong/pkg/kcodec"
 )
 
-// ID etcd 监听器实现标识符
-const WatcherID = "etcd(watcher)"
-
 // Watcher 使用 etcd Watch 实现服务监听
 type Watcher struct {
 	client    *clientv3.Client
@@ -67,11 +64,6 @@ func newWatcher(ctx context.Context, client *clientv3.Client, prefix, namespace 
 	return w, nil
 }
 
-// ID 返回实现标识符
-func (w *Watcher) ID() string {
-	return WatcherID
-}
-
 // Next 阻塞等待服务实例变更，首次调用或变更时返回实例列表
 func (w *Watcher) Next() ([]*registry.ServiceInstance, error) {
 	select {
@@ -88,8 +80,8 @@ func (w *Watcher) Next() ([]*registry.ServiceInstance, error) {
 	}
 }
 
-// Close 停止监听并释放资源
-func (w *Watcher) Close() error {
+// Stop 停止监听并释放资源
+func (w *Watcher) Stop() error {
 	var err error
 	w.once.Do(func() {
 		w.mu.Lock()

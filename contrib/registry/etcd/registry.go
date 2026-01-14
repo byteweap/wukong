@@ -25,7 +25,7 @@ type Registry struct {
 	leases            sync.Map // map[string]*leaseInfo 存储实例ID对应的租约信息
 }
 
-var _ registry.Registrar = (*Registry)(nil)
+var _ registry.Registry = (*Registry)(nil)
 
 type leaseInfo struct {
 	leaseID clientv3.LeaseID
@@ -188,6 +188,53 @@ func (r *Registry) Deregister(ctx context.Context, service *registry.ServiceInst
 	return nil
 }
 
+// GetService 根据服务名返回服务实例列表
+func (r *Registry) GetService(ctx context.Context, serviceName string) ([]*registry.ServiceInstance, error) {
+	if serviceName == "" {
+		return nil, fmt.Errorf("service name is required")
+	}
+
+	// 构建 key 前缀
+	prefix := r.buildKeyPrefix(serviceName)
+
+	// 获取所有匹配的 key-value
+	resp, err := r.client.Get(ctx, prefix, clientv3.WithPrefix())
+	if err != nil {
+		return nil, fmt.Errorf("failed to get services from etcd: %w", err)
+	}
+
+	// 解析服务实例
+	instances := make([]*registry.ServiceInstance, 0, len(resp.Kvs))
+	codec, err := kcodec.Invoke("json")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get json codec: %w", err)
+	}
+
+	for _, kv := range resp.Kvs {
+		var instance registry.ServiceInstance
+		if err := codec.Unmarshal(kv.Value, &instance); err != nil {
+			// 跳过无法解析的实例
+			continue
+		}
+		instances = append(instances, &instance)
+	}
+
+	return instances, nil
+}
+
+// Watch 根据服务名创建监听器
+func (r *Registry) Watch(ctx context.Context, serviceName string) (registry.Watcher, error) {
+	if serviceName == "" {
+		return nil, fmt.Errorf("service name is required")
+	}
+
+	// 构建 key 前缀
+	prefix := r.buildKeyPrefix(serviceName)
+
+	// 创建 watcher
+	return newWatcher(ctx, r.client, prefix, r.namespace)
+}
+
 // Close 关闭注册器并释放资源
 func (r *Registry) Close() error {
 	// 停止所有续租
@@ -207,4 +254,9 @@ func (r *Registry) Close() error {
 // buildKey 构建 etcd key
 func (r *Registry) buildKey(serviceName, instanceID string) string {
 	return path.Join(r.namespace, serviceName, instanceID)
+}
+
+// buildKeyPrefix 构建 etcd key 前缀
+func (r *Registry) buildKeyPrefix(serviceName string) string {
+	return path.Join(r.namespace, serviceName) + "/"
 }

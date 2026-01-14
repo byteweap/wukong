@@ -83,8 +83,8 @@ func (w *Watcher) Next() ([]*registry.ServiceInstance, error) {
 	}
 }
 
-// Close 停止监听并释放资源
-func (w *Watcher) Close() error {
+// Stop 停止监听并释放资源
+func (w *Watcher) Stop() error {
 	var err error
 	w.once.Do(func() {
 		w.mu.Lock()
