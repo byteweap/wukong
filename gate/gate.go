@@ -185,16 +185,26 @@ func (g *Gate) buildInstance() (*registry.ServiceInstance, error) {
 
 // registerService 注册服务
 func (g *Gate) registerService() error {
-	if g.registry != nil && g.instance != nil {
-		return g.registry.Register(g.ctx, g.instance)
+
+	g.mu.Lock()
+	instance := g.instance
+	g.mu.Unlock()
+
+	if g.registry != nil && instance != nil {
+		return g.registry.Register(g.ctx, instance)
 	}
 	return nil
 }
 
 // unregisterService 注销服务
 func (g *Gate) unregisterService() error {
-	if g.registry != nil && g.instance != nil {
-		return g.registry.Deregister(g.ctx, g.instance)
+
+	g.mu.Lock()
+	instance := g.instance
+	g.mu.Unlock()
+
+	if g.registry != nil && instance != nil {
+		return g.registry.Deregister(g.ctx, instance)
 	}
 	return nil
 }
