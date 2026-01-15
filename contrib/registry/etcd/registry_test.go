@@ -86,12 +86,11 @@ func setupEmbeddedEtcd(t *testing.T) (*embed.Etcd, string) {
 func TestNewRegistry(t *testing.T) {
 	_, clientURL := setupEmbeddedEtcd(t)
 
-	reg, err := NewRegistry(
-		Endpoints(clientURL),
-		DialTimeout(2*time.Second),
-		Namespace("/test"),
-		TTL(5*time.Second),
-	)
+	cfg := &EtcdConfig{
+		Addrs:       []string{clientURL},
+		DialTimeout: 2 * time.Second,
+	}
+	reg, err := NewRegistry(cfg, Namespace("/test"), TTL(5*time.Second))
 	require.NoError(t, err)
 	require.NotNil(t, reg)
 	defer reg.Close()
@@ -124,12 +123,11 @@ func TestNewRegistryWith(t *testing.T) {
 func TestRegister(t *testing.T) {
 	_, clientURL := setupEmbeddedEtcd(t)
 
-	reg, err := NewRegistry(
-		Endpoints(clientURL),
-		DialTimeout(2*time.Second),
-		Namespace("/test"),
-		TTL(5*time.Second),
-	)
+	cfg := &EtcdConfig{
+		Addrs:       []string{clientURL},
+		DialTimeout: 2 * time.Second,
+	}
+	reg, err := NewRegistry(cfg, Namespace("/test"), TTL(5*time.Second))
 	require.NoError(t, err)
 	defer reg.Close()
 
@@ -180,12 +178,11 @@ func TestRegister(t *testing.T) {
 func TestDeregister(t *testing.T) {
 	_, clientURL := setupEmbeddedEtcd(t)
 
-	reg, err := NewRegistry(
-		Endpoints(clientURL),
-		DialTimeout(2*time.Second),
-		Namespace("/test"),
-		TTL(5*time.Second),
-	)
+	cfg := &EtcdConfig{
+		Addrs:       []string{clientURL},
+		DialTimeout: 2 * time.Second,
+	}
+	reg, err := NewRegistry(cfg, Namespace("/test"), TTL(5*time.Second))
 	require.NoError(t, err)
 	defer reg.Close()
 
@@ -234,12 +231,11 @@ func TestDeregister(t *testing.T) {
 func TestGetService(t *testing.T) {
 	_, clientURL := setupEmbeddedEtcd(t)
 
-	reg, err := NewRegistry(
-		Endpoints(clientURL),
-		DialTimeout(2*time.Second),
-		Namespace("/test"),
-		TTL(5*time.Second),
-	)
+	cfg := &EtcdConfig{
+		Addrs:       []string{clientURL},
+		DialTimeout: 2 * time.Second,
+	}
+	reg, err := NewRegistry(cfg, Namespace("/test"), TTL(5*time.Second))
 	require.NoError(t, err)
 	defer reg.Close()
 
@@ -305,12 +301,11 @@ func TestGetService(t *testing.T) {
 func TestWatch(t *testing.T) {
 	_, clientURL := setupEmbeddedEtcd(t)
 
-	reg, err := NewRegistry(
-		Endpoints(clientURL),
-		DialTimeout(2*time.Second),
-		Namespace("/test"),
-		TTL(5*time.Second),
-	)
+	cfg := &EtcdConfig{
+		Addrs:       []string{clientURL},
+		DialTimeout: 2 * time.Second,
+	}
+	reg, err := NewRegistry(cfg, Namespace("/test"), TTL(5*time.Second))
 	require.NoError(t, err)
 	defer reg.Close()
 
@@ -376,12 +371,11 @@ func TestClose(t *testing.T) {
 	_, clientURL := setupEmbeddedEtcd(t)
 
 	// 测试 NewRegistry 创建的注册器可以关闭客户端
-	reg, err := NewRegistry(
-		Endpoints(clientURL),
-		DialTimeout(2*time.Second),
-		Namespace("/test"),
-		TTL(5*time.Second),
-	)
+	cfg := &EtcdConfig{
+		Addrs:       []string{clientURL},
+		DialTimeout: 2 * time.Second,
+	}
+	reg, err := NewRegistry(cfg, Namespace("/test"), TTL(5*time.Second))
 	require.NoError(t, err)
 
 	ctx := context.Background()
@@ -456,12 +450,11 @@ func TestClose_NewRegistryWith(t *testing.T) {
 func TestLeaseExpiration(t *testing.T) {
 	_, clientURL := setupEmbeddedEtcd(t)
 
-	reg, err := NewRegistry(
-		Endpoints(clientURL),
-		DialTimeout(2*time.Second),
-		Namespace("/test"),
-		TTL(2*time.Second), // 短 TTL 用于测试过期
-	)
+	cfg := &EtcdConfig{
+		Addrs:       []string{clientURL},
+		DialTimeout: 2 * time.Second,
+	}
+	reg, err := NewRegistry(cfg, Namespace("/test"), TTL(2*time.Second)) // 短 TTL 用于测试过期
 	require.NoError(t, err)
 	defer reg.Close()
 
@@ -557,12 +550,11 @@ func TestRegistryOptions(t *testing.T) {
 	_, clientURL := setupEmbeddedEtcd(t)
 
 	// 测试自定义命名空间
-	reg, err := NewRegistry(
-		Endpoints(clientURL),
-		Namespace("/custom/namespace"),
-		TTL(10*time.Second),
-		DialTimeout(5*time.Second),
-	)
+	cfg := &EtcdConfig{
+		Addrs:       []string{clientURL},
+		DialTimeout: 5 * time.Second,
+	}
+	reg, err := NewRegistry(cfg, Namespace("/custom/namespace"), TTL(10*time.Second))
 	require.NoError(t, err)
 	defer reg.Close()
 
@@ -574,12 +566,11 @@ func TestRegistryOptions(t *testing.T) {
 func TestEmbeddedEtcdIntegration(t *testing.T) {
 	_, clientURL := setupEmbeddedEtcd(t)
 
-	reg, err := NewRegistry(
-		Endpoints(clientURL),
-		DialTimeout(2*time.Second),
-		Namespace("/integration-test"),
-		TTL(5*time.Second),
-	)
+	cfg := &EtcdConfig{
+		Addrs:       []string{clientURL},
+		DialTimeout: 2 * time.Second,
+	}
+	reg, err := NewRegistry(cfg, Namespace("/integration-test"), TTL(5*time.Second))
 	require.NoError(t, err)
 	defer reg.Close()
 

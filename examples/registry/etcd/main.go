@@ -45,11 +45,10 @@ func runProvider() {
 	}
 
 	// 创建服务注册器
-	reg, err := etcddiscovery.NewRegistry(
-		etcddiscovery.Endpoints(*etcdAddr),
-		etcddiscovery.TTL(30*time.Second),
-		etcddiscovery.Namespace("/services"),
-	)
+	cfg := &etcddiscovery.EtcdConfig{
+		Addrs: []string{*etcdAddr},
+	}
+	reg, err := etcddiscovery.NewRegistry(cfg, etcddiscovery.TTL(30*time.Second), etcddiscovery.Namespace("/services"))
 	if err != nil {
 		log.Fatalf("创建注册器失败: %v", err)
 	}
@@ -129,10 +128,10 @@ func runProvider() {
 // runConsumer 运行服务消费者
 func runConsumer() {
 	// 创建服务发现器
-	registry, err := etcddiscovery.NewRegistry(
-		etcddiscovery.Endpoints(*etcdAddr),
-		etcddiscovery.Namespace("/services"),
-	)
+	cfg := &etcddiscovery.EtcdConfig{
+		Addrs: []string{*etcdAddr},
+	}
+	registry, err := etcddiscovery.NewRegistry(cfg, etcddiscovery.Namespace("/services"))
 	if err != nil {
 		log.Fatalf("创建发现器失败: %v", err)
 	}

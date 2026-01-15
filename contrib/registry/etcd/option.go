@@ -12,11 +12,37 @@ const (
 	defaultKeepAliveInterval = 10 * time.Second
 )
 
+// EtcdConfig etcd 配置
+type EtcdConfig struct {
+	// Addrs etcd 集群地址列表，格式: "ip:port"
+	Addrs []string
+	// DialTimeout 连接超时时间，默认 3 秒
+	DialTimeout time.Duration
+	// Username 用户名（可选）
+	Username string
+	// Password 密码（可选）
+	Password string
+}
+
+// DefaultEtcdConfig 返回默认的 etcd 配置
+func DefaultEtcdConfig() *EtcdConfig {
+	return &EtcdConfig{
+		Addrs:       []string{"localhost:2379"},
+		DialTimeout: defaultDialTimeout,
+	}
+}
+
+func validate(cfg *EtcdConfig) {
+	if len(cfg.Addrs) == 0 {
+		cfg.Addrs = []string{"localhost:2379"}
+	}
+	if cfg.DialTimeout == 0 {
+		cfg.DialTimeout = defaultDialTimeout
+	}
+}
+
+// options 客户端配置选项
 type options struct {
-	endpoints         []string
-	dialTimeout       time.Duration
-	username          string
-	password          string
 	namespace         string
 	ttl               time.Duration
 	keepAliveInterval time.Duration
@@ -26,37 +52,9 @@ type Option func(*options)
 
 func defaultOptions() *options {
 	return &options{
-		endpoints:         []string{"localhost:2379"},
-		dialTimeout:       defaultDialTimeout,
 		namespace:         defaultNamespace,
 		ttl:               defaultTTL,
 		keepAliveInterval: defaultKeepAliveInterval,
-	}
-}
-
-// Endpoints 设置 etcd 集群地址
-func Endpoints(endpoints ...string) Option {
-	return func(o *options) {
-		if len(endpoints) > 0 {
-			o.endpoints = endpoints
-		}
-	}
-}
-
-// DialTimeout 设置连接超时时间，默认 3 秒
-func DialTimeout(d time.Duration) Option {
-	return func(o *options) {
-		if d > 0 {
-			o.dialTimeout = d
-		}
-	}
-}
-
-// Auth 设置用户名和密码认证
-func Auth(username, password string) Option {
-	return func(o *options) {
-		o.username = username
-		o.password = password
 	}
 }
 

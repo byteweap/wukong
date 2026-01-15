@@ -33,24 +33,31 @@ type leaseInfo struct {
 	cancel  context.CancelFunc
 }
 
-// New 创建 etcd 注册器并立即连接
-func NewRegistry(opts ...Option) (*Registry, error) {
+// NewRegistry 创建 etcd 注册器并立即连接
+func NewRegistry(cfg *EtcdConfig, opts ...Option) (*Registry, error) {
+
+	if cfg == nil {
+		cfg = DefaultEtcdConfig()
+	} else {
+		validate(cfg)
+	}
+
 	o := defaultOptions()
 	for _, opt := range opts {
 		opt(o)
 	}
 
-	cfg := clientv3.Config{
-		Endpoints:   o.endpoints,
-		DialTimeout: o.dialTimeout,
-		Username:    o.username,
-		Password:    o.password,
-		// TLS:         o.tlsConfig,
+	clientCfg := clientv3.Config{
+		Endpoints:   cfg.Addrs,
+		DialTimeout: cfg.DialTimeout,
+		Username:    cfg.Username,
+		Password:    cfg.Password,
+		// TLS:         cfg.TLS,
 	}
 
-	client, err := clientv3.New(cfg)
+	client, err := clientv3.New(clientCfg)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create etcd client: %w", err)
+		return nil, err
 	}
 
 	return &Registry{
@@ -62,7 +69,7 @@ func NewRegistry(opts ...Option) (*Registry, error) {
 	}, nil
 }
 
-// NewWith 使用现有的 etcd 客户端创建注册器（调用者负责其生命周期）
+// NewRegistryWith 使用现有的 etcd 客户端创建注册器（调用者负责其生命周期）
 func NewRegistryWith(client *clientv3.Client, opts ...Option) *Registry {
 	o := defaultOptions()
 	for _, opt := range opts {
