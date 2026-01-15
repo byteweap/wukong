@@ -20,7 +20,7 @@ var (
 	serviceID   = flag.String("id", "", "服务实例ID")
 	serviceName = flag.String("name", "example-service", "服务名称")
 	port        = flag.Int("port", 8080, "服务端口")
-	nacosAddr   = flag.String("nacos", "127.0.0.1:8848", "Nacos 服务地址")
+	nacosAddr   = flag.String("nacos", "127.0.0.1:18848", "Nacos 服务地址")
 	namespace   = flag.String("namespace", "public", "Nacos 命名空间")
 	group       = flag.String("group", "DEFAULT_GROUP", "服务分组")
 )

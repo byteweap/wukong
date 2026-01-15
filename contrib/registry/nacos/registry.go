@@ -212,7 +212,10 @@ func (d *Registry) GetService(ctx context.Context, serviceName string) ([]*regis
 	// 获取服务实例
 	instances, err := d.namingClient.SelectInstances(param)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get services from nacos: %w", err)
+		if err.Error() == "instance list is empty!" {
+			return []*registry.ServiceInstance{}, nil
+		}
+		return nil, err
 	}
 	// 转换为 ServiceInstance
 	result := make([]*registry.ServiceInstance, 0, len(instances))
