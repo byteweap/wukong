@@ -203,13 +203,14 @@ func (d *Registry) GetService(ctx context.Context, serviceName string) ([]*regis
 	}
 
 	// 查询参数
-	param := vo.SelectAllInstancesParam{
+	param := vo.SelectInstancesParam{
 		ServiceName: serviceName,
 		GroupName:   d.opts.group,
 		Clusters:    []string{d.opts.clusterName},
+		HealthyOnly: true,
 	}
 	// 获取服务实例
-	instances, err := d.namingClient.SelectAllInstances(param)
+	instances, err := d.namingClient.SelectInstances(param)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get services from nacos: %w", err)
 	}
