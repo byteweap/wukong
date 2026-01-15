@@ -13,8 +13,8 @@ func TestGate(t *testing.T) {
 	assert.Nil(t, err)
 
 	t.Cleanup(func() {
-		g.Close()
+		g.Stop()
 	})
 
-	g.Serve()
+	g.Run()
 }

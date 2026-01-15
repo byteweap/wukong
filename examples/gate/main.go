@@ -8,8 +8,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer g.Close()
+	defer g.Stop()
 
-	g.Serve()
+	g.Run()
 
 }

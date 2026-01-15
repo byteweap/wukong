@@ -7,6 +7,14 @@ import (
 )
 
 type (
+	// ApplicationOptions 应用选项
+	ApplicationOptions struct {
+		ID       string
+		Name     string
+		Version  string
+		Metadata map[string]string
+		Addr     string
+	}
 
 	// NetworkOptions 网络选项
 	NetworkOptions struct {
@@ -42,19 +50,28 @@ type (
 
 	// Options 选项
 	Options struct {
-		NetworkOptions NetworkOptions
-		LocatorOptions LocatorOptions
-		RedisOptions   redis.UniversalOptions
-		BrokerOptions  BrokerOptions
+		Application ApplicationOptions
+		Network     NetworkOptions
+		Locator     LocatorOptions
+		Redis       redis.UniversalOptions
+		Broker      BrokerOptions
 	}
 )
 
 type Option func(*Options)
 
 func defaultOptions() *Options {
+
 	return &Options{
-		NetworkOptions: NetworkOptions{
-			Addr:           "0.0.0.0:8000",
+		Application: ApplicationOptions{
+			ID:       "",
+			Name:     "gate",
+			Version:  "1.0.0",
+			Metadata: make(map[string]string),
+			Addr:     "0.0.0.0:9000",
+		},
+		Network: NetworkOptions{
+			Addr:           "0.0.0.0:9000",
 			Pattern:        "/",
 			MaxConnections: 10000,
 			MaxMessageSize: 4 * 1024, // 4KB
@@ -62,19 +79,19 @@ func defaultOptions() *Options {
 			WriteTimeout:   0,
 			WriteQueueSize: 0,
 		},
-		LocatorOptions: LocatorOptions{
+		Locator: LocatorOptions{
 			KeyFormat:     "gate:%d",
 			GateFieldName: "gate",
 			GameFieldName: "game",
 		},
-		RedisOptions: redis.UniversalOptions{
+		Redis: redis.UniversalOptions{
 			Addrs:      []string{"localhost:6379"},
 			Username:   "",
 			Password:   "",
 			DB:         0,
 			ClientName: "wukong-gate",
 		},
-		BrokerOptions: BrokerOptions{
+		Broker: BrokerOptions{
 			Name:                "gate",
 			URLs:                []string{"localhost:4222"},
 			Token:               "",
@@ -91,42 +108,42 @@ func defaultOptions() *Options {
 
 func Addr(addr string) Option {
 	return func(o *Options) {
-		o.NetworkOptions.Addr = addr
+		o.Network.Addr = addr
 	}
 }
 
 func Pattern(pattern string) Option {
 	return func(o *Options) {
-		if o.NetworkOptions.Pattern != "" {
-			o.NetworkOptions.Pattern = pattern
+		if o.Network.Pattern != "" {
+			o.Network.Pattern = pattern
 		}
 	}
 }
 
 func MaxConnections(maxConnections int) Option {
 	return func(o *Options) {
-		if o.NetworkOptions.MaxConnections > 0 {
-			o.NetworkOptions.MaxConnections = maxConnections
+		if o.Network.MaxConnections > 0 {
+			o.Network.MaxConnections = maxConnections
 		}
 	}
 }
 
 func Locator(keyFormat, gateFieldName, gameFieldName string) Option {
 	return func(o *Options) {
-		o.LocatorOptions.KeyFormat = keyFormat
-		o.LocatorOptions.GateFieldName = gateFieldName
-		o.LocatorOptions.GameFieldName = gameFieldName
+		o.Locator.KeyFormat = keyFormat
+		o.Locator.GateFieldName = gateFieldName
+		o.Locator.GameFieldName = gameFieldName
 	}
 }
 
 func Redis(opts redis.UniversalOptions) Option {
 	return func(o *Options) {
-		o.RedisOptions = opts
+		o.Redis = opts
 	}
 }
 
 func Broker(opts BrokerOptions) Option {
 	return func(o *Options) {
-		o.BrokerOptions = opts
+		o.Broker = opts
 	}
 }

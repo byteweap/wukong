@@ -1,42 +1,57 @@
 package gate
 
 import (
+	"context"
 	"fmt"
+	"sync"
 
 	"github.com/byteweap/wukong/component/broker"
 	"github.com/byteweap/wukong/component/locator"
 	"github.com/byteweap/wukong/component/logger"
 	"github.com/byteweap/wukong/component/network"
+	"github.com/byteweap/wukong/component/registry"
 	"github.com/byteweap/wukong/contrib/broker/nats"
 	"github.com/byteweap/wukong/contrib/locator/redis"
 	"github.com/byteweap/wukong/contrib/logger/zerolog"
 	"github.com/byteweap/wukong/contrib/network/websocket"
+	"github.com/google/uuid"
 )
 
 // Gate websocket 网关
 type Gate struct {
-	opts           *Options        // 配置选项
-	logger         logger.Logger   // 日志
-	netServer      network.Server  // 网络服务器（WebSocket）
-	locator        locator.Locator // 玩家位置定位器
-	broker         broker.Broker   // 消息传输代理
-	sessionManager *SessionManager // 会话管理器
+	ctx    context.Context
+	cancel context.CancelFunc
+
+	opts           *Options          // 配置选项
+	logger         logger.Logger     // 日志
+	netServer      network.Server    // 网络服务器（WebSocket）
+	locator        locator.Locator   // 玩家位置定位器
+	broker         broker.Broker     // 消息传输代理
+	sessionManager *SessionManager   // 会话管理器
+	registry       registry.Registry // 服务注册与发现器
+
+	mu       sync.Mutex
+	instance *registry.ServiceInstance // 服务实例
 }
 
 // New 创建新的网关服务器实例
 func New(opts ...Option) (*Gate, error) {
 
 	// 应用配置选项
-	options := defaultOptions()
+	o := defaultOptions()
+
+	if id, err := uuid.NewUUID(); err == nil {
+		o.Application.ID = id.String()
+	}
 	for _, opt := range opts {
-		opt(options)
+		opt(o)
 	}
 
 	// 选项
 	var (
-		redisOpts   = options.RedisOptions
-		locatorOpts = options.LocatorOptions
-		brokerOpts  = options.BrokerOptions
+		redisOpts   = o.Redis
+		locatorOpts = o.Locator
+		brokerOpts  = o.Broker
 	)
 
 	// logger
@@ -66,25 +81,35 @@ func New(opts ...Option) (*Gate, error) {
 
 	return &Gate{
 		logger:         logger.With("module", "gate"),
-		opts:           options,
+		opts:           o,
 		sessionManager: NewSessionManager(),
 		locator:        locator,
 		broker:         broker,
 	}, nil
 }
 
-// Serve 启动网关服务器
-func (g *Gate) Serve() {
+// Run 启动网关服务器
+func (g *Gate) Run() error {
+
+	instance, err := g.buildInstance()
+	if err != nil {
+		return err
+	}
+	g.mu.Lock()
+	g.instance = instance
+	g.mu.Unlock()
 
 	// 初始化网络配置
 	g.setupNetwork()
 
 	// 启动网络服务器
 	g.netServer.Start()
+
+	return nil
 }
 
-// Close 关闭网关服务器
-func (g *Gate) Close() {
+// Stop 关闭网关服务器
+func (g *Gate) Stop() {
 
 	g.netServer.Stop()
 
@@ -105,7 +130,7 @@ func (g *Gate) Close() {
 
 // setupNetwork 初始化网络服务器配置
 func (g *Gate) setupNetwork() {
-	options := g.opts.NetworkOptions
+	options := g.opts.Network
 
 	// 创建 WebSocket 服务器
 	ws := websocket.NewServer(
@@ -142,4 +167,32 @@ func (g *Gate) setupNetwork() {
 // handlerBinaryMessage 处理接收到的二进制消息
 func (g *Gate) handlerBinaryMessage(_ network.Conn, msg []byte) {
 	fmt.Println("Gate receive binary message: ", msg)
+}
+
+// buildInstance 构建服务实例
+func (g *Gate) buildInstance() (*registry.ServiceInstance, error) {
+
+	return &registry.ServiceInstance{
+		ID:        g.opts.Application.ID,
+		Name:      g.opts.Application.Name,
+		Version:   g.opts.Application.Version,
+		Metadata:  g.opts.Application.Metadata,
+		Endpoints: []string{g.opts.Application.Addr},
+	}, nil
+}
+
+// registerService 注册服务
+func (g *Gate) registerService() error {
+	if g.registry != nil && g.instance != nil {
+		return g.registry.Register(g.ctx, g.instance)
+	}
+	return nil
+}
+
+// unregisterService 注销服务
+func (g *Gate) unregisterService() error {
+	if g.registry != nil && g.instance != nil {
+		return g.registry.Deregister(g.ctx, g.instance)
+	}
+	return nil
 }
