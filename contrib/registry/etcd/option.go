@@ -1,15 +1,14 @@
 package etcd
 
 import (
-	"crypto/tls"
 	"time"
 )
 
 const (
 	// 默认值
-	defaultNamespace        = "/registry"
-	defaultDialTimeout      = 3 * time.Second
-	defaultTTL              = 30 * time.Second
+	defaultNamespace         = "/registry"
+	defaultDialTimeout       = 3 * time.Second
+	defaultTTL               = 30 * time.Second
 	defaultKeepAliveInterval = 10 * time.Second
 )
 
@@ -18,7 +17,6 @@ type options struct {
 	dialTimeout       time.Duration
 	username          string
 	password          string
-	tlsConfig         *tls.Config
 	namespace         string
 	ttl               time.Duration
 	keepAliveInterval time.Duration
@@ -59,13 +57,6 @@ func Auth(username, password string) Option {
 	return func(o *options) {
 		o.username = username
 		o.password = password
-	}
-}
-
-// TLS 设置 TLS 配置
-func TLS(cfg *tls.Config) Option {
-	return func(o *options) {
-		o.tlsConfig = cfg
 	}
 }
 

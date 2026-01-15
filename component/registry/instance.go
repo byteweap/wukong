@@ -13,8 +13,6 @@ type ServiceInstance struct {
 	Name string `json:"name"`
 	// Version 编译版本
 	Version string `json:"version"`
-	// Weight 权重, 必须大于0
-	Weight float64 `json:"weight"`
 	// Metadata 服务实例关联的键值对元数据
 	Metadata map[string]string `json:"metadata"`
 	// Endpoints 服务实例的端点地址

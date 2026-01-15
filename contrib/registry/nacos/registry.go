@@ -133,7 +133,7 @@ func (r *Registry) Register(ctx context.Context, service *registry.ServiceInstan
 		Ip:          ip,
 		Port:        uint64(port),
 		ServiceName: service.Name,
-		Weight:      service.Weight,
+		Weight:      r.opts.weight,
 		Enable:      true,
 		Healthy:     true,
 		Ephemeral:   true, // 临时实例，支持自动下线

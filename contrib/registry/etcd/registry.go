@@ -45,7 +45,7 @@ func NewRegistry(opts ...Option) (*Registry, error) {
 		DialTimeout: o.dialTimeout,
 		Username:    o.username,
 		Password:    o.password,
-		TLS:         o.tlsConfig,
+		// TLS:         o.tlsConfig,
 	}
 
 	client, err := clientv3.New(cfg)

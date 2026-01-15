@@ -6,30 +6,32 @@ import (
 
 const (
 	// 默认值
-	defaultNamespace      = "public"
-	defaultGroup          = "DEFAULT_GROUP"
-	defaultClusterName    = "DEFAULT"
-	defaultDialTimeout    = 3 * time.Second
-	defaultBeatInterval   = 5 * time.Second
-	defaultLogLevel       = "info"
-	defaultCacheDir       = "/tmp/nacos/cache"
-	defaultLogDir         = "/tmp/nacos/log"
-	defaultServerPort     = 8848
+	defaultNamespace    = "public"
+	defaultGroup        = "DEFAULT_GROUP"
+	defaultClusterName  = "DEFAULT"
+	defaultDialTimeout  = 3 * time.Second
+	defaultBeatInterval = 5 * time.Second
+	defaultLogLevel     = "info"
+	defaultCacheDir     = "/tmp/nacos/cache"
+	defaultLogDir       = "/tmp/nacos/log"
+	defaultServerPort   = 8848
 )
 
 type options struct {
-	serverAddrs    []string
-	namespace      string
-	group          string
-	clusterName    string
-	dialTimeout    time.Duration
-	beatInterval   time.Duration
-	username       string
-	password       string
-	logLevel       string
-	cacheDir       string
-	logDir         string
+	serverAddrs         []string
+	namespace           string
+	group               string
+	clusterName         string
+	dialTimeout         time.Duration
+	beatInterval        time.Duration
+	username            string
+	password            string
+	logLevel            string
+	cacheDir            string
+	logDir              string
 	notLoadCacheAtStart bool
+
+	weight float64 // 权重, 必须大于0
 }
 
 type Option func(*options)
@@ -46,6 +48,7 @@ func defaultOptions() *options {
 		cacheDir:            defaultCacheDir,
 		logDir:              defaultLogDir,
 		notLoadCacheAtStart: true,
+		weight:              10,
 	}
 }
 
@@ -142,5 +145,14 @@ func LogDir(dir string) Option {
 func NotLoadCacheAtStart(notLoad bool) Option {
 	return func(o *options) {
 		o.notLoadCacheAtStart = notLoad
+	}
+}
+
+// Weight 设置权重, 必须大于0
+func Weight(weight float64) Option {
+	return func(o *options) {
+		if weight > 0 {
+			o.weight = weight
+		}
 	}
 }

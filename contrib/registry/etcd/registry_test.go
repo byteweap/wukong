@@ -140,7 +140,6 @@ func TestRegister(t *testing.T) {
 		ID:        "instance-1",
 		Name:      "test-service",
 		Version:   "v1.0.0",
-		Weight:    1.0,
 		Endpoints: []string{"http://127.0.0.1:8080"},
 		Metadata:  map[string]string{"env": "test"},
 	}
@@ -155,7 +154,6 @@ func TestRegister(t *testing.T) {
 	assert.Equal(t, service.ID, instances[0].ID)
 	assert.Equal(t, service.Name, instances[0].Name)
 	assert.Equal(t, service.Version, instances[0].Version)
-	assert.Equal(t, service.Weight, instances[0].Weight)
 	assert.Equal(t, service.Endpoints, instances[0].Endpoints)
 	assert.Equal(t, service.Metadata, instances[0].Metadata)
 
@@ -198,7 +196,6 @@ func TestDeregister(t *testing.T) {
 		ID:        "instance-1",
 		Name:      "test-service",
 		Version:   "v1.0.0",
-		Weight:    1.0,
 		Endpoints: []string{"http://127.0.0.1:8080"},
 		Metadata:  map[string]string{"env": "test"},
 	}
@@ -254,21 +251,18 @@ func TestGetService(t *testing.T) {
 			ID:        "instance-1",
 			Name:      "test-service",
 			Version:   "v1.0.0",
-			Weight:    1.0,
 			Endpoints: []string{"http://127.0.0.1:8080"},
 		},
 		{
 			ID:        "instance-2",
 			Name:      "test-service",
 			Version:   "v1.0.0",
-			Weight:    2.0,
 			Endpoints: []string{"http://127.0.0.1:8081"},
 		},
 		{
 			ID:        "instance-3",
 			Name:      "other-service",
 			Version:   "v1.0.0",
-			Weight:    1.0,
 			Endpoints: []string{"http://127.0.0.1:8082"},
 		},
 	}
@@ -334,7 +328,6 @@ func TestWatch(t *testing.T) {
 		ID:        "instance-1",
 		Name:      serviceName,
 		Version:   "v1.0.0",
-		Weight:    1.0,
 		Endpoints: []string{"http://127.0.0.1:8080"},
 	}
 
@@ -352,7 +345,6 @@ func TestWatch(t *testing.T) {
 		ID:        "instance-2",
 		Name:      serviceName,
 		Version:   "v1.0.0",
-		Weight:    1.0,
 		Endpoints: []string{"http://127.0.0.1:8081"},
 	}
 
@@ -399,7 +391,6 @@ func TestClose(t *testing.T) {
 		ID:        "instance-1",
 		Name:      "test-service",
 		Version:   "v1.0.0",
-		Weight:    1.0,
 		Endpoints: []string{"http://127.0.0.1:8080"},
 	}
 
@@ -442,7 +433,6 @@ func TestClose_NewRegistryWith(t *testing.T) {
 		ID:        "instance-1",
 		Name:      "test-service",
 		Version:   "v1.0.0",
-		Weight:    1.0,
 		Endpoints: []string{"http://127.0.0.1:8080"},
 	}
 
@@ -482,7 +472,6 @@ func TestLeaseExpiration(t *testing.T) {
 		ID:        "instance-1",
 		Name:      "test-service",
 		Version:   "v1.0.0",
-		Weight:    1.0,
 		Endpoints: []string{"http://127.0.0.1:8080"},
 	}
 
@@ -528,7 +517,6 @@ func TestMultipleRegistries(t *testing.T) {
 		ID:        "instance-1",
 		Name:      "service",
 		Version:   "v1.0.0",
-		Weight:    1.0,
 		Endpoints: []string{"http://127.0.0.1:8080"},
 	}
 	err = reg1.Register(ctx, service1)
@@ -539,7 +527,6 @@ func TestMultipleRegistries(t *testing.T) {
 		ID:        "instance-2",
 		Name:      "service",
 		Version:   "v1.0.0",
-		Weight:    1.0,
 		Endpoints: []string{"http://127.0.0.1:8081"},
 	}
 	err = reg2.Register(ctx, service2)
@@ -601,9 +588,9 @@ func TestEmbeddedEtcdIntegration(t *testing.T) {
 
 	// 1. 注册多个服务实例
 	services := []*registry.ServiceInstance{
-		{ID: "instance-1", Name: serviceName, Version: "v1.0.0", Weight: 1.0, Endpoints: []string{"http://127.0.0.1:8080"}},
-		{ID: "instance-2", Name: serviceName, Version: "v1.0.0", Weight: 2.0, Endpoints: []string{"http://127.0.0.1:8081"}},
-		{ID: "instance-3", Name: serviceName, Version: "v2.0.0", Weight: 1.0, Endpoints: []string{"http://127.0.0.1:8082"}},
+		{ID: "instance-1", Name: serviceName, Version: "v1.0.0", Endpoints: []string{"http://127.0.0.1:8080"}},
+		{ID: "instance-2", Name: serviceName, Version: "v1.0.0", Endpoints: []string{"http://127.0.0.1:8081"}},
+		{ID: "instance-3", Name: serviceName, Version: "v2.0.0", Endpoints: []string{"http://127.0.0.1:8082"}},
 	}
 
 	for _, service := range services {

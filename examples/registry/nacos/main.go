@@ -62,7 +62,6 @@ func runProvider() {
 	service := &registry.ServiceInstance{
 		ID:      instanceID,
 		Name:    *serviceName,
-		Weight:  10,
 		Version: "v1.0.0",
 		Metadata: map[string]string{
 			"env":    "development",
