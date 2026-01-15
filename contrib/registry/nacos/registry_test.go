@@ -70,12 +70,13 @@ func skipIfNacosNotAvailable(t *testing.T) {
 func TestNewRegistry(t *testing.T) {
 	skipIfNacosNotAvailable(t)
 
-	reg, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-	)
+	serverConfig := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+
+	reg, err := NewRegistry(serverConfig, Group(testGroup))
 	require.NoError(t, err)
 	require.NotNil(t, reg)
 	defer reg.Close()
@@ -87,7 +88,7 @@ func TestNewRegistry(t *testing.T) {
 func TestNewRegistry_DefaultOptions(t *testing.T) {
 	skipIfNacosNotAvailable(t)
 
-	reg, err := NewRegistry()
+	reg, err := NewRegistry(nil)
 	require.NoError(t, err)
 	require.NotNil(t, reg)
 	defer reg.Close()
@@ -98,10 +99,11 @@ func TestNewRegistry_DefaultOptions(t *testing.T) {
 // TestNewRegistry_InvalidServerAddr 测试无效服务器地址
 func TestNewRegistry_InvalidServerAddr(t *testing.T) {
 	// 使用无效地址，应该快速失败
-	reg, err := NewRegistry(
-		ServerAddrs("127.0.0.1:99999"),
-		DialTimeout(1*time.Second),
-	)
+	serverConfig := &NacosConfig{
+		Addrs:       []string{"127.0.0.1:99999"},
+		DialTimeout: 1 * time.Second,
+	}
+	reg, err := NewRegistry(serverConfig)
 	// 创建客户端可能不会立即失败，但后续操作会失败
 	if err == nil {
 		reg.Close()
@@ -136,10 +138,7 @@ func TestNewRegistryWith(t *testing.T) {
 	)
 	require.NoError(t, err)
 
-	reg := NewRegistryWith(namingClient,
-		Namespace(testNamespace),
-		Group(testGroup),
-	)
+	reg := NewRegistryWith(namingClient, Group(testGroup))
 	require.NotNil(t, reg)
 	defer reg.Close()
 
@@ -150,12 +149,12 @@ func TestNewRegistryWith(t *testing.T) {
 func TestRegister(t *testing.T) {
 	skipIfNacosNotAvailable(t)
 
-	reg, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-	)
+	serverConfig := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	reg, err := NewRegistry(serverConfig, Group(testGroup))
 	require.NoError(t, err)
 	defer reg.Close()
 
@@ -224,12 +223,12 @@ func TestRegister(t *testing.T) {
 func TestRegister_DifferentEndpointFormats(t *testing.T) {
 	skipIfNacosNotAvailable(t)
 
-	reg, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-	)
+	serverConfig := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	reg, err := NewRegistry(serverConfig, Group(testGroup))
 	require.NoError(t, err)
 	defer reg.Close()
 
@@ -278,12 +277,12 @@ func TestRegister_DifferentEndpointFormats(t *testing.T) {
 func TestRegister_MultipleEndpoints(t *testing.T) {
 	skipIfNacosNotAvailable(t)
 
-	reg, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-	)
+	serverConfig := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	reg, err := NewRegistry(serverConfig, Group(testGroup))
 	require.NoError(t, err)
 	defer reg.Close()
 
@@ -321,12 +320,12 @@ func TestRegister_MultipleEndpoints(t *testing.T) {
 func TestDeregister(t *testing.T) {
 	skipIfNacosNotAvailable(t)
 
-	reg, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-	)
+	serverConfig := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	reg, err := NewRegistry(serverConfig, Group(testGroup))
 	require.NoError(t, err)
 	defer reg.Close()
 
@@ -391,44 +390,40 @@ func TestGetService(t *testing.T) {
 	serviceName2 := fmt.Sprintf("test-service-2-%d", baseTime)
 
 	// 为每个实例创建独立的 Registry 实例（因为 Nacos SDK 客户端层面的限制）
-	reg1, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-		Weight(10),
-	)
+	serverConfig := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	reg1, err := NewRegistry(serverConfig, Group(testGroup), Weight(10))
 	require.NoError(t, err)
 	defer reg1.Close()
 
-	reg2, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-		Weight(10),
-	)
+	serverConfig2 := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	reg2, err := NewRegistry(serverConfig2, Group(testGroup), Weight(10))
 	require.NoError(t, err)
 	defer reg2.Close()
 
-	reg3, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-		Weight(10),
-	)
+	serverConfig3 := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	reg3, err := NewRegistry(serverConfig3, Group(testGroup), Weight(10))
 	require.NoError(t, err)
 	defer reg3.Close()
 
 	// 用于查询的独立 Registry 实例
-	regQuery, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-		Weight(10),
-	)
+	serverConfigQuery := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	regQuery, err := NewRegistry(serverConfigQuery, Group(testGroup), Weight(10))
 	require.NoError(t, err)
 	defer regQuery.Close()
 
@@ -512,31 +507,31 @@ func TestWatch(t *testing.T) {
 	serviceName := fmt.Sprintf("test-service-watch-%d", time.Now().UnixNano())
 
 	// 为每个实例创建独立的 Registry 实例（因为 Nacos SDK 客户端层面的限制）
-	reg1, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-	)
+	serverConfig1 := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	reg1, err := NewRegistry(serverConfig1, Group(testGroup))
 	require.NoError(t, err)
 	defer reg1.Close()
 
-	reg2, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-	)
+	serverConfig2 := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	reg2, err := NewRegistry(serverConfig2, Group(testGroup))
 	require.NoError(t, err)
 	defer reg2.Close()
 
 	// 用于监听和查询的独立 Registry 实例
-	regWatch, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-	)
+	serverConfigWatch := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	regWatch, err := NewRegistry(serverConfigWatch, Group(testGroup))
 	require.NoError(t, err)
 	defer regWatch.Close()
 
@@ -659,12 +654,12 @@ func getWatcherErrorChannel(w registry.Watcher) <-chan error {
 func TestWatch_Stop(t *testing.T) {
 	skipIfNacosNotAvailable(t)
 
-	reg, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-	)
+	serverConfig := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	reg, err := NewRegistry(serverConfig, Group(testGroup))
 	require.NoError(t, err)
 	defer reg.Close()
 
@@ -705,12 +700,12 @@ func TestWatch_Stop(t *testing.T) {
 func TestClose(t *testing.T) {
 	skipIfNacosNotAvailable(t)
 
-	reg, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-	)
+	serverConfig := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	reg, err := NewRegistry(serverConfig, Group(testGroup))
 	require.NoError(t, err)
 
 	ctx := context.Background()
@@ -744,23 +739,20 @@ func TestRegistryOptions(t *testing.T) {
 	skipIfNacosNotAvailable(t)
 
 	// 测试自定义命名空间和分组
-	reg, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace("custom-namespace"),
-		Group("CUSTOM_GROUP"),
-		ClusterName("CUSTOM_CLUSTER"),
-		DialTimeout(5*time.Second),
-		Weight(20.0),
-		LogLevel("warn"),
-		CacheDir("/tmp/test-cache"),
-		LogDir("/tmp/test-log"),
-		NotLoadCacheAtStart(false),
-	)
+	serverConfig := &NacosConfig{
+		Addrs:               []string{testNacosAddr},
+		Namespace:           "custom-namespace",
+		DialTimeout:         5 * time.Second,
+		LogLevel:            "warn",
+		CacheDir:            "/tmp/test-cache",
+		LogDir:              "/tmp/test-log",
+		NotLoadCacheAtStart: false,
+	}
+	reg, err := NewRegistry(serverConfig, Group("CUSTOM_GROUP"), ClusterName("CUSTOM_CLUSTER"), Weight(20.0))
 	require.NoError(t, err)
 	defer reg.Close()
 
 	assert.Equal(t, RegistryID, reg.ID())
-	assert.Equal(t, "custom-namespace", reg.opts.namespace)
 	assert.Equal(t, "CUSTOM_GROUP", reg.opts.group)
 	assert.Equal(t, "CUSTOM_CLUSTER", reg.opts.clusterName)
 	assert.Equal(t, 20.0, reg.opts.weight)
@@ -773,21 +765,21 @@ func TestMultipleRegistries(t *testing.T) {
 	baseTime := time.Now().UnixNano()
 
 	// 创建两个注册器使用不同的分组
-	reg1, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group("GROUP_1"),
-		DialTimeout(3*time.Second),
-	)
+	serverConfig1 := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	reg1, err := NewRegistry(serverConfig1, Group("GROUP_1"))
 	require.NoError(t, err)
 	defer reg1.Close()
 
-	reg2, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group("GROUP_2"),
-		DialTimeout(3*time.Second),
-	)
+	serverConfig2 := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	reg2, err := NewRegistry(serverConfig2, Group("GROUP_2"))
 	require.NoError(t, err)
 	defer reg2.Close()
 
@@ -857,40 +849,40 @@ func TestIntegration(t *testing.T) {
 	serviceName := fmt.Sprintf("integration-service-%d", baseTime)
 
 	// 为每个实例创建独立的 Registry 实例（因为 Nacos SDK 客户端层面的限制）
-	reg1, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-	)
+	serverConfig1 := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	reg1, err := NewRegistry(serverConfig1, Group(testGroup))
 	require.NoError(t, err)
 	defer reg1.Close()
 
-	reg2, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-	)
+	serverConfig2 := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	reg2, err := NewRegistry(serverConfig2, Group(testGroup))
 	require.NoError(t, err)
 	defer reg2.Close()
 
-	reg3, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-	)
+	serverConfig3 := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	reg3, err := NewRegistry(serverConfig3, Group(testGroup))
 	require.NoError(t, err)
 	defer reg3.Close()
 
 	// 用于查询和监听的独立 Registry 实例
-	regQuery, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-	)
+	serverConfigQuery := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	regQuery, err := NewRegistry(serverConfigQuery, Group(testGroup))
 	require.NoError(t, err)
 	defer regQuery.Close()
 
@@ -1018,12 +1010,12 @@ func TestIntegration(t *testing.T) {
 func TestRegister_WithMetadata(t *testing.T) {
 	skipIfNacosNotAvailable(t)
 
-	reg, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-	)
+	serverConfig := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	reg, err := NewRegistry(serverConfig, Group(testGroup))
 	require.NoError(t, err)
 	defer reg.Close()
 
@@ -1086,12 +1078,12 @@ func TestConcurrentRegister(t *testing.T) {
 
 	// 创建多个 Registry 实例
 	for i := 0; i < numInstances; i++ {
-		reg, err := NewRegistry(
-			ServerAddrs(testNacosAddr),
-			Namespace(testNamespace),
-			Group(testGroup),
-			DialTimeout(3*time.Second),
-		)
+		serverConfig := &NacosConfig{
+			Addrs:       []string{testNacosAddr},
+			Namespace:   testNamespace,
+			DialTimeout: 3 * time.Second,
+		}
+		reg, err := NewRegistry(serverConfig, Group(testGroup))
 		require.NoError(t, err)
 		regs[i] = reg
 		defer reg.Close()
@@ -1119,12 +1111,12 @@ func TestConcurrentRegister(t *testing.T) {
 	}
 
 	// 创建用于查询的独立 Registry 实例
-	regQuery, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-	)
+	serverConfigQuery := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	regQuery, err := NewRegistry(serverConfigQuery, Group(testGroup))
 	require.NoError(t, err)
 	defer regQuery.Close()
 
@@ -1159,40 +1151,40 @@ func TestWatcher_MultipleChanges(t *testing.T) {
 	serviceName := fmt.Sprintf("test-service-watcher-%d", time.Now().UnixNano())
 
 	// 为每个实例创建独立的 Registry 实例（因为 Nacos SDK 客户端层面的限制）
-	reg1, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-	)
+	serverConfig1 := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	reg1, err := NewRegistry(serverConfig1, Group(testGroup))
 	require.NoError(t, err)
 	defer reg1.Close()
 
-	reg2, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-	)
+	serverConfig2 := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	reg2, err := NewRegistry(serverConfig2, Group(testGroup))
 	require.NoError(t, err)
 	defer reg2.Close()
 
-	reg3, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-	)
+	serverConfig3 := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	reg3, err := NewRegistry(serverConfig3, Group(testGroup))
 	require.NoError(t, err)
 	defer reg3.Close()
 
 	// 用于监听和查询的独立 Registry 实例
-	regWatch, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-	)
+	serverConfigWatch := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	regWatch, err := NewRegistry(serverConfigWatch, Group(testGroup))
 	require.NoError(t, err)
 	defer regWatch.Close()
 
@@ -1266,13 +1258,14 @@ func TestNewRegistry_WithAuth(t *testing.T) {
 		t.Skip("跳过认证测试: 未设置 NACOS_USERNAME 或 NACOS_PASSWORD 环境变量")
 	}
 
-	reg, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		Auth(username, password),
-		DialTimeout(3*time.Second),
-	)
+	serverConfig := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+		Username:    username,
+		Password:    password,
+	}
+	reg, err := NewRegistry(serverConfig, Group(testGroup))
 	require.NoError(t, err)
 	defer reg.Close()
 
@@ -1284,12 +1277,12 @@ func TestNewRegistry_WithMultipleServers(t *testing.T) {
 	skipIfNacosNotAvailable(t)
 
 	// 测试多个服务器地址（即使只有一个可用）
-	reg, err := NewRegistry(
-		ServerAddrs(testNacosAddr, "127.0.0.1:8848"),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-	)
+	serverConfig := &NacosConfig{
+		Addrs:       []string{testNacosAddr, "127.0.0.1:8848"},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	reg, err := NewRegistry(serverConfig, Group(testGroup))
 	require.NoError(t, err)
 	defer reg.Close()
 
@@ -1300,12 +1293,12 @@ func TestNewRegistry_WithMultipleServers(t *testing.T) {
 func TestParseEndpoint(t *testing.T) {
 	skipIfNacosNotAvailable(t)
 
-	reg, err := NewRegistry(
-		ServerAddrs(testNacosAddr),
-		Namespace(testNamespace),
-		Group(testGroup),
-		DialTimeout(3*time.Second),
-	)
+	serverConfig := &NacosConfig{
+		Addrs:       []string{testNacosAddr},
+		Namespace:   testNamespace,
+		DialTimeout: 3 * time.Second,
+	}
+	reg, err := NewRegistry(serverConfig, Group(testGroup))
 	require.NoError(t, err)
 	defer reg.Close()
 

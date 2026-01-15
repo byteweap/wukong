@@ -6,67 +6,89 @@ import (
 
 const (
 	// 默认值
-	defaultNamespace    = "public"
-	defaultGroup        = "DEFAULT_GROUP"
-	defaultClusterName  = "DEFAULT"
-	defaultDialTimeout  = 3 * time.Second
-	defaultBeatInterval = 5 * time.Second
-	defaultLogLevel     = "info"
-	defaultCacheDir     = "/tmp/nacos/cache"
-	defaultLogDir       = "/tmp/nacos/log"
-	defaultServerPort   = 8848
+	defaultNamespace   = "public"
+	defaultGroup       = "DEFAULT_GROUP"
+	defaultClusterName = "DEFAULT"
+	defaultDialTimeout = 3 * time.Second
+	defaultLogLevel    = "info"
+	defaultCacheDir    = "/tmp/nacos/cache"
+	defaultLogDir      = "/tmp/nacos/log"
+	defaultServerPort  = 8848
 )
 
-type options struct {
-	serverAddrs         []string
-	namespace           string
-	group               string
-	clusterName         string
-	dialTimeout         time.Duration
-	beatInterval        time.Duration
-	username            string
-	password            string
-	logLevel            string
-	cacheDir            string
-	logDir              string
-	notLoadCacheAtStart bool
+// NacosConfig Nacos 配置
+type NacosConfig struct {
+	// Addrs 服务器地址列表，格式: "ip:port" 或 "ip"
+	Addrs []string
+	// Namespace 命名空间，默认 "public"
+	Namespace string
+	// DialTimeout 连接超时时间，默认 3 秒
+	DialTimeout time.Duration
+	// Username 用户名（可选）
+	Username string
+	// Password 密码（可选）
+	Password string
+	// LogLevel 日志级别，默认 "info"
+	LogLevel string
+	// CacheDir 缓存目录，默认 "/tmp/nacos/cache"
+	CacheDir string
+	// LogDir 日志目录，默认 "/tmp/nacos/log"
+	LogDir string
+	// NotLoadCacheAtStart 启动时不加载缓存，默认 true
+	NotLoadCacheAtStart bool
+}
 
-	weight float64 // 权重, 必须大于0
+// DefaultNacosConfig 返回默认的 Nacos 配置
+func DefaultNacosConfig() *NacosConfig {
+	return &NacosConfig{
+		Addrs:               []string{"127.0.0.1:8848"},
+		Namespace:           defaultNamespace,
+		DialTimeout:         defaultDialTimeout,
+		LogLevel:            defaultLogLevel,
+		CacheDir:            defaultCacheDir,
+		LogDir:              defaultLogDir,
+		NotLoadCacheAtStart: true,
+	}
+}
+
+func validate(cfg *NacosConfig) {
+	if len(cfg.Addrs) == 0 {
+		cfg.Addrs = []string{"127.0.0.1:8848"}
+	}
+	if cfg.Namespace == "" {
+		cfg.Namespace = defaultNamespace
+	}
+	if cfg.DialTimeout == 0 {
+		cfg.DialTimeout = defaultDialTimeout
+	}
+	if cfg.LogLevel == "" {
+		cfg.LogLevel = defaultLogLevel
+	}
+	if cfg.CacheDir == "" {
+		cfg.CacheDir = defaultCacheDir
+	}
+	if cfg.LogDir == "" {
+		cfg.LogDir = defaultLogDir
+	}
+	if cfg.NotLoadCacheAtStart {
+		cfg.NotLoadCacheAtStart = true
+	}
+}
+
+// options 客户端配置选项
+type options struct {
+	group       string
+	clusterName string
+	weight      float64 // 服务注册权重, 必须大于0
 }
 
 type Option func(*options)
 
 func defaultOptions() *options {
 	return &options{
-		serverAddrs:         []string{"127.0.0.1:8848"},
-		namespace:           defaultNamespace,
-		group:               defaultGroup,
-		clusterName:         defaultClusterName,
-		dialTimeout:         defaultDialTimeout,
-		beatInterval:        defaultBeatInterval,
-		logLevel:            defaultLogLevel,
-		cacheDir:            defaultCacheDir,
-		logDir:              defaultLogDir,
-		notLoadCacheAtStart: true,
-		weight:              10,
-	}
-}
-
-// ServerAddrs 设置 Nacos 服务器地址列表，格式: "ip:port" 或 "ip"
-func ServerAddrs(addrs ...string) Option {
-	return func(o *options) {
-		if len(addrs) > 0 {
-			o.serverAddrs = addrs
-		}
-	}
-}
-
-// Namespace 设置命名空间，默认 "public"
-func Namespace(ns string) Option {
-	return func(o *options) {
-		if ns != "" {
-			o.namespace = ns
-		}
+		group:       defaultGroup,
+		clusterName: defaultClusterName,
+		weight:      10,
 	}
 }
 
@@ -88,67 +110,7 @@ func ClusterName(cluster string) Option {
 	}
 }
 
-// DialTimeout 设置连接超时时间，默认 3 秒
-func DialTimeout(d time.Duration) Option {
-	return func(o *options) {
-		if d > 0 {
-			o.dialTimeout = d
-		}
-	}
-}
-
-// BeatInterval 设置心跳间隔，默认 5 秒
-func BeatInterval(interval time.Duration) Option {
-	return func(o *options) {
-		if interval > 0 {
-			o.beatInterval = interval
-		}
-	}
-}
-
-// Auth 设置用户名和密码认证
-func Auth(username, password string) Option {
-	return func(o *options) {
-		o.username = username
-		o.password = password
-	}
-}
-
-// LogLevel 设置日志级别，默认 "info"
-func LogLevel(level string) Option {
-	return func(o *options) {
-		if level != "" {
-			o.logLevel = level
-		}
-	}
-}
-
-// CacheDir 设置缓存目录，默认 "/tmp/nacos/cache"
-func CacheDir(dir string) Option {
-	return func(o *options) {
-		if dir != "" {
-			o.cacheDir = dir
-		}
-	}
-}
-
-// LogDir 设置日志目录，默认 "/tmp/nacos/log"
-func LogDir(dir string) Option {
-	return func(o *options) {
-		if dir != "" {
-			o.logDir = dir
-		}
-	}
-}
-
-// NotLoadCacheAtStart 设置启动时不加载缓存，默认 true
-func NotLoadCacheAtStart(notLoad bool) Option {
-	return func(o *options) {
-		o.notLoadCacheAtStart = notLoad
-	}
-}
-
-// Weight 设置权重, 必须大于0
+// Weight 设置服务注册权重, 必须大于0, 默认10
 func Weight(weight float64) Option {
 	return func(o *options) {
 		if weight > 0 {

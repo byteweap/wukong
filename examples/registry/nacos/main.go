@@ -47,12 +47,11 @@ func runProvider() {
 	}
 
 	// 创建服务注册器
-	reg, err := nacosdiscovery.NewRegistry(
-		nacosdiscovery.ServerAddrs(*nacosAddr),
-		nacosdiscovery.Namespace(*namespace),
-		nacosdiscovery.Group(*group),
-		nacosdiscovery.BeatInterval(5*time.Second),
-	)
+	serverConfig := &nacosdiscovery.NacosConfig{
+		Addrs:     []string{*nacosAddr},
+		Namespace: *namespace,
+	}
+	reg, err := nacosdiscovery.NewRegistry(serverConfig, nacosdiscovery.Group(*group))
 	if err != nil {
 		log.Fatalf("创建注册器失败: %v", err)
 	}
@@ -133,11 +132,11 @@ func runProvider() {
 // runConsumer 运行服务消费者
 func runConsumer() {
 	// 创建服务发现器
-	registry, err := nacosdiscovery.NewRegistry(
-		nacosdiscovery.ServerAddrs(*nacosAddr),
-		nacosdiscovery.Namespace(*namespace),
-		nacosdiscovery.Group(*group),
-	)
+	serverConfig := &nacosdiscovery.NacosConfig{
+		Addrs:     []string{*nacosAddr},
+		Namespace: *namespace,
+	}
+	registry, err := nacosdiscovery.NewRegistry(serverConfig, nacosdiscovery.Group(*group))
 	if err != nil {
 		log.Fatalf("创建发现器失败: %v", err)
 	}

@@ -29,15 +29,22 @@ type Registry struct {
 var _ registry.Registry = (*Registry)(nil)
 
 // NewRegistry 创建 Nacos 注册器并立即连接
-func NewRegistry(opts ...Option) (*Registry, error) {
+func NewRegistry(cfg *NacosConfig, opts ...Option) (*Registry, error) {
+
+	if cfg == nil {
+		cfg = DefaultNacosConfig()
+	} else {
+		validate(cfg)
+	}
+
 	o := defaultOptions()
 	for _, opt := range opts {
 		opt(o)
 	}
 
 	// 解析服务器地址
-	serverConfigs := make([]constant.ServerConfig, 0, len(o.serverAddrs))
-	for _, addr := range o.serverAddrs {
+	serverConfigs := make([]constant.ServerConfig, 0, len(cfg.Addrs))
+	for _, addr := range cfg.Addrs {
 		ip, port := parseAddr(addr)
 		serverConfigs = append(serverConfigs, constant.ServerConfig{
 			IpAddr:      ip,
@@ -48,17 +55,17 @@ func NewRegistry(opts ...Option) (*Registry, error) {
 
 	// 客户端配置
 	clientConfig := constant.ClientConfig{
-		NamespaceId:         o.namespace,
-		TimeoutMs:           uint64(o.dialTimeout.Milliseconds()),
-		NotLoadCacheAtStart: o.notLoadCacheAtStart,
-		LogDir:              o.logDir,
-		CacheDir:            o.cacheDir,
-		LogLevel:            o.logLevel,
+		NamespaceId:         cfg.Namespace,
+		TimeoutMs:           uint64(cfg.DialTimeout.Milliseconds()),
+		NotLoadCacheAtStart: cfg.NotLoadCacheAtStart,
+		LogDir:              cfg.LogDir,
+		CacheDir:            cfg.CacheDir,
+		LogLevel:            cfg.LogLevel,
 	}
 
-	if o.username != "" {
-		clientConfig.Username = o.username
-		clientConfig.Password = o.password
+	if cfg.Username != "" {
+		clientConfig.Username = cfg.Username
+		clientConfig.Password = cfg.Password
 	}
 
 	// 创建命名客户端
@@ -69,7 +76,7 @@ func NewRegistry(opts ...Option) (*Registry, error) {
 		},
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create nacos naming client: %w", err)
+		return nil, err
 	}
 
 	return &Registry{
