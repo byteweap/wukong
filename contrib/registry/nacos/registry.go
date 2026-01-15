@@ -125,6 +125,8 @@ func (r *Registry) Register(ctx context.Context, service *registry.ServiceInstan
 	if service.Version != "" {
 		metadata["version"] = service.Version
 	}
+	// 添加应用id
+	metadata["id"] = service.ID
 	// 添加所有 endpoints
 	metadata["endpoints"] = strings.Join(service.Endpoints, ",")
 
@@ -311,11 +313,11 @@ func convertToServiceInstance(instance model.Instance, serviceName string) *regi
 
 	// 构建 ServiceInstance
 	si := &registry.ServiceInstance{
-		ID:        instanceId,
 		Name:      serviceName,
 		Endpoints: endpoints,
 		Metadata:  make(map[string]string),
 	}
+	si.Metadata["nacos_instance_id"] = instanceId
 
 	// 复制 metadata
 	if metadata != nil {
@@ -328,6 +330,9 @@ func convertToServiceInstance(instance model.Instance, serviceName string) *regi
 		// 提取版本
 		if version, ok := metadata["version"]; ok {
 			si.Version = version
+		}
+		if id, ok := metadata["id"]; ok {
+			si.ID = id
 		}
 	}
 
