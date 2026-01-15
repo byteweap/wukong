@@ -172,12 +172,14 @@ func (g *Gate) handlerBinaryMessage(_ network.Conn, msg []byte) {
 // buildInstance 构建服务实例
 func (g *Gate) buildInstance() (*registry.ServiceInstance, error) {
 
+	app := g.opts.application
+
 	return &registry.ServiceInstance{
-		ID:        g.opts.application.ID,
-		Name:      g.opts.application.Name,
-		Version:   g.opts.application.Version,
-		Metadata:  g.opts.application.Metadata,
-		Endpoints: []string{g.opts.application.Addr},
+		ID:        app.ID,
+		Name:      app.Name,
+		Version:   app.Version,
+		Metadata:  app.Metadata,
+		Endpoints: []string{app.Addr},
 	}, nil
 }
 
