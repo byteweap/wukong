@@ -1,6 +1,7 @@
 package gate
 
 import (
+	"context"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -48,29 +49,30 @@ type (
 		MaxPingsOutstanding int           // 最大心跳未响应次数, 默认 0, 无限重连
 	}
 
-	// Options 选项
-	Options struct {
-		Application ApplicationOptions
-		Network     NetworkOptions
-		Locator     LocatorOptions
-		Redis       redis.UniversalOptions
-		Broker      BrokerOptions
+	// options 选项
+	options struct {
+		ctx         context.Context
+		application ApplicationOptions
+		network     NetworkOptions
+		locator     LocatorOptions
+		redis       redis.UniversalOptions
+		broker      BrokerOptions
 	}
 )
 
-type Option func(*Options)
+type Option func(*options)
 
-func defaultOptions() *Options {
+func defaultOptions() *options {
 
-	return &Options{
-		Application: ApplicationOptions{
+	return &options{
+		application: ApplicationOptions{
 			ID:       "",
 			Name:     "gate",
 			Version:  "1.0.0",
 			Metadata: make(map[string]string),
 			Addr:     "0.0.0.0:9000",
 		},
-		Network: NetworkOptions{
+		network: NetworkOptions{
 			Addr:           "0.0.0.0:9000",
 			Pattern:        "/",
 			MaxConnections: 10000,
@@ -79,19 +81,19 @@ func defaultOptions() *Options {
 			WriteTimeout:   0,
 			WriteQueueSize: 0,
 		},
-		Locator: LocatorOptions{
+		locator: LocatorOptions{
 			KeyFormat:     "gate:%d",
 			GateFieldName: "gate",
 			GameFieldName: "game",
 		},
-		Redis: redis.UniversalOptions{
+		redis: redis.UniversalOptions{
 			Addrs:      []string{"localhost:6379"},
 			Username:   "",
 			Password:   "",
 			DB:         0,
 			ClientName: "wukong-gate",
 		},
-		Broker: BrokerOptions{
+		broker: BrokerOptions{
 			Name:                "gate",
 			URLs:                []string{"localhost:4222"},
 			Token:               "",
@@ -106,44 +108,106 @@ func defaultOptions() *Options {
 	}
 }
 
+func Context(ctx context.Context) Option {
+	return func(o *options) {
+		o.ctx = ctx
+	}
+}
+func ID(id string) Option {
+	return func(o *options) {
+		o.application.ID = id
+	}
+}
+
+func Name(name string) Option {
+	return func(o *options) {
+		o.application.Name = name
+	}
+}
+
+func Version(version string) Option {
+	return func(o *options) {
+		o.application.Version = version
+	}
+}
+
 func Addr(addr string) Option {
-	return func(o *Options) {
-		o.Network.Addr = addr
+	return func(o *options) {
+		o.application.Addr = addr
+		o.network.Addr = addr
+	}
+}
+
+func Metadata(metadata map[string]string) Option {
+	return func(o *options) {
+		o.application.Metadata = metadata
 	}
 }
 
 func Pattern(pattern string) Option {
-	return func(o *Options) {
-		if o.Network.Pattern != "" {
-			o.Network.Pattern = pattern
+	return func(o *options) {
+		if o.network.Pattern != "" {
+			o.network.Pattern = pattern
 		}
 	}
 }
 
 func MaxConnections(maxConnections int) Option {
-	return func(o *Options) {
-		if o.Network.MaxConnections > 0 {
-			o.Network.MaxConnections = maxConnections
+	return func(o *options) {
+		if o.network.MaxConnections > 0 {
+			o.network.MaxConnections = maxConnections
+		}
+	}
+}
+
+func MaxMessageSize(maxMessageSize int64) Option {
+	return func(o *options) {
+		if o.network.MaxMessageSize > 0 {
+			o.network.MaxMessageSize = maxMessageSize
+		}
+	}
+}
+
+func ReadTimeout(readTimeout time.Duration) Option {
+	return func(o *options) {
+		if readTimeout > 0 {
+			o.network.ReadTimeout = readTimeout
+		}
+	}
+}
+
+func WriteTimeout(writeTimeout time.Duration) Option {
+	return func(o *options) {
+		if writeTimeout > 0 {
+			o.network.WriteTimeout = writeTimeout
+		}
+	}
+}
+
+func WriteQueueSize(writeQueueSize int) Option {
+	return func(o *options) {
+		if writeQueueSize > 0 {
+			o.network.WriteQueueSize = writeQueueSize
 		}
 	}
 }
 
 func Locator(keyFormat, gateFieldName, gameFieldName string) Option {
-	return func(o *Options) {
-		o.Locator.KeyFormat = keyFormat
-		o.Locator.GateFieldName = gateFieldName
-		o.Locator.GameFieldName = gameFieldName
+	return func(o *options) {
+		o.locator.KeyFormat = keyFormat
+		o.locator.GateFieldName = gateFieldName
+		o.locator.GameFieldName = gameFieldName
 	}
 }
 
 func Redis(opts redis.UniversalOptions) Option {
-	return func(o *Options) {
-		o.Redis = opts
+	return func(o *options) {
+		o.redis = opts
 	}
 }
 
 func Broker(opts BrokerOptions) Option {
-	return func(o *Options) {
-		o.Broker = opts
+	return func(o *options) {
+		o.broker = opts
 	}
 }

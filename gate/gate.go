@@ -22,7 +22,7 @@ type Gate struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
-	opts           *Options          // 配置选项
+	opts           *options          // 配置选项
 	logger         logger.Logger     // 日志
 	netServer      network.Server    // 网络服务器（WebSocket）
 	locator        locator.Locator   // 玩家位置定位器
@@ -41,7 +41,7 @@ func New(opts ...Option) (*Gate, error) {
 	o := defaultOptions()
 
 	if id, err := uuid.NewUUID(); err == nil {
-		o.Application.ID = id.String()
+		o.application.ID = id.String()
 	}
 	for _, opt := range opts {
 		opt(o)
@@ -49,9 +49,9 @@ func New(opts ...Option) (*Gate, error) {
 
 	// 选项
 	var (
-		redisOpts   = o.Redis
-		locatorOpts = o.Locator
-		brokerOpts  = o.Broker
+		redisOpts   = o.redis
+		locatorOpts = o.locator
+		brokerOpts  = o.broker
 	)
 
 	// logger
@@ -130,7 +130,7 @@ func (g *Gate) Stop() {
 
 // setupNetwork 初始化网络服务器配置
 func (g *Gate) setupNetwork() {
-	options := g.opts.Network
+	options := g.opts.network
 
 	// 创建 WebSocket 服务器
 	ws := websocket.NewServer(
@@ -173,11 +173,11 @@ func (g *Gate) handlerBinaryMessage(_ network.Conn, msg []byte) {
 func (g *Gate) buildInstance() (*registry.ServiceInstance, error) {
 
 	return &registry.ServiceInstance{
-		ID:        g.opts.Application.ID,
-		Name:      g.opts.Application.Name,
-		Version:   g.opts.Application.Version,
-		Metadata:  g.opts.Application.Metadata,
-		Endpoints: []string{g.opts.Application.Addr},
+		ID:        g.opts.application.ID,
+		Name:      g.opts.application.Name,
+		Version:   g.opts.application.Version,
+		Metadata:  g.opts.application.Metadata,
+		Endpoints: []string{g.opts.application.Addr},
 	}, nil
 }
 
