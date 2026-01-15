@@ -7,7 +7,8 @@ import (
 )
 
 type (
-	// NetworkOptions is the options for the network.
+
+	// NetworkOptions 网络选项
 	NetworkOptions struct {
 		Addr           string
 		Pattern        string
@@ -18,14 +19,14 @@ type (
 		WriteQueueSize int
 	}
 
-	// LocatorOptions is the options for the locator.
+	// LocatorOptions 定位器选项
 	LocatorOptions struct {
 		KeyFormat     string
 		GateFieldName string
 		GameFieldName string
 	}
 
-	// BrokerOptions is the options for the broker.
+	// BrokerOptions 消息代理选项
 	BrokerOptions struct {
 		Name                string        // 名称, 默认 "gate"
 		URLs                []string      // 连接地址,
@@ -39,7 +40,7 @@ type (
 		MaxPingsOutstanding int           // 最大心跳未响应次数, 默认 0, 无限重连
 	}
 
-	// Options is the options for the gate.
+	// Options 选项
 	Options struct {
 		NetworkOptions NetworkOptions
 		LocatorOptions LocatorOptions

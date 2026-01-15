@@ -25,6 +25,7 @@ type Gate struct {
 
 // New 创建新的网关服务器实例
 func New(opts ...Option) (*Gate, error) {
+
 	// 应用配置选项
 	options := defaultOptions()
 	for _, opt := range opts {
