@@ -7,12 +7,10 @@ import (
 
 	"github.com/byteweap/wukong/component/broker"
 	"github.com/byteweap/wukong/component/locator"
-	"github.com/byteweap/wukong/component/logger"
 	"github.com/byteweap/wukong/component/network"
 	"github.com/byteweap/wukong/component/registry"
 	"github.com/byteweap/wukong/contrib/broker/nats"
 	"github.com/byteweap/wukong/contrib/locator/redis"
-	"github.com/byteweap/wukong/contrib/logger/zerolog"
 	"github.com/byteweap/wukong/contrib/network/websocket"
 	"github.com/google/uuid"
 )
@@ -23,7 +21,6 @@ type Gate struct {
 	cancel context.CancelFunc
 
 	opts           *options          // 配置选项
-	logger         logger.Logger     // 日志
 	netServer      network.Server    // 网络服务器（WebSocket）
 	locator        locator.Locator   // 玩家位置定位器
 	broker         broker.Broker     // 消息传输代理
@@ -54,9 +51,6 @@ func New(opts ...Option) (*Gate, error) {
 		brokerOpts  = o.broker
 	)
 
-	// logger
-	logger := zerolog.New()
-
 	// 定位器
 	locator := redis.New(
 		redisOpts,
@@ -80,7 +74,6 @@ func New(opts ...Option) (*Gate, error) {
 	}
 
 	return &Gate{
-		logger:         logger.With("module", "gate"),
 		opts:           o,
 		sessionManager: NewSessionManager(),
 		locator:        locator,
@@ -112,23 +105,23 @@ func (g *Gate) Run() error {
 }
 
 // Stop 关闭网关服务器
-func (g *Gate) Stop() {
+func (g *Gate) Stop() error {
 
 	g.netServer.Stop()
 
 	if err := g.broker.Close(); err != nil {
-		g.logger.Error().Err(err).Msg("broker close error")
+		return fmt.Errorf("broker close error: %w", err)
 	}
 
 	if err := g.locator.Close(); err != nil {
-		g.logger.Error().Err(err).Msg("locator close error")
+		return fmt.Errorf("locator close error: %w", err)
 	}
 
 	if err := g.sessionManager.Close(); err != nil {
-		g.logger.Error().Err(err).Msg("session manager close error")
+		return fmt.Errorf("session manager close error: %w", err)
 	}
 
-	g.logger.Info().Msg("gate server stop success")
+	return nil
 }
 
 // setupNetwork 初始化网络服务器配置
@@ -146,23 +139,23 @@ func (g *Gate) setupNetwork() {
 		websocket.WriteQueueSize(options.WriteQueueSize),
 	)
 	ws.OnStart(func(addr, pattern string) {
-		g.logger.Info().Msgf("websocket server start success, listening on %s%s", addr, pattern)
+		//g.logger.Info().Msgf("websocket server start success, listening on %s%s", addr, pattern)
 	})
 
 	ws.OnStop(func() {
-		g.logger.Info().Msg("websocket server stop success")
+		//g.logger.Info().Msg("websocket server stop success")
 	})
 	ws.OnConnect(func(conn network.Conn) {
-		g.logger.Info().Msgf("connect success, id: %d, localAddr: %s, remoteAddr: %s", conn.ID(), conn.LocalAddr(), conn.RemoteAddr())
+		//g.logger.Info().Msgf("connect success, id: %d, localAddr: %s, remoteAddr: %s", conn.ID(), conn.LocalAddr(), conn.RemoteAddr())
 	})
 	ws.OnDisconnect(func(conn network.Conn) {
-		g.logger.Info().Msgf("disconnect success, id: %d, localAddr: %s, remoteAddr: %s", conn.ID(), conn.LocalAddr(), conn.RemoteAddr())
+		//g.logger.Info().Msgf("disconnect success, id: %d, localAddr: %s, remoteAddr: %s", conn.ID(), conn.LocalAddr(), conn.RemoteAddr())
 	})
 	ws.OnBinaryMessage(func(conn network.Conn, msg []byte) {
 		g.handlerBinaryMessage(conn, msg)
 	})
 	ws.OnError(func(err error) {
-		g.logger.Error().Err(err).Msg("websocket server err")
+		//g.logger.Error().Err(err).Msg("websocket server err")
 	})
 	g.netServer = ws
 }
