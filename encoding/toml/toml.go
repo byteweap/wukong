@@ -1,0 +1,41 @@
+package toml
+
+import (
+	"github.com/BurntSushi/toml"
+	"github.com/byteweap/wukong/encoding"
+)
+
+const Name = "toml"
+
+var c = &codec{}
+
+func init() {
+	encoding.RegisterCodec(codec{})
+}
+
+type codec struct{}
+
+// Name 编解码器名称
+func (codec) Name() string {
+	return Name
+}
+
+// Marshal 编码
+func (codec) Marshal(v any) ([]byte, error) {
+	return toml.Marshal(v)
+}
+
+// Unmarshal 解码
+func (codec) Unmarshal(data []byte, v any) error {
+	return toml.Unmarshal(data, v)
+}
+
+// Marshal 编码
+func Marshal(v any) ([]byte, error) {
+	return c.Marshal(v)
+}
+
+// Unmarshal 解码
+func Unmarshal(data []byte, v any) error {
+	return c.Unmarshal(data, v)
+}

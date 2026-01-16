@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"sync"
 
-	clientv3 "go.etcd.io/etcd/client/v3"
-
 	"github.com/byteweap/wukong/component/registry"
-	"github.com/byteweap/wukong/pkg/kcodec"
+	"github.com/byteweap/wukong/encoding/json"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 // Watcher 使用 etcd Watch 实现服务监听
@@ -23,7 +22,6 @@ type Watcher struct {
 	errCh     chan error
 	mu        sync.RWMutex
 	instances map[string]*registry.ServiceInstance // key -> instance
-	codec     kcodec.Codec
 	once      sync.Once
 	stopped   bool
 }
@@ -32,10 +30,6 @@ var _ registry.Watcher = (*Watcher)(nil)
 
 // newWatcher 创建新的监听器
 func newWatcher(ctx context.Context, client *clientv3.Client, prefix, namespace string) (*Watcher, error) {
-	codec, err := kcodec.Invoke("json")
-	if err != nil {
-		return nil, fmt.Errorf("failed to get json codec: %w", err)
-	}
 
 	watchCtx, cancel := context.WithCancel(ctx)
 
@@ -49,7 +43,6 @@ func newWatcher(ctx context.Context, client *clientv3.Client, prefix, namespace 
 		eventCh:   make(chan []*registry.ServiceInstance, 1),
 		errCh:     make(chan error, 1),
 		instances: make(map[string]*registry.ServiceInstance),
-		codec:     codec,
 	}
 
 	// 首次获取当前所有实例
@@ -110,7 +103,7 @@ func (w *Watcher) initialLoad(ctx context.Context) error {
 
 	for _, kv := range resp.Kvs {
 		var instance registry.ServiceInstance
-		if err := w.codec.Unmarshal(kv.Value, &instance); err != nil {
+		if err := json.Unmarshal(kv.Value, &instance); err != nil {
 			continue
 		}
 		w.instances[string(kv.Key)] = &instance
@@ -191,7 +184,7 @@ func (w *Watcher) processEvents(events []*clientv3.Event) bool {
 		case clientv3.EventTypePut:
 			// 新增或更新
 			var instance registry.ServiceInstance
-			if err := w.codec.Unmarshal(event.Kv.Value, &instance); err != nil {
+			if err := json.Unmarshal(event.Kv.Value, &instance); err != nil {
 				continue
 			}
 			// 检查是否有变更

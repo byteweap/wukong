@@ -7,13 +7,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/byteweap/wukong/encoding/json"
 	clientv3 "go.etcd.io/etcd/client/v3"
 
 	"github.com/byteweap/wukong/component/registry"
-	"github.com/byteweap/wukong/pkg/kcodec"
 )
 
-// ID etcd 注册器实现标识符
+// RegistryID etcd 注册器实现标识符
 const RegistryID = "etcd"
 
 // Registry 使用 etcd 实现服务注册
@@ -100,11 +100,7 @@ func (r *Registry) Register(ctx context.Context, service *registry.ServiceInstan
 	}
 
 	// 序列化服务实例
-	data, err := kcodec.Invoke("json")
-	if err != nil {
-		return fmt.Errorf("failed to get json codec: %w", err)
-	}
-	value, err := data.Marshal(service)
+	value, err := json.Marshal(service)
 	if err != nil {
 		return fmt.Errorf("failed to marshal service instance: %w", err)
 	}
@@ -215,14 +211,10 @@ func (r *Registry) GetService(ctx context.Context, serviceName string) ([]*regis
 
 	// 解析服务实例
 	instances := make([]*registry.ServiceInstance, 0, len(resp.Kvs))
-	codec, err := kcodec.Invoke("json")
-	if err != nil {
-		return nil, fmt.Errorf("failed to get json codec: %w", err)
-	}
 
 	for _, kv := range resp.Kvs {
 		var instance registry.ServiceInstance
-		if err := codec.Unmarshal(kv.Value, &instance); err != nil {
+		if err := json.Unmarshal(kv.Value, &instance); err != nil {
 			// 跳过无法解析的实例
 			continue
 		}
