@@ -181,8 +181,8 @@ type subscription struct {
 // Unsub 立即取消订阅.
 func (s *subscription) Unsub() error { return s.sub.Unsubscribe() }
 
-// Shutdown 优雅关闭订阅: 完成处理中的消息后退出.
-func (s *subscription) Shutdown() error { return s.sub.Drain() }
+// Close 优雅关闭订阅: 完成处理中的消息后退出.
+func (s *subscription) Close() error { return s.sub.Drain() }
 
 // buildNatsOptions 根据配置构建 NATS 连接选项。
 func buildNatsOptions(o *options) []nats.Option {

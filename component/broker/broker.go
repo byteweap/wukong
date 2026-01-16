@@ -34,7 +34,7 @@ type Handler func(ctx context.Context, msg *Message)
 // Subscription 表示一次订阅.
 type Subscription interface {
 	Unsub() error
-	Shutdown() error
+	Close() error
 }
 
 // Message 是 Broker 层的通用消息结构.
