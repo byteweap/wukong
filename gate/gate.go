@@ -91,13 +91,7 @@ func New(opts ...Option) (*Gate, error) {
 // Run 启动网关服务器
 func (g *Gate) Run() error {
 
-	instance, err := g.buildInstance()
-	if err != nil {
-		return err
-	}
-	g.mu.Lock()
-	g.instance = instance
-	g.mu.Unlock()
+	g.buildInstance()
 
 	// 初始化网络配置
 	g.setupNetwork()
@@ -170,17 +164,20 @@ func (g *Gate) handlerBinaryMessage(_ network.Conn, msg []byte) {
 }
 
 // buildInstance 构建服务实例
-func (g *Gate) buildInstance() (*registry.ServiceInstance, error) {
+func (g *Gate) buildInstance() {
 
 	app := g.opts.application
-
-	return &registry.ServiceInstance{
+	instance := &registry.ServiceInstance{
 		ID:        app.ID,
 		Name:      app.Name,
 		Version:   app.Version,
 		Metadata:  app.Metadata,
 		Endpoints: []string{app.Addr},
-	}, nil
+	}
+
+	g.mu.Lock()
+	g.instance = instance
+	g.mu.Unlock()
 }
 
 // registerService 注册服务
@@ -190,6 +187,7 @@ func (g *Gate) registerService() error {
 	instance := g.instance
 	g.mu.Unlock()
 	if g.registry == nil {
+		// 如果注册器为空，则不进行注册
 		return nil
 	}
 	if instance == nil {
@@ -210,6 +208,7 @@ func (g *Gate) unregisterService() error {
 	g.mu.Unlock()
 
 	if g.registry == nil {
+		// 如果注册器为空，则不进行注销
 		return nil
 	}
 	if instance == nil {
