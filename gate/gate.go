@@ -97,8 +97,16 @@ func (g *Gate) Run() error {
 	// 初始化网络配置
 	g.setupNetwork()
 
-	// 启动网络服务器
+	// 注册服务
+	if err := g.registerService(); err != nil {
+		return err
+	}
+
+	// 启动网络服务器 (阻塞)
 	g.netServer.Start()
+
+	// 停止网关服务器
+	g.Stop()
 
 	return nil
 }
@@ -120,7 +128,7 @@ func (g *Gate) Stop() {
 		g.logger.Error().Err(err).Msg("session manager close error")
 	}
 
-	g.logger.Info().Msg("gate server shutdown success")
+	g.logger.Info().Msg("gate server stop success")
 }
 
 // setupNetwork 初始化网络服务器配置
