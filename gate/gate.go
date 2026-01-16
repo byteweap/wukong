@@ -12,6 +12,7 @@ import (
 	"github.com/byteweap/wukong/contrib/broker/nats"
 	"github.com/byteweap/wukong/contrib/locator/redis"
 	"github.com/byteweap/wukong/contrib/network/websocket"
+	"github.com/byteweap/wukong/log"
 	"github.com/google/uuid"
 )
 
@@ -44,6 +45,10 @@ func New(opts ...Option) (*Gate, error) {
 		opt(o)
 	}
 
+	if o.logger != nil {
+		log.SetLogger(o.logger)
+	}
+
 	// 选项
 	var (
 		redisOpts   = o.redis
@@ -52,7 +57,7 @@ func New(opts ...Option) (*Gate, error) {
 	)
 
 	// 定位器
-	locator := redis.New(
+	loc := redis.New(
 		redisOpts,
 		locatorOpts.KeyFormat,
 		locatorOpts.GateFieldName,
@@ -60,7 +65,7 @@ func New(opts ...Option) (*Gate, error) {
 	)
 
 	// 消息代理
-	broker, err := nats.New(
+	bro, err := nats.New(
 		nats.Name(brokerOpts.Name),
 		nats.URLs(brokerOpts.URLs...),
 		nats.Token(brokerOpts.Token),
@@ -76,8 +81,8 @@ func New(opts ...Option) (*Gate, error) {
 	return &Gate{
 		opts:           o,
 		sessionManager: NewSessionManager(),
-		locator:        locator,
-		broker:         broker,
+		locator:        loc,
+		broker:         bro,
 	}, nil
 }
 

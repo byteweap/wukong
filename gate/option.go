@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/byteweap/wukong/log"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -56,7 +57,9 @@ type (
 
 	// options 选项
 	options struct {
-		ctx         context.Context
+		ctx    context.Context
+		logger log.Logger
+
 		application ApplicationOptions
 		network     NetworkOptions
 		locator     LocatorOptions
@@ -198,6 +201,12 @@ func WriteQueueSize(writeQueueSize int) Option {
 		if writeQueueSize > 0 {
 			o.network.WriteQueueSize = writeQueueSize
 		}
+	}
+}
+
+func Logger(logger log.Logger) Option {
+	return func(o *options) {
+		o.logger = logger
 	}
 }
 
