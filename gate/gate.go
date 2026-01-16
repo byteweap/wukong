@@ -189,11 +189,17 @@ func (g *Gate) registerService() error {
 	g.mu.Lock()
 	instance := g.instance
 	g.mu.Unlock()
-
-	if g.registry != nil && instance != nil {
-		return g.registry.Register(g.ctx, instance)
+	if g.registry == nil {
+		return nil
 	}
-	return nil
+	if instance == nil {
+		return fmt.Errorf("service instance is nil")
+	}
+
+	ctx, cancel := context.WithTimeout(g.ctx, g.opts.registry.RegistryTimeout)
+	defer cancel()
+
+	return g.registry.Register(ctx, instance)
 }
 
 // unregisterService 注销服务
@@ -203,8 +209,15 @@ func (g *Gate) unregisterService() error {
 	instance := g.instance
 	g.mu.Unlock()
 
-	if g.registry != nil && instance != nil {
-		return g.registry.Deregister(g.ctx, instance)
+	if g.registry == nil {
+		return nil
 	}
-	return nil
+	if instance == nil {
+		return fmt.Errorf("service instance is nil")
+	}
+
+	ctx, cancel := context.WithTimeout(g.ctx, g.opts.registry.RegistryTimeout)
+	defer cancel()
+
+	return g.registry.Deregister(ctx, instance)
 }

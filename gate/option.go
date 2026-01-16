@@ -49,6 +49,11 @@ type (
 		MaxPingsOutstanding int           // 最大心跳未响应次数, 默认 0, 无限重连
 	}
 
+	// RegistryOptions 注册选项
+	RegistryOptions struct {
+		RegistryTimeout time.Duration // 注册/注销 超时时间, 默认 10 秒
+	}
+
 	// options 选项
 	options struct {
 		ctx         context.Context
@@ -57,6 +62,7 @@ type (
 		locator     LocatorOptions
 		redis       redis.UniversalOptions
 		broker      BrokerOptions
+		registry    RegistryOptions
 	}
 )
 
@@ -104,6 +110,9 @@ func defaultOptions() *options {
 			MaxReconnects:       -1,
 			PingInterval:        20 * time.Second,
 			MaxPingsOutstanding: 3,
+		},
+		registry: RegistryOptions{
+			RegistryTimeout: 10 * time.Second,
 		},
 	}
 }
