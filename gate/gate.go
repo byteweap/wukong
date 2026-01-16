@@ -91,6 +91,7 @@ func New(opts ...Option) (*Gate, error) {
 // Run 启动网关服务器
 func (g *Gate) Run() error {
 
+	// 构建服务实例
 	g.buildInstance()
 
 	// 初始化网络配置
