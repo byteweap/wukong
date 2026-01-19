@@ -4,24 +4,21 @@ import (
 	"strings"
 )
 
-// Codec defines the interface Transport uses to encode and decode messages. Note
-// that implementations of this interface must be thread safe; a Codec's
-// methods can be called from concurrent goroutines.
+// Codec 定义编解码接口，用于序列化和反序列化消息。
+// 实现必须线程安全，方法可能被并发调用。
 type Codec interface {
-	// Name returns the name of the Codec implementation. The returned string
-	// will be used as part of content type in transmission. The result must be
-	// static; the result cannot change between calls.
+	// Name 返回编解码器名称，用作传输时的内容类型标识。
+	// 返回值必须静态不变。
 	Name() string
-	// Marshal returns the wire format of v.
+	// Marshal 将 v 序列化为字节数组。
 	Marshal(v any) ([]byte, error)
-	// Unmarshal parses the wire format into v.
+	// Unmarshal 将字节数组反序列化到 v。
 	Unmarshal(data []byte, v any) error
 }
 
 var registeredCodecs = make(map[string]Codec)
 
-// RegisterCodec registers the provided Codec for use with all Transport clients and
-// servers.
+// RegisterCodec 注册编解码器，供所有传输客户端和服务器使用。
 func RegisterCodec(codec Codec) {
 	if codec == nil {
 		panic("cannot register a nil Codec")
@@ -33,10 +30,9 @@ func RegisterCodec(codec Codec) {
 	registeredCodecs[contentSubtype] = codec
 }
 
-// GetCodec gets a registered Codec by content-subtype, or nil if no Codec is
-// registered for the content-subtype.
+// GetCodec 根据内容子类型获取已注册的编解码器，未注册则返回 nil。
 //
-// The content-subtype is expected to be lowercase.
+// content-subtype 应为小写。
 func GetCodec(contentSubtype string) Codec {
 	return registeredCodecs[contentSubtype]
 }

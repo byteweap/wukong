@@ -6,7 +6,7 @@ import (
 	"github.com/byteweap/wukong/encoding"
 )
 
-// Name is the name registered for the xml codec.
+// Name 是 XML 编解码器注册的名称。
 const Name = "xml"
 
 var c = &codec{}
@@ -15,7 +15,7 @@ func init() {
 	encoding.RegisterCodec(codec{})
 }
 
-// codec is a Codec implementation with xml.
+// codec 是基于 XML 的编解码器实现。
 type codec struct{}
 
 func (codec) Marshal(v any) ([]byte, error) {

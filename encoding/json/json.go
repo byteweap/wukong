@@ -9,17 +9,17 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// Name is the name registered for the json codec.
+// Name 是 JSON 编解码器注册的名称。
 const Name = "json"
 
 var (
 	c = &codec{}
 
-	// MarshalOptions is a configurable JSON format marshaller.
+	// MarshalOptions 可配置的 JSON 序列化选项。
 	MarshalOptions = protojson.MarshalOptions{
 		EmitUnpopulated: true,
 	}
-	// UnmarshalOptions is a configurable JSON format parser.
+	// UnmarshalOptions 可配置的 JSON 反序列化选项。
 	UnmarshalOptions = protojson.UnmarshalOptions{
 		DiscardUnknown: true,
 	}
@@ -29,7 +29,7 @@ func init() {
 	encoding.RegisterCodec(codec{})
 }
 
-// codec is a Codec implementation with json.
+// codec 是基于 JSON 的编解码器实现。
 type codec struct{}
 
 func (codec) Name() string {

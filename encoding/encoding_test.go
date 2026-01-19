@@ -20,7 +20,7 @@ func (c codec) Name() string {
 	return ""
 }
 
-// codec2 is a Codec implementation with xml.
+// codec2 是基于 XML 的编解码器实现。
 type codec2 struct{}
 
 func (codec2) Marshal(v any) ([]byte, error) {
@@ -62,11 +62,10 @@ func TestRegisterCodec(t *testing.T) {
 	}
 }
 
-// PanicTestFunc defines a func that should be passed to assert.Panics and assert.NotPanics
-// methods, and represents a simple func that takes no arguments, and returns nothing.
+// PanicTestFunc 定义用于测试 panic 的函数类型，无参数无返回值。
 type PanicTestFunc func()
 
-// didPanic returns true if the function passed to it panics. Otherwise, it returns false.
+// didPanic 检测函数是否发生 panic，返回是否 panic、panic 值和堆栈信息。
 func didPanic(f PanicTestFunc) (bool, any, string) {
 	didPanic := false
 	var message any
@@ -79,7 +78,7 @@ func didPanic(f PanicTestFunc) (bool, any, string) {
 			}
 		}()
 
-		// call the target function
+		// 调用目标函数
 		f()
 	}()
 
