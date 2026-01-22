@@ -1,26 +1,33 @@
 #!/bin/bash
+set -euo pipefail
 
 readonly directory=$(cd "$(dirname "$0")" && pwd)
-readonly modules=(
-    "./"
-    "game"
-    "gate"
-    "contrib/locator/redis"
-    "contrib/logger/logrus"
-    "contrib/logger/zap"
-    "contrib/logger/zerolog"
-    "contrib/network/websocket"
-    "contrib/network/tcp"
-    "contrib/network/kcp"
-    "contrib/registry/consul"
-    "contrib/registry/etcd"
-    "contrib/registry/nacos"
-    "contrib/registry/zookeeper"
+
+mapfile -t modules < <(
+  find "${directory}" -name go.mod -type f \
+    -not -path "*/.git/*" \
+    -print |
+  sed 's|/go.mod$||' |
+  sort
 )
 
-for module in ${modules[@]}
-do
+root_module="${directory}"
+sub_modules=()
+for module in "${modules[@]}"; do
+  if [[ "${module}" == "${root_module}" ]]; then
+    continue
+  fi
+  sub_modules+=("${module}")
+done
+
+for module in "${sub_modules[@]}"; do
+  echo "tidy: ${module#${directory}/}"
   cd "${module}"
   go mod tidy
-  cd "${directory}"
 done
+
+if [[ -f "${root_module}/go.mod" ]]; then
+  echo "tidy: ./"
+  cd "${root_module}"
+  go mod tidy
+fi

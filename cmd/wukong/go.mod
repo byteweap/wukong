@@ -1,6 +1,6 @@
 module github.com/byteweap/wukong/cmd/wukong
 
-go 1.25.4
+go 1.25.5
 
 replace github.com/byteweap/wukong => ../../
 

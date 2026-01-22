@@ -9,10 +9,6 @@ import (
 	"github.com/byteweap/wukong/component/locator"
 	"github.com/byteweap/wukong/component/network"
 	"github.com/byteweap/wukong/component/registry"
-	"github.com/byteweap/wukong/contrib/broker/nats"
-	"github.com/byteweap/wukong/contrib/locator/redis"
-	"github.com/byteweap/wukong/contrib/network/websocket"
-	"github.com/byteweap/wukong/log"
 	"github.com/google/uuid"
 )
 
@@ -45,44 +41,9 @@ func New(opts ...Option) (*Gate, error) {
 		opt(o)
 	}
 
-	if o.logger != nil {
-		log.SetLogger(o.logger)
-	}
-
-	// 选项
-	var (
-		redisOpts   = o.redis
-		locatorOpts = o.locator
-		brokerOpts  = o.broker
-	)
-
-	// 定位器
-	loc := redis.New(
-		redisOpts,
-		locatorOpts.KeyFormat,
-		locatorOpts.GateFieldName,
-		locatorOpts.GameFieldName,
-	)
-
-	// 消息代理
-	bro, err := nats.New(
-		nats.Name(brokerOpts.Name),
-		nats.URLs(brokerOpts.URLs...),
-		nats.Token(brokerOpts.Token),
-		nats.UserPass(brokerOpts.User, brokerOpts.Password),
-		nats.ConnectTimeout(brokerOpts.ConnectTimeout),
-		nats.Reconnect(brokerOpts.ReconnectWait, brokerOpts.MaxReconnects),
-		nats.Ping(brokerOpts.PingInterval, brokerOpts.MaxPingsOutstanding),
-	)
-	if err != nil {
-		return nil, err
-	}
-
 	return &Gate{
 		opts:           o,
 		sessionManager: NewSessionManager(),
-		locator:        loc,
-		broker:         bro,
 	}, nil
 }
 
@@ -104,7 +65,10 @@ func (g *Gate) Run() error {
 	g.netServer.Start()
 
 	// 停止网关服务器
-	g.Stop()
+	err := g.Stop()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -131,38 +95,7 @@ func (g *Gate) Stop() error {
 
 // setupNetwork 初始化网络服务器配置
 func (g *Gate) setupNetwork() {
-	options := g.opts.network
 
-	// 创建 WebSocket 服务器
-	ws := websocket.NewServer(
-		websocket.Addr(options.Addr),
-		websocket.Pattern(options.Pattern),
-		websocket.MaxMessageSize(options.MaxMessageSize),
-		websocket.MaxConnections(options.MaxConnections),
-		websocket.ReadTimeout(options.ReadTimeout),
-		websocket.WriteTimeout(options.WriteTimeout),
-		websocket.WriteQueueSize(options.WriteQueueSize),
-	)
-	ws.OnStart(func(addr, pattern string) {
-		//g.logger.Info().Msgf("websocket server start success, listening on %s%s", addr, pattern)
-	})
-
-	ws.OnStop(func() {
-		//g.logger.Info().Msg("websocket server stop success")
-	})
-	ws.OnConnect(func(conn network.Conn) {
-		//g.logger.Info().Msgf("connect success, id: %d, localAddr: %s, remoteAddr: %s", conn.ID(), conn.LocalAddr(), conn.RemoteAddr())
-	})
-	ws.OnDisconnect(func(conn network.Conn) {
-		//g.logger.Info().Msgf("disconnect success, id: %d, localAddr: %s, remoteAddr: %s", conn.ID(), conn.LocalAddr(), conn.RemoteAddr())
-	})
-	ws.OnBinaryMessage(func(conn network.Conn, msg []byte) {
-		g.handlerBinaryMessage(conn, msg)
-	})
-	ws.OnError(func(err error) {
-		//g.logger.Error().Err(err).Msg("websocket server err")
-	})
-	g.netServer = ws
 }
 
 // handlerBinaryMessage 处理接收到的二进制消息
@@ -201,7 +134,7 @@ func (g *Gate) registerService() error {
 		return fmt.Errorf("service instance is nil")
 	}
 
-	ctx, cancel := context.WithTimeout(g.ctx, g.opts.registry.RegistryTimeout)
+	ctx, cancel := context.WithTimeout(g.ctx, g.opts.registryTimeout)
 	defer cancel()
 
 	return g.registry.Register(ctx, instance)
@@ -222,7 +155,7 @@ func (g *Gate) unregisterService() error {
 		return fmt.Errorf("service instance is nil")
 	}
 
-	ctx, cancel := context.WithTimeout(g.ctx, g.opts.registry.RegistryTimeout)
+	ctx, cancel := context.WithTimeout(g.ctx, g.opts.registryTimeout)
 	defer cancel()
 
 	return g.registry.Deregister(ctx, instance)
