@@ -14,8 +14,6 @@ type Registry interface {
 	GetService(ctx context.Context, serviceName string) ([]*ServiceInstance, error)
 	// Watch 根据服务名创建监听器
 	Watch(ctx context.Context, serviceName string) (Watcher, error)
-	// Close 关闭,释放资源
-	Close() error
 }
 
 // Watcher 服务监听器接口
