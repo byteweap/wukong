@@ -8,6 +8,7 @@ require (
 	github.com/fluent/fluent-logger-golang v1.10.1
 	github.com/go-chassis/cari v0.9.0
 	github.com/go-chassis/sc-client v0.7.0
+	github.com/go-zookeeper/zk v1.0.3
 	github.com/gobwas/ws v1.4.0
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/google/uuid v1.6.0

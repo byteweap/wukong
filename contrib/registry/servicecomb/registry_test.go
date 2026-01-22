@@ -26,7 +26,7 @@ func (receiver *mockClient) WatchMicroService(_ string, _ func(*sc.MicroServiceI
 func (receiver *mockClient) FindMicroServiceInstances(_,
 	_, microServiceName, _ string, _ ...sc.CallOption,
 ) ([]*pb.MicroServiceInstance, error) {
-	if microServiceName == "KratosServicecomb" {
+	if microServiceName == "WuKongServicecomb" {
 		return []*pb.MicroServiceInstance{{}}, nil
 	}
 	return nil, nil
@@ -58,9 +58,9 @@ func TestRegistry(t *testing.T) {
 		t.Fatal(err)
 	}
 	svc := &registry.ServiceInstance{
-		Name:      "KratosServicecomb",
+		Name:      "WuKongServicecomb",
 		Version:   "0.0.1",
-		Metadata:  map[string]string{"app": "kratos"},
+		Metadata:  map[string]string{"app": "wukong"},
 		Endpoints: []string{"tcp://127.0.0.1:9000?isSecure=false"},
 		ID:        instanceID.String(),
 	}
@@ -98,7 +98,7 @@ func TestWatcher(t *testing.T) {
 	svc1 := &registry.ServiceInstance{
 		Name:      "WatcherTest",
 		Version:   "0.0.1",
-		Metadata:  map[string]string{"app": "kratos"},
+		Metadata:  map[string]string{"app": "wukong"},
 		Endpoints: []string{"tcp://127.0.0.1:9000?isSecure=false"},
 		ID:        instanceID1.String(),
 	}
