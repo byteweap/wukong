@@ -9,7 +9,7 @@ import (
 
 	"github.com/fluent/fluent-logger-golang/fluent"
 
-	"github.com/byteweap/wukong/log"
+	"github.com/byteweap/wukong/component/log"
 )
 
 var _ log.Logger = (*Logger)(nil)

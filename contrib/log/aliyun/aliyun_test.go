@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/byteweap/wukong/log"
+	"github.com/byteweap/wukong/component/log"
 )
 
 func TestWithEndpoint(t *testing.T) {

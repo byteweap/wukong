@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/byteweap/wukong/component/log"
 	"github.com/byteweap/wukong/component/registry"
-	"github.com/byteweap/wukong/log"
 	"github.com/polarismesh/polaris-go/api"
 	"github.com/polarismesh/polaris-go/pkg/config"
 	"github.com/polarismesh/polaris-go/pkg/model"

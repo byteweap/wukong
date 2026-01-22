@@ -7,7 +7,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/byteweap/wukong/log"
+	"github.com/byteweap/wukong/component/log"
 )
 
 func TestLoggerLog(t *testing.T) {

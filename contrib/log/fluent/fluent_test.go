@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/byteweap/wukong/log"
+	"github.com/byteweap/wukong/component/log"
 )
 
 func TestMain(m *testing.M) {

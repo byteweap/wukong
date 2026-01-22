@@ -12,8 +12,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/byteweap/wukong/component/log"
 	"github.com/byteweap/wukong/component/registry"
-	"github.com/byteweap/wukong/log"
 	"github.com/hashicorp/consul/api"
 )
 

@@ -1,7 +1,7 @@
 package zerolog
 
 import (
-	"github.com/byteweap/wukong/log"
+	"github.com/byteweap/wukong/component/log"
 	"github.com/rs/zerolog"
 )
 

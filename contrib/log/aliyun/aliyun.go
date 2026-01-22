@@ -10,7 +10,7 @@ import (
 	"github.com/aliyun/aliyun-log-go-sdk/producer"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/byteweap/wukong/log"
+	"github.com/byteweap/wukong/component/log"
 )
 
 // Logger see more detail https://github.com/aliyun/aliyun-log-go-sdk
