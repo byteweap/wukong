@@ -106,12 +106,12 @@ func TestFilterFuncWitchLoggerPrefix(t *testing.T) {
 			want:   "",
 		},
 		{
-			// Filtered value
+			// 需要脱敏的值
 			logger: NewFilter(With(NewStdLogger(buf), "caller", "caller"), FilterFunc(testFilterFuncWithLoggerPrefix)),
 			want:   "INFO caller=caller msg=msg filtered=***\n",
 		},
 		{
-			// NO prefix
+			// 无前缀
 			logger: NewFilter(With(NewStdLogger(buf)), FilterFunc(testFilterFuncWithLoggerPrefix)),
 			want:   "INFO msg=msg filtered=***\n",
 		},

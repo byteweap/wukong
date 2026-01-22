@@ -18,7 +18,7 @@ func TestWriterWrapper(t *testing.T) {
 	}{
 		{
 			w:                NewWriter(logger),
-			acceptLevel:      LevelInfo, // default level
+			acceptLevel:      LevelInfo, // 默认级别
 			acceptMessageKey: DefaultMessageKey,
 		},
 		{
@@ -28,7 +28,7 @@ func TestWriterWrapper(t *testing.T) {
 		},
 		{
 			w:                NewWriter(logger, WithWriteMessageKey("XxXxX")),
-			acceptLevel:      LevelInfo, // default level
+			acceptLevel:      LevelInfo, // 默认级别
 			acceptMessageKey: "XxXxX",
 		},
 		{

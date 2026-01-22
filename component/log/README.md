@@ -6,7 +6,7 @@
 
 ```go
 logger := log.NewStdLogger(os.Stdout)
-// fields & valuer
+// 字段与 Valuer
 logger = log.With(logger,
     "service.name", "helloworld",
     "service.version", "v1.0.0",
@@ -15,14 +15,14 @@ logger = log.With(logger,
 )
 logger.Log(log.LevelInfo, "key", "value")
 
-// helper
+// 辅助器
 helper := log.NewHelper(logger)
 helper.Log(log.LevelInfo, "key", "value")
 helper.Info("info message")
 helper.Infof("info %s", "message")
 helper.Infow("key", "value")
 
-// filter
+// 过滤器
 log := log.NewHelper(log.NewFilter(logger,
 	log.FilterLevel(log.LevelInfo),
 	log.FilterKey("foo"),
