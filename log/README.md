@@ -40,23 +40,23 @@ log.Error("warn log")
 ### zap
 
 ```shell
-go get -u github.com/byteweap/wukong/log/zap/v2
+go get -u github.com/byteweap/wukong/contrib/log/zap/v2
 ```
 
 ### logrus
 
 ```shell
-go get -u github.com/go-kratos/kratos/contrib/log/logrus
+go get -u github.com/byteweap/wukong/contrib/log/logrus
 ```
 
 ### fluent
 
 ```shell
-go get -u github.com/go-kratos/kratos/contrib/log/fluent
+go get -u github.com/byteweap/wukong/contrib/log/fluent
 ```
 
 ### aliyun
 
 ```shell
-go get -u github.com/go-kratos/kratos/contrib/log/aliyun
+go get -u github.com/byteweap/wukong/contrib/log/aliyun
 ```
