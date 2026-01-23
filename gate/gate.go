@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/byteweap/wukong/component/broker"
-	"github.com/byteweap/wukong/component/locator"
 	"github.com/byteweap/wukong/component/network"
 	"github.com/byteweap/wukong/component/registry"
 	"github.com/google/uuid"
@@ -14,18 +12,12 @@ import (
 
 // Gate websocket 网关
 type Gate struct {
-	ctx    context.Context
-	cancel context.CancelFunc
-
-	opts           *options          // 配置选项
-	netServer      network.Server    // 网络服务器（WebSocket）
-	locator        locator.Locator   // 玩家位置定位器
-	broker         broker.Broker     // 消息传输代理
-	sessionManager *SessionManager   // 会话管理器
-	registry       registry.Registry // 服务注册与发现器
-
-	mu       sync.Mutex
-	instance *registry.ServiceInstance // 服务实例
+	opts           *options // 配置选项
+	ctx            context.Context
+	cancel         context.CancelFunc
+	sessionManager *SessionManager // 会话管理器
+	mu             sync.Mutex
+	instance       *registry.ServiceInstance // 服务实例
 }
 
 // New 创建新的网关服务器实例
@@ -62,7 +54,7 @@ func (g *Gate) Run() error {
 	}
 
 	// 启动网络服务器 (阻塞)
-	g.netServer.Start()
+	g.opts.netServer.Start()
 
 	// 停止网关服务器
 	err := g.Stop()
@@ -76,13 +68,13 @@ func (g *Gate) Run() error {
 // Stop 关闭网关服务器
 func (g *Gate) Stop() error {
 
-	g.netServer.Stop()
+	g.opts.netServer.Stop()
 
-	if err := g.broker.Close(); err != nil {
+	if err := g.opts.broker.Close(); err != nil {
 		return fmt.Errorf("broker close error: %w", err)
 	}
 
-	if err := g.locator.Close(); err != nil {
+	if err := g.opts.locator.Close(); err != nil {
 		return fmt.Errorf("locator close error: %w", err)
 	}
 
@@ -126,7 +118,7 @@ func (g *Gate) registerService() error {
 	g.mu.Lock()
 	instance := g.instance
 	g.mu.Unlock()
-	if g.registry == nil {
+	if g.opts.registry == nil {
 		// 如果注册器为空，则不进行注册
 		return nil
 	}
@@ -137,7 +129,7 @@ func (g *Gate) registerService() error {
 	ctx, cancel := context.WithTimeout(g.ctx, g.opts.registryTimeout)
 	defer cancel()
 
-	return g.registry.Register(ctx, instance)
+	return g.opts.registry.Register(ctx, instance)
 }
 
 // unregisterService 注销服务
@@ -147,7 +139,7 @@ func (g *Gate) unregisterService() error {
 	instance := g.instance
 	g.mu.Unlock()
 
-	if g.registry == nil {
+	if g.opts.registry == nil {
 		// 如果注册器为空，则不进行注销
 		return nil
 	}
@@ -158,5 +150,5 @@ func (g *Gate) unregisterService() error {
 	ctx, cancel := context.WithTimeout(g.ctx, g.opts.registryTimeout)
 	defer cancel()
 
-	return g.registry.Deregister(ctx, instance)
+	return g.opts.registry.Deregister(ctx, instance)
 }

@@ -4,7 +4,11 @@ import (
 	"context"
 	"time"
 
+	"github.com/byteweap/wukong/component/broker"
+	"github.com/byteweap/wukong/component/locator"
 	"github.com/byteweap/wukong/component/log"
+	"github.com/byteweap/wukong/component/network"
+	"github.com/byteweap/wukong/component/registry"
 )
 
 type (
@@ -20,9 +24,13 @@ type (
 	// options 选项
 	options struct {
 		ctx             context.Context
-		logger          log.Logger
 		application     ApplicationOptions
-		registryTimeout time.Duration
+		logger          log.Logger
+		netServer       network.Server    // 网络服务器
+		locator         locator.Locator   // 玩家位置定位器
+		broker          broker.Broker     // 消息传输代理
+		registry        registry.Registry // 服务注册与发现器
+		registryTimeout time.Duration     // 服务注册与发现超时时间
 	}
 )
 
@@ -76,8 +84,27 @@ func Logger(logger log.Logger) Option {
 	}
 }
 
-func RegistryTimeout(registryTimeout time.Duration) Option {
+func NetServer(netServer network.Server) Option {
 	return func(o *options) {
+		o.netServer = netServer
+	}
+}
+
+func Locator(locator locator.Locator) Option {
+	return func(o *options) {
+		o.locator = locator
+	}
+}
+
+func Broker(broker broker.Broker) Option {
+	return func(o *options) {
+		o.broker = broker
+	}
+}
+
+func Registry(registry registry.Registry, registryTimeout time.Duration) Option {
+	return func(o *options) {
+		o.registry = registry
 		o.registryTimeout = registryTimeout
 	}
 }
