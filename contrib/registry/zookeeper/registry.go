@@ -11,29 +11,7 @@ import (
 	"golang.org/x/sync/singleflight"
 )
 
-// Option is etcd registry option.
-type Option func(o *options)
-
-type options struct {
-	namespace string
-	user      string
-	password  string
-}
-
-// WithRootPath with registry root path.
-func WithRootPath(path string) Option {
-	return func(o *options) { o.namespace = path }
-}
-
-// WithDigestACL with registry password.
-func WithDigestACL(user string, password string) Option {
-	return func(o *options) {
-		o.user = user
-		o.password = password
-	}
-}
-
-// Registry is consul registry
+// Registry 是 zookeeper 注册中心实现
 type Registry struct {
 	opts *options
 	conn *zk.Conn
@@ -42,10 +20,6 @@ type Registry struct {
 }
 
 var _ registry.Registry = (*Registry)(nil)
-
-func (r *Registry) ID() string {
-	return "zookeeper"
-}
 
 func New(conn *zk.Conn, opts ...Option) *Registry {
 	options := &options{
@@ -58,6 +32,10 @@ func New(conn *zk.Conn, opts ...Option) *Registry {
 		opts: options,
 		conn: conn,
 	}
+}
+
+func (r *Registry) ID() string {
+	return "zookeeper"
 }
 
 func (r *Registry) Register(_ context.Context, service *registry.ServiceInstance) error {
@@ -83,7 +61,7 @@ func (r *Registry) Register(_ context.Context, service *registry.ServiceInstance
 	return nil
 }
 
-// Deregister registry service to zookeeper.
+// Deregister 从 zookeeper 注销服务
 func (r *Registry) Deregister(ctx context.Context, service *registry.ServiceInstance) error {
 	ch := make(chan error, 1)
 	servicePath := path.Join(r.opts.namespace, service.Name, service.ID)
@@ -100,8 +78,9 @@ func (r *Registry) Deregister(ctx context.Context, service *registry.ServiceInst
 	return err
 }
 
-// GetService get services from zookeeper
+// GetService 从 zookeeper 获取服务
 func (r *Registry) GetService(_ context.Context, serviceName string) ([]*registry.ServiceInstance, error) {
+
 	instances, err, _ := r.group.Do(serviceName, func() (any, error) {
 		serviceNamePath := path.Join(r.opts.namespace, serviceName)
 		servicesID, _, err := r.conn.Children(serviceNamePath)
@@ -126,6 +105,7 @@ func (r *Registry) GetService(_ context.Context, serviceName string) ([]*registr
 	if err != nil {
 		return nil, err
 	}
+
 	return instances.([]*registry.ServiceInstance), nil
 }
 
@@ -134,14 +114,16 @@ func (r *Registry) Watch(ctx context.Context, serviceName string) (registry.Watc
 	return newWatcher(ctx, prefix, serviceName, r.conn)
 }
 
-// ensureName ensure node exists, if not exist, create and set data
+// ensureName 确保节点存在，不存在则创建并写入数据
 func (r *Registry) ensureName(path string, data []byte, flags int32) error {
+
 	exists, stat, err := r.conn.Exists(path)
 	if err != nil {
 		return err
 	}
-	// ephemeral nodes handling after restart
-	// fixes a race condition if the server crashes without using CreateProtectedEphemeralSequential()
+
+	// 处理临时节点重连问题
+	// 避免未使用 CreateProtectedEphemeralSequential 时的竞态
 	if flags&zk.FlagEphemeral == zk.FlagEphemeral {
 		err = r.conn.Delete(path, stat.Version)
 		if err != nil && !errors.Is(err, zk.ErrNoNode) {
@@ -162,16 +144,18 @@ func (r *Registry) ensureName(path string, data []byte, flags int32) error {
 	return nil
 }
 
-// reRegister re-register data node info when bad connection recovered
+// reRegister 连接恢复后重新注册数据节点
 func (r *Registry) reRegister(path string, data []byte) {
+
 	sessionID := r.conn.SessionID()
 	ticker := time.NewTicker(time.Second)
+
 	defer ticker.Stop()
 	for range ticker.C {
 		cur := r.conn.SessionID()
-		// sessionID changed
+		// sessionID 发生变化
 		if cur > 0 && sessionID != cur {
-			// re-ensureName
+			// 重新确保节点存在
 			if err := r.ensureName(path, data, zk.FlagEphemeral); err != nil {
 				return
 			}

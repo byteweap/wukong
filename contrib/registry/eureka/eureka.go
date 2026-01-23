@@ -28,7 +28,7 @@ func NewAPI(ctx context.Context, client *Client, refreshInterval time.Duration) 
 		refreshInterval: refreshInterval,
 	}
 
-	// it is required to broadcast for the first time
+	// 首次需要广播一次，确保订阅方能拿到初始数据
 	go e.broadcast()
 
 	go e.refresh(ctx)
@@ -93,7 +93,7 @@ func (e *API) Register(ctx context.Context, serviceName string, endpoints ...End
 	return nil
 }
 
-// Deregister ctx is the same as register ctx
+// Deregister 的 ctx 与 Register 保持一致
 func (e *API) Deregister(ctx context.Context, endpoints []Endpoint) error {
 	for _, ep := range endpoints {
 		if err := e.cli.Deregister(ctx, ep.AppID, ep.InstanceID); err != nil {
@@ -122,7 +122,7 @@ func (e *API) GetService(ctx context.Context, serverName string) []Instance {
 		return ins
 	}
 
-	// if not in allInstances of API, you can try to obtain it separately again
+	// 如果未命中缓存，可再单独拉取一次
 	return e.cli.FetchAppUpInstances(ctx, appID)
 }
 

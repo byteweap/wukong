@@ -10,25 +10,6 @@ import (
 	"github.com/byteweap/wukong/component/registry"
 )
 
-type Option func(o *Registry)
-
-// WithContext with registry context.
-func WithContext(ctx context.Context) Option {
-	return func(o *Registry) { o.ctx = ctx }
-}
-
-func WithHeartbeat(interval time.Duration) Option {
-	return func(o *Registry) { o.heartbeatInterval = interval }
-}
-
-func WithRefresh(interval time.Duration) Option {
-	return func(o *Registry) { o.refreshInterval = interval }
-}
-
-func WithEurekaPath(path string) Option {
-	return func(o *Registry) { o.eurekaPath = path }
-}
-
 type Registry struct {
 	ctx               context.Context
 	api               *API
@@ -64,18 +45,18 @@ func New(eurekaUrls []string, opts ...Option) (*Registry, error) {
 	return r, nil
 }
 
-// Register registers the service instance.
-// The context here is exclusive to each registry instance.
+// Register 注册服务实例
+// 这里的 ctx 只用于当前 Registry 实例
 func (r *Registry) Register(ctx context.Context, service *registry.ServiceInstance) error {
 	return r.api.Register(ctx, service.Name, r.Endpoints(service)...)
 }
 
-// Deregister deregisters the service instance from Eureka.
+// Deregister 从 Eureka 注销服务实例
 func (r *Registry) Deregister(ctx context.Context, service *registry.ServiceInstance) error {
 	return r.api.Deregister(ctx, r.Endpoints(service))
 }
 
-// GetService gets services from Eureka.
+// GetService 从 Eureka 获取服务
 func (r *Registry) GetService(ctx context.Context, serviceName string) ([]*registry.ServiceInstance, error) {
 	instances := r.api.GetService(ctx, serviceName)
 	items := make([]*registry.ServiceInstance, 0, len(instances))
@@ -92,7 +73,7 @@ func (r *Registry) GetService(ctx context.Context, serviceName string) ([]*regis
 	return items, nil
 }
 
-// Watch creates a watcher for the service. It uses an independent context.
+// Watch 创建服务监听器，使用独立的 ctx
 func (r *Registry) Watch(ctx context.Context, serviceName string) (registry.Watcher, error) {
 	return newWatch(ctx, r.api, serviceName)
 }

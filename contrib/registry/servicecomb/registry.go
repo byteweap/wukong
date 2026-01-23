@@ -34,26 +34,12 @@ const (
 	envVar           = "CAS_ENVIRONMENT_ID"
 	appIDVar         = "CAS_APPLICATION_NAME"
 	frameWorkName    = "wukong"
-	frameWorkVersion = "v2"
+	frameWorkVersion = "v1"
 )
 
-type RegistryClient interface {
-	GetMicroServiceID(appID, microServiceName, version, env string, opts ...sc.CallOption) (string, error)
-	FindMicroServiceInstances(consumerID, appID, microServiceName, versionRule string, opts ...sc.CallOption) ([]*discovery.MicroServiceInstance, error)
-	RegisterService(microService *discovery.MicroService) (string, error)
-	RegisterMicroServiceInstance(microServiceInstance *discovery.MicroServiceInstance) (string, error)
-	Heartbeat(microServiceID, microServiceInstanceID string) (bool, error)
-	UnregisterMicroServiceInstance(microServiceID, microServiceInstanceID string) (bool, error)
-	WatchMicroService(microServiceID string, callback func(*sc.MicroServiceInstanceChangedEvent)) error
-}
-
-// Registry is servicecomb registry.
+// Registry 是 servicecomb 注册中心实现
 type Registry struct {
 	cli RegistryClient
-}
-
-func (r *Registry) ID() string {
-	return "servicecomb"
 }
 
 var _ registry.Registry = (*Registry)(nil)
@@ -63,6 +49,10 @@ func NewRegistry(client RegistryClient) *Registry {
 		cli: client,
 	}
 	return r
+}
+
+func (r *Registry) ID() string {
+	return "servicecomb"
 }
 
 func (r *Registry) GetService(_ context.Context, serviceName string) ([]*registry.ServiceInstance, error) {
@@ -99,9 +89,9 @@ func (r *Registry) Register(_ context.Context, svcIns *registry.ServiceInstance)
 		Environment: env,
 		Framework:   fw,
 	}
-	// attempt to register the microservice
+	// 尝试注册微服务
 	sid, err := r.cli.RegisterService(ms)
-	// if it fails, it may indicate that the service is already registered
+	// 失败时可能是服务已存在
 	if err != nil {
 		registryException, ok := err.(*sc.RegistryException)
 		if !ok {
@@ -112,7 +102,7 @@ func (r *Registry) Register(_ context.Context, svcIns *registry.ServiceInstance)
 		if parseErr != nil {
 			return parseErr
 		}
-		// if the error code is not specific to the service already existing, return the current error
+		// 错误码不是服务已存在时直接返回
 		if svcErr.Code != discovery.ErrServiceAlreadyExists {
 			return err
 		}
@@ -121,7 +111,7 @@ func (r *Registry) Register(_ context.Context, svcIns *registry.ServiceInstance)
 			return err
 		}
 	} else {
-		// save the service ID for the newly registered service
+		// 记录新注册服务的 ID
 		curServiceID = sid
 	}
 	if svcIns.ID == "" {

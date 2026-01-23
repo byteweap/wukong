@@ -130,7 +130,7 @@ func TestWatcher(t *testing.T) {
 		}
 	})
 	t.Run("Watch deregister event, expected: success", func(t *testing.T) {
-		// Deregister instance1.
+		// 注销 instance1
 		err = r.Deregister(ctx, svc1)
 		if err != nil {
 			t.Fatal(err)

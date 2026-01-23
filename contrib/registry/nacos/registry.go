@@ -18,43 +18,7 @@ import (
 
 var ErrServiceInstanceNameEmpty = errors.New("wukong/nacos: ServiceInstance.Name can not be empty")
 
-type options struct {
-	prefix  string
-	weight  float64
-	cluster string
-	group   string
-	kind    string
-}
-
-// Option is nacos option.
-type Option func(o *options)
-
-// WithPrefix with prefix path.
-func WithPrefix(prefix string) Option {
-	return func(o *options) { o.prefix = prefix }
-}
-
-// WithWeight with weight option.
-func WithWeight(weight float64) Option {
-	return func(o *options) { o.weight = weight }
-}
-
-// WithCluster with cluster option.
-func WithCluster(cluster string) Option {
-	return func(o *options) { o.cluster = cluster }
-}
-
-// WithGroup with group option.
-func WithGroup(group string) Option {
-	return func(o *options) { o.group = group }
-}
-
-// WithDefaultKind with default kind option.
-func WithDefaultKind(kind string) Option {
-	return func(o *options) { o.kind = kind }
-}
-
-// Registry is nacos registry.
+// Registry 是 nacos 注册中心实现
 type Registry struct {
 	opts options
 	cli  naming_client.INamingClient
@@ -66,7 +30,7 @@ func (r *Registry) ID() string {
 
 var _ registry.Registry = (*Registry)(nil)
 
-// New new a nacos registry.
+// New 创建 nacos 注册中心
 func New(cli naming_client.INamingClient, opts ...Option) (r *Registry) {
 	op := options{
 		prefix:  "/microservices",
@@ -84,7 +48,7 @@ func New(cli naming_client.INamingClient, opts ...Option) (r *Registry) {
 	}
 }
 
-// Register the registration.
+// Register 注册服务
 func (r *Registry) Register(_ context.Context, si *registry.ServiceInstance) error {
 	if si.Name == "" {
 		return ErrServiceInstanceNameEmpty
@@ -139,7 +103,7 @@ func (r *Registry) Register(_ context.Context, si *registry.ServiceInstance) err
 	return nil
 }
 
-// Deregister the registration.
+// Deregister 注销服务
 func (r *Registry) Deregister(_ context.Context, service *registry.ServiceInstance) error {
 	for _, endpoint := range service.Endpoints {
 		u, err := url.Parse(endpoint)
@@ -168,12 +132,12 @@ func (r *Registry) Deregister(_ context.Context, service *registry.ServiceInstan
 	return nil
 }
 
-// Watch creates a watcher according to the service name.
+// Watch 按服务名创建 watcher
 func (r *Registry) Watch(ctx context.Context, serviceName string) (registry.Watcher, error) {
 	return newWatcher(ctx, r.cli, serviceName, r.opts.group, r.opts.kind, []string{r.opts.cluster})
 }
 
-// GetService return the service instances in memory according to the service name.
+// GetService 按服务名获取实例列表
 func (r *Registry) GetService(_ context.Context, serviceName string) ([]*registry.ServiceInstance, error) {
 	res, err := r.cli.SelectInstances(vo.SelectInstancesParam{
 		ServiceName: serviceName,

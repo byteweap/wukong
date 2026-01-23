@@ -21,7 +21,7 @@ func TestRegistry_Register(t *testing.T) {
 	sc := testServerConfig
 
 	cc := constant.ClientConfig{
-		NamespaceId:         "public", // namespace id
+		NamespaceId:         "public", // 命名空间 id
 		TimeoutMs:           5000,
 		NotLoadCacheAtStart: true,
 		LogDir:              "/tmp/nacos/log",
@@ -30,7 +30,7 @@ func TestRegistry_Register(t *testing.T) {
 		LogLevel:            "debug",
 	}
 
-	// a more graceful way to create naming client
+	// 更稳妥的方式创建 naming client
 	client, err := clients.NewNamingClient(
 		vo.NacosClientParam{
 			ClientConfig:  &cc,
@@ -235,7 +235,7 @@ func TestRegistry_Deregister(t *testing.T) {
 				sc := testServerConfig
 
 				cc := constant.ClientConfig{
-					NamespaceId:         "public", // namespace id
+					NamespaceId:         "public", // 命名空间 id
 					TimeoutMs:           5000,
 					NotLoadCacheAtStart: true,
 					LogDir:              "/tmp/nacos/log",
@@ -244,7 +244,7 @@ func TestRegistry_Deregister(t *testing.T) {
 					LogLevel:            "debug",
 				}
 
-				// a more graceful way to create naming client
+				// 更稳妥的方式创建 naming client
 				client, err := clients.NewNamingClient(
 					vo.NacosClientParam{
 						ClientConfig:  &cc,
@@ -293,7 +293,7 @@ func TestRegistry_Deregister(t *testing.T) {
 			sc := testServerConfig
 
 			cc := constant.ClientConfig{
-				NamespaceId:         "public", // namespace id
+				NamespaceId:         "public", // 命名空间 id
 				TimeoutMs:           5000,
 				NotLoadCacheAtStart: true,
 				LogDir:              "/tmp/nacos/log",
@@ -302,7 +302,7 @@ func TestRegistry_Deregister(t *testing.T) {
 				LogLevel:            "debug",
 			}
 
-			// a more graceful way to create naming client
+			// 更稳妥的方式创建 naming client
 			client, err := clients.NewNamingClient(
 				vo.NacosClientParam{
 					ClientConfig:  &cc,
@@ -327,7 +327,7 @@ func TestRegistry_GetService(t *testing.T) {
 	sc := testServerConfig
 
 	cc := constant.ClientConfig{
-		NamespaceId:         "public", // namespace id
+		NamespaceId:         "public", // 命名空间 id
 		TimeoutMs:           5000,
 		NotLoadCacheAtStart: true,
 		LogDir:              "/tmp/nacos/log",
@@ -336,7 +336,7 @@ func TestRegistry_GetService(t *testing.T) {
 		LogLevel:            "debug",
 	}
 
-	// a more graceful way to create naming client
+	// 更稳妥的方式创建 naming client
 	client, err := clients.NewNamingClient(
 		vo.NacosClientParam{
 			ClientConfig:  &cc,
@@ -440,7 +440,7 @@ func TestRegistry_Watch(t *testing.T) {
 	sc := testServerConfig
 
 	cc := constant.ClientConfig{
-		NamespaceId:         "public", // namespace id
+		NamespaceId:         "public", // 命名空间 id
 		TimeoutMs:           5000,
 		NotLoadCacheAtStart: true,
 		LogDir:              "/tmp/nacos/log",
@@ -449,7 +449,7 @@ func TestRegistry_Watch(t *testing.T) {
 		LogLevel:            "debug",
 	}
 
-	// a more graceful way to create naming client
+	// 更稳妥的方式创建 naming client
 	client, err := clients.NewNamingClient(
 		vo.NacosClientParam{
 			ClientConfig:  &cc,

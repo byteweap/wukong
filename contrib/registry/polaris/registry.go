@@ -15,49 +15,10 @@ import (
 	"github.com/polarismesh/polaris-go/pkg/model"
 )
 
-// _instanceIDSeparator . Instance id Separator.
+// _instanceIDSeparator 用于拼接实例 ID
 const _instanceIDSeparator = "-"
 
-type options struct {
-	// required, namespace in polaris
-	Namespace string
-
-	// required, service access token
-	ServiceToken string
-
-	// optional, protocol in polaris. Default value is nil, it means use protocol config in service
-	Protocol *string
-
-	// service weight in polaris. Default value is 100, 0 <= weight <= 10000
-	Weight int
-
-	// service priority. Default value is 0. The smaller the value, the lower the priority
-	Priority int
-
-	// To show service is healthy or not. Default value is True .
-	Healthy bool
-
-	// Heartbeat enable .Not in polaris . Default value is True.
-	Heartbeat bool
-
-	// To show service is isolate or not. Default value is False .
-	Isolate bool
-
-	// TTL timeout. if node needs to use heartbeat to report,required. If not set,server will throw ErrorCode-400141
-	TTL int
-
-	// optional, Timeout for single query. Default value is global config
-	// Total is (1+RetryCount) * Timeout
-	Timeout time.Duration
-
-	// optional, retry count. Default value is global config
-	RetryCount int
-}
-
-// Option is polaris option.
-type Option func(o *options)
-
-// Registry is polaris registry.
+// Registry 是 polaris 注册中心实现
 type Registry struct {
 	opt      options
 	provider api.ProviderAPI
@@ -68,56 +29,6 @@ var _ registry.Registry = (*Registry)(nil)
 
 func (r *Registry) ID() string {
 	return "polaris"
-}
-
-// WithNamespace with Namespace option.
-func WithNamespace(namespace string) Option {
-	return func(o *options) { o.Namespace = namespace }
-}
-
-// WithServiceToken with ServiceToken option.
-func WithServiceToken(serviceToken string) Option {
-	return func(o *options) { o.ServiceToken = serviceToken }
-}
-
-// WithProtocol with Protocol option.
-func WithProtocol(protocol string) Option {
-	return func(o *options) { o.Protocol = &protocol }
-}
-
-// WithWeight with Weight option.
-func WithWeight(weight int) Option {
-	return func(o *options) { o.Weight = weight }
-}
-
-// WithHealthy with Healthy option.
-func WithHealthy(healthy bool) Option {
-	return func(o *options) { o.Healthy = healthy }
-}
-
-// WithIsolate with Isolate option.
-func WithIsolate(isolate bool) Option {
-	return func(o *options) { o.Isolate = isolate }
-}
-
-// WithTTL with TTL option.
-func WithTTL(TTL int) Option {
-	return func(o *options) { o.TTL = TTL }
-}
-
-// WithTimeout with Timeout option.
-func WithTimeout(timeout time.Duration) Option {
-	return func(o *options) { o.Timeout = timeout }
-}
-
-// WithRetryCount with RetryCount option.
-func WithRetryCount(retryCount int) Option {
-	return func(o *options) { o.RetryCount = retryCount }
-}
-
-// WithHeartbeat . with Heartbeat option.
-func WithHeartbeat(heartbeat bool) Option {
-	return func(o *options) { o.Heartbeat = heartbeat }
 }
 
 func NewRegistry(provider api.ProviderAPI, consumer api.ConsumerAPI, opts ...Option) (r *Registry) {
@@ -156,29 +67,29 @@ func NewRegistryWithConfig(conf config.Configuration, opts ...Option) (r *Regist
 	return NewRegistry(provider, consumer, opts...)
 }
 
-// Register the registration.
+// Register 注册服务
 func (r *Registry) Register(_ context.Context, serviceInstance *registry.ServiceInstance) error {
 	ids := make([]string, 0, len(serviceInstance.Endpoints))
 	for _, endpoint := range serviceInstance.Endpoints {
-		// get url
+		// 解析 url
 		u, err := url.Parse(endpoint)
 		if err != nil {
 			return err
 		}
 
-		// get host and port
+		// 解析 host 与 port
 		host, port, err := net.SplitHostPort(u.Host)
 		if err != nil {
 			return err
 		}
 
-		// port to int
+		// 端口转为整数
 		portNum, err := strconv.Atoi(port)
 		if err != nil {
 			return err
 		}
 
-		// medata
+		// 组装 metadata
 		var rmd map[string]string
 		if serviceInstance.Metadata == nil {
 			rmd = map[string]string{
@@ -193,7 +104,7 @@ func (r *Registry) Register(_ context.Context, serviceInstance *registry.Service
 			rmd["kind"] = u.Scheme
 			rmd["version"] = serviceInstance.Version
 		}
-		// Register
+		// 调用注册
 		service, err := r.provider.Register(
 			&api.InstanceRegisterRequest{
 				InstanceRegisterRequest: model.InstanceRegisterRequest{
@@ -220,7 +131,7 @@ func (r *Registry) Register(_ context.Context, serviceInstance *registry.Service
 		instanceID := service.InstanceID
 
 		if r.opt.Heartbeat {
-			// start heartbeat report
+			// 启动心跳上报
 			go func() {
 				ticker := time.NewTicker(time.Second * time.Duration(r.opt.TTL))
 				defer ticker.Stop()
@@ -250,33 +161,33 @@ func (r *Registry) Register(_ context.Context, serviceInstance *registry.Service
 
 		ids = append(ids, instanceID)
 	}
-	// need to set InstanceID for Deregister
+	// 设置 InstanceID 供注销使用
 	serviceInstance.ID = strings.Join(ids, _instanceIDSeparator)
 	return nil
 }
 
-// Deregister the registration.
+// Deregister 注销服务
 func (r *Registry) Deregister(_ context.Context, serviceInstance *registry.ServiceInstance) error {
 	split := strings.Split(serviceInstance.ID, _instanceIDSeparator)
 	for i, endpoint := range serviceInstance.Endpoints {
-		// get url
+		// 解析 url
 		u, err := url.Parse(endpoint)
 		if err != nil {
 			return err
 		}
 
-		// get host and port
+		// 解析 host 与 port
 		host, port, err := net.SplitHostPort(u.Host)
 		if err != nil {
 			return err
 		}
 
-		// port to int
+		// 端口转为整数
 		portNum, err := strconv.Atoi(port)
 		if err != nil {
 			return err
 		}
-		// Deregister
+		// 调用注销
 		err = r.provider.Deregister(
 			&api.InstanceDeRegisterRequest{
 				InstanceDeRegisterRequest: model.InstanceDeRegisterRequest{
@@ -298,9 +209,9 @@ func (r *Registry) Deregister(_ context.Context, serviceInstance *registry.Servi
 	return nil
 }
 
-// GetService return the service instances in memory according to the service name.
+// GetService 按服务名获取实例列表
 func (r *Registry) GetService(_ context.Context, serviceName string) ([]*registry.ServiceInstance, error) {
-	// get all instances
+	// 获取全部实例
 	instancesResponse, err := r.consumer.GetAllInstances(&api.GetAllInstancesRequest{
 		GetAllInstancesRequest: model.GetAllInstancesRequest{
 			Service:    serviceName,
@@ -318,101 +229,9 @@ func (r *Registry) GetService(_ context.Context, serviceName string) ([]*registr
 	return serviceInstances, nil
 }
 
-// Watch creates a watcher according to the service name.
+// Watch 按服务名创建 watcher
 func (r *Registry) Watch(ctx context.Context, serviceName string) (registry.Watcher, error) {
 	return newWatcher(ctx, r.opt.Namespace, serviceName, r.consumer)
-}
-
-type Watcher struct {
-	ServiceName      string
-	Namespace        string
-	Ctx              context.Context
-	Cancel           context.CancelFunc
-	Channel          <-chan model.SubScribeEvent
-	ServiceInstances []*registry.ServiceInstance
-	first            bool
-}
-
-func newWatcher(ctx context.Context, namespace string, serviceName string, consumer api.ConsumerAPI) (*Watcher, error) {
-	watchServiceResponse, err := consumer.WatchService(&api.WatchServiceRequest{
-		WatchServiceRequest: model.WatchServiceRequest{
-			Key: model.ServiceKey{
-				Namespace: namespace,
-				Service:   serviceName,
-			},
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	w := &Watcher{
-		Namespace:        namespace,
-		ServiceName:      serviceName,
-		first:            true,
-		Channel:          watchServiceResponse.EventChannel,
-		ServiceInstances: instancesToServiceInstances(watchServiceResponse.GetAllInstancesResp.GetInstances()),
-	}
-	w.Ctx, w.Cancel = context.WithCancel(ctx)
-	return w, nil
-}
-
-// Next returns services in the following two cases:
-// 1.the first time to watch and the service instance list is not empty.
-// 2.any service instance changes found.
-// if the above two conditions are not met, it will block until context deadline exceeded or canceled
-func (w *Watcher) Next() ([]*registry.ServiceInstance, error) {
-	if w.first {
-		w.first = false
-		return w.ServiceInstances, nil
-	}
-	select {
-	case <-w.Ctx.Done():
-		return nil, w.Ctx.Err()
-	case event := <-w.Channel:
-		if event.GetSubScribeEventType() == model.EventInstance {
-			// this always true, but we need to check it to make sure EventType not change
-			if instanceEvent, ok := event.(*model.InstanceEvent); ok {
-				// handle DeleteEvent
-				if instanceEvent.DeleteEvent != nil {
-					for _, instance := range instanceEvent.DeleteEvent.Instances {
-						for i, serviceInstance := range w.ServiceInstances {
-							if serviceInstance.ID == instance.GetId() {
-								// remove equal
-								if len(w.ServiceInstances) <= 1 {
-									w.ServiceInstances = w.ServiceInstances[:0]
-									continue
-								}
-								w.ServiceInstances = append(w.ServiceInstances[:i], w.ServiceInstances[i+1:]...)
-							}
-						}
-					}
-				}
-				// handle UpdateEvent
-				if instanceEvent.UpdateEvent != nil {
-					for i, serviceInstance := range w.ServiceInstances {
-						for _, update := range instanceEvent.UpdateEvent.UpdateList {
-							if serviceInstance.ID == update.Before.GetId() {
-								w.ServiceInstances[i] = instanceToServiceInstance(update.After)
-							}
-						}
-					}
-				}
-				// handle AddEvent
-				if instanceEvent.AddEvent != nil {
-					w.ServiceInstances = append(w.ServiceInstances, instancesToServiceInstances(instanceEvent.AddEvent.Instances)...)
-				}
-			}
-			return w.ServiceInstances, nil
-		}
-	}
-	return w.ServiceInstances, nil
-}
-
-// Stop close the watcher.
-func (w *Watcher) Stop() error {
-	w.Cancel()
-	return nil
 }
 
 func instancesToServiceInstances(instances []model.Instance) []*registry.ServiceInstance {
@@ -427,7 +246,7 @@ func instancesToServiceInstances(instances []model.Instance) []*registry.Service
 
 func instanceToServiceInstance(instance model.Instance) *registry.ServiceInstance {
 	metadata := instance.GetMetadata()
-	// Usually, it won't fail in wukong if register correctly
+	// 正常注册情况下不会出错
 	kind := ""
 	if k, ok := metadata["kind"]; ok {
 		kind = k

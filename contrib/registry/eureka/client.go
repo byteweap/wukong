@@ -36,7 +36,7 @@ type Endpoint struct {
 	MetaData       map[string]string
 }
 
-// ApplicationsRootResponse for /eureka/apps
+// ApplicationsRootResponse 对应 /eureka/apps 响应
 type ApplicationsRootResponse struct {
 	ApplicationsResponse `json:"applications"`
 }
