@@ -117,12 +117,14 @@ func (g *Gate) buildInstance() {
 // registerService 注册服务
 func (g *Gate) registerService() error {
 
-	g.mu.Lock()
-	instance := g.instance
-	g.mu.Unlock()
 	if g.opts.registry == nil {
 		return nil // 如果注册器为空，则不进行注册
 	}
+
+	g.mu.Lock()
+	instance := g.instance
+	g.mu.Unlock()
+
 	if instance == nil {
 		return fmt.Errorf("service instance is nil")
 	}
@@ -136,20 +138,18 @@ func (g *Gate) registerService() error {
 // unregisterService 注销服务
 func (g *Gate) unregisterService() error {
 
+	if g.opts.registry == nil {
+		return nil // 如果注册器为空，则不进行注销
+	}
+
 	g.mu.Lock()
 	instance := g.instance
 	g.mu.Unlock()
-
-	if g.opts.registry == nil {
-		// 如果注册器为空，则不进行注销
-		return nil
-	}
 	if instance == nil {
 		return fmt.Errorf("service instance is nil")
 	}
 
 	ctx, cancel := context.WithTimeout(g.ctx, g.opts.registryTimeout)
 	defer cancel()
-
 	return g.opts.registry.Deregister(ctx, instance)
 }
