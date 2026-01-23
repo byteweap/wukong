@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/byteweap/wukong/component/log"
 	"github.com/byteweap/wukong/component/network"
 	"github.com/byteweap/wukong/component/registry"
 	"github.com/google/uuid"
@@ -31,6 +32,9 @@ func New(opts ...Option) (*Gate, error) {
 	}
 	for _, opt := range opts {
 		opt(o)
+	}
+	if o.logger != nil {
+		log.SetLogger(o.logger)
 	}
 
 	return &Gate{

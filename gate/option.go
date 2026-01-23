@@ -40,7 +40,7 @@ func defaultOptions() *options {
 
 	return &options{
 		application: ApplicationOptions{
-			Name:     "gate",
+			Name:     "wukong-gate",
 			Version:  "v1.0.0",
 			Metadata: make(map[string]string),
 			Addr:     "0.0.0.0:9000",
@@ -48,60 +48,70 @@ func defaultOptions() *options {
 	}
 }
 
+// Context 设置上下文, 默认值: context.Background()
 func Context(ctx context.Context) Option {
 	return func(o *options) {
 		o.ctx = ctx
 	}
 }
 
+// ID 设置服务ID, 默认值: uuid()
 func ID(id string) Option {
 	return func(o *options) {
 		o.application.ID = id
 	}
 }
 
+// Name 设置服务名称, 默认: wukong-gate
 func Name(name string) Option {
 	return func(o *options) {
 		o.application.Name = name
 	}
 }
 
+// Version 设置服务版本, 默认: v1.0.0
 func Version(version string) Option {
 	return func(o *options) {
 		o.application.Version = version
 	}
 }
 
+// Metadata 设置自定义服务元数据
 func Metadata(metadata map[string]string) Option {
 	return func(o *options) {
 		o.application.Metadata = metadata
 	}
 }
 
+// Logger 设置日志记录器, 默认: std logger
 func Logger(logger log.Logger) Option {
 	return func(o *options) {
 		o.logger = logger
 	}
 }
 
+// NetServer 设置网络服务器, required
 func NetServer(netServer network.Server) Option {
 	return func(o *options) {
 		o.netServer = netServer
 	}
 }
 
+// Locator 设置玩家位置定位器, required
 func Locator(locator locator.Locator) Option {
 	return func(o *options) {
 		o.locator = locator
 	}
 }
 
+// Broker 设置消息传输代理, required
 func Broker(broker broker.Broker) Option {
 	return func(o *options) {
 		o.broker = broker
 	}
 }
 
+// Registry 设置服务注册与发现器、注册超时时间, required
 func Registry(registry registry.Registry, registryTimeout time.Duration) Option {
 	return func(o *options) {
 		o.registry = registry
