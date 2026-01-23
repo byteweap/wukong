@@ -8,7 +8,6 @@ import (
 	"github.com/byteweap/wukong/component/log"
 	"github.com/byteweap/wukong/component/network"
 	"github.com/byteweap/wukong/component/registry"
-	"github.com/google/uuid"
 )
 
 // Gate websocket 网关
@@ -26,13 +25,10 @@ func New(opts ...Option) (*Gate, error) {
 
 	// 应用配置选项
 	o := defaultOptions()
-
-	if id, err := uuid.NewUUID(); err == nil {
-		o.application.ID = id.String()
-	}
 	for _, opt := range opts {
 		opt(o)
 	}
+
 	if o.logger != nil {
 		log.SetLogger(o.logger)
 	}
@@ -104,13 +100,13 @@ func (g *Gate) handlerBinaryMessage(_ network.Conn, msg []byte) {
 // buildInstance 构建服务实例
 func (g *Gate) buildInstance() {
 
-	app := g.opts.application
+	app := g.opts.app
 	instance := &registry.ServiceInstance{
-		ID:        app.ID,
-		Name:      app.Name,
-		Version:   app.Version,
-		Metadata:  app.Metadata,
-		Endpoints: []string{app.Addr},
+		ID:        app.id,
+		Name:      app.name,
+		Version:   app.version,
+		Metadata:  app.metadata,
+		Endpoints: []string{app.addr},
 	}
 
 	g.mu.Lock()

@@ -9,22 +9,23 @@ import (
 	"github.com/byteweap/wukong/component/log"
 	"github.com/byteweap/wukong/component/network"
 	"github.com/byteweap/wukong/component/registry"
+	"github.com/google/uuid"
 )
 
 type (
-	// ApplicationOptions 应用选项
-	ApplicationOptions struct {
-		ID       string
-		Name     string
-		Version  string
-		Metadata map[string]string
-		Addr     string
+	// Application 应用选项
+	Application struct {
+		id       string
+		name     string
+		version  string
+		metadata map[string]string
+		addr     string
 	}
 
 	// options 选项
 	options struct {
 		ctx             context.Context
-		application     ApplicationOptions
+		app             Application
 		logger          log.Logger
 		netServer       network.Server    // 网络服务器
 		locator         locator.Locator   // 玩家位置定位器
@@ -39,11 +40,11 @@ type Option func(*options)
 func defaultOptions() *options {
 
 	return &options{
-		application: ApplicationOptions{
-			Name:     "wukong-gate",
-			Version:  "v1.0.0",
-			Metadata: make(map[string]string),
-			Addr:     "0.0.0.0:9000",
+		app: Application{
+			id:       uuid.New().String(),
+			name:     "wukong-gate",
+			metadata: make(map[string]string),
+			addr:     "0.0.0.0:9000",
 		},
 	}
 }
@@ -58,28 +59,28 @@ func Context(ctx context.Context) Option {
 // ID 设置服务ID, 默认值: uuid()
 func ID(id string) Option {
 	return func(o *options) {
-		o.application.ID = id
+		o.app.id = id
 	}
 }
 
 // Name 设置服务名称, 默认: wukong-gate
 func Name(name string) Option {
 	return func(o *options) {
-		o.application.Name = name
+		o.app.name = name
 	}
 }
 
 // Version 设置服务版本, 默认: v1.0.0
 func Version(version string) Option {
 	return func(o *options) {
-		o.application.Version = version
+		o.app.version = version
 	}
 }
 
 // Metadata 设置自定义服务元数据
 func Metadata(metadata map[string]string) Option {
 	return func(o *options) {
-		o.application.Metadata = metadata
+		o.app.metadata = metadata
 	}
 }
 
