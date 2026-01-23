@@ -77,6 +77,7 @@ func (r *Registry) Register(_ context.Context, si *registry.ServiceInstance) err
 			rmd = maps.Clone(si.Metadata)
 			rmd["kind"] = u.Scheme
 			rmd["version"] = si.Version
+			rmd["id"] = si.ID
 			if w, ok := si.Metadata["weight"]; ok {
 				weight, err = strconv.ParseFloat(w, 64)
 				if err != nil {
