@@ -115,7 +115,7 @@ func TestHeartBeat(t *testing.T) {
 	}()
 	time.Sleep(time.Second)
 
-	// new a server
+	// 新建一个服务
 	r := New(client,
 		RegisterTTL(2*time.Second),
 		MaxRetry(5),
@@ -129,7 +129,7 @@ func TestHeartBeat(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// wait for lease expired
+	// 等待租约过期
 	time.Sleep(3 * time.Second)
 
 	res, err := r.GetService(ctx, s.Name)

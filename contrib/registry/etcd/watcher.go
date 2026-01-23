@@ -22,6 +22,7 @@ type watcher struct {
 
 var _ registry.Watcher = (*watcher)(nil)
 
+// newWatcher 创建一个 watcher 并初始化 watch 通道
 func newWatcher(ctx context.Context, key, name string, client *clientv3.Client) (*watcher, error) {
 	w := &watcher{
 		key:         key,
@@ -40,6 +41,7 @@ func newWatcher(ctx context.Context, key, name string, client *clientv3.Client) 
 	return w, nil
 }
 
+// Next 获取下一次变更后的服务列表
 func (w *watcher) Next() ([]*registry.ServiceInstance, error) {
 	if w.first {
 		item, err := w.getInstance()
@@ -62,11 +64,13 @@ func (w *watcher) Next() ([]*registry.ServiceInstance, error) {
 	}
 }
 
+// Stop 停止 watcher 并释放资源
 func (w *watcher) Stop() error {
 	w.cancel()
 	return w.watcher.Close()
 }
 
+// getInstance 拉取当前服务实例列表
 func (w *watcher) getInstance() ([]*registry.ServiceInstance, error) {
 	resp, err := w.kv.Get(w.ctx, w.key, clientv3.WithPrefix())
 	if err != nil {
@@ -86,6 +90,7 @@ func (w *watcher) getInstance() ([]*registry.ServiceInstance, error) {
 	return items, nil
 }
 
+// reWatch 重新建立 watch 通道
 func (w *watcher) reWatch() error {
 	w.watcher.Close()
 	w.watcher = clientv3.NewWatcher(w.client)
