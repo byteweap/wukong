@@ -2,6 +2,7 @@ package gate
 
 import (
 	"context"
+	"net/url"
 	"time"
 
 	"github.com/byteweap/wukong/component/broker"
@@ -13,14 +14,13 @@ import (
 )
 
 type (
-
 	// application 应用选项
 	application struct {
-		id       string
-		name     string
-		version  string
-		metadata map[string]string
-		addr     string
+		id        string
+		name      string
+		version   string
+		metadata  map[string]string
+		endpoints []*url.URL
 	}
 
 	// options 选项
@@ -41,11 +41,11 @@ type Option func(*options)
 func defaultOptions() *options {
 
 	return &options{
+		ctx: context.Background(),
 		app: application{
 			id:       uuid.New().String(),
 			name:     "wukong-gate",
 			metadata: make(map[string]string),
-			addr:     "0.0.0.0:9000",
 		},
 	}
 }
@@ -82,6 +82,13 @@ func Version(version string) Option {
 func Metadata(metadata map[string]string) Option {
 	return func(o *options) {
 		o.app.metadata = metadata
+	}
+}
+
+// Endpoint with service endpoint.
+func Endpoint(endpoints ...*url.URL) Option {
+	return func(o *options) {
+		o.app.endpoints = endpoints
 	}
 }
 
