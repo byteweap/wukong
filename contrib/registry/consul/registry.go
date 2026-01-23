@@ -11,31 +11,31 @@ import (
 	"github.com/hashicorp/consul/api"
 )
 
-// Option is consul registry option.
+// Option 是 consul 注册中心的配置项
 type Option func(*Registry)
 
-// WithHealthCheck with registry health check option.
+// WithHealthCheck 设置是否启用健康检查
 func WithHealthCheck(enable bool) Option {
 	return func(o *Registry) {
 		o.enableHealthCheck = enable
 	}
 }
 
-// WithTimeout with get services timeout option.
+// WithTimeout 设置获取服务的超时时间
 func WithTimeout(timeout time.Duration) Option {
 	return func(o *Registry) {
 		o.timeout = timeout
 	}
 }
 
-// WithDatacenter with registry datacenter option
+// WithDatacenter 设置数据中心
 func WithDatacenter(dc Datacenter) Option {
 	return func(o *Registry) {
 		o.cli.dc = dc
 	}
 }
 
-// WithHeartbeat enable or disable heartbeat
+// WithHeartbeat 设置是否启用心跳
 func WithHeartbeat(enable bool) Option {
 	return func(o *Registry) {
 		if o.cli != nil {
@@ -44,7 +44,7 @@ func WithHeartbeat(enable bool) Option {
 	}
 }
 
-// WithServiceResolver with endpoint function option.
+// WithServiceResolver 设置 endpoint 解析函数
 func WithServiceResolver(fn ServiceResolver) Option {
 	return func(o *Registry) {
 		if o.cli != nil {
@@ -53,7 +53,7 @@ func WithServiceResolver(fn ServiceResolver) Option {
 	}
 }
 
-// WithHealthCheckInterval with healthcheck interval in seconds.
+// WithHealthCheckInterval 设置健康检查间隔秒数
 func WithHealthCheckInterval(interval int) Option {
 	return func(o *Registry) {
 		if o.cli != nil {
@@ -62,7 +62,7 @@ func WithHealthCheckInterval(interval int) Option {
 	}
 }
 
-// WithDeregisterCriticalServiceAfter with deregister-critical-service-after in seconds.
+// WithDeregisterCriticalServiceAfter 设置不健康服务自动注销时间，单位秒
 func WithDeregisterCriticalServiceAfter(interval int) Option {
 	return func(o *Registry) {
 		if o.cli != nil {
@@ -71,7 +71,7 @@ func WithDeregisterCriticalServiceAfter(interval int) Option {
 	}
 }
 
-// WithServiceCheck with service checks
+// WithServiceCheck 追加服务健康检查
 func WithServiceCheck(checks ...*api.AgentServiceCheck) Option {
 	return func(o *Registry) {
 		if o.cli != nil {
@@ -80,7 +80,7 @@ func WithServiceCheck(checks ...*api.AgentServiceCheck) Option {
 	}
 }
 
-// WithTags with service tags.
+// WithTags 设置服务标签
 func WithTags(tags []string) Option {
 	return func(o *Registry) {
 		if o.cli != nil {
@@ -89,12 +89,12 @@ func WithTags(tags []string) Option {
 	}
 }
 
-// Config is consul registry config
+// Config 是 consul 注册中心配置
 type Config struct {
 	*api.Config
 }
 
-// Registry is consul registry
+// Registry 是 consul 注册中心实现
 type Registry struct {
 	cli               *Client
 	enableHealthCheck bool
@@ -109,7 +109,7 @@ func (r *Registry) ID() string {
 	return "consul"
 }
 
-// New creates consul registry
+// New 创建 consul 注册中心
 func New(apiClient *api.Client, opts ...Option) *Registry {
 	r := &Registry{
 		registry:          make(map[string]*serviceSet),
@@ -131,17 +131,17 @@ func New(apiClient *api.Client, opts ...Option) *Registry {
 	return r
 }
 
-// Register register service
+// Register 注册服务
 func (r *Registry) Register(ctx context.Context, svc *registry.ServiceInstance) error {
 	return r.cli.Register(ctx, svc, r.enableHealthCheck)
 }
 
-// Deregister deregister service
+// Deregister 注销服务
 func (r *Registry) Deregister(ctx context.Context, svc *registry.ServiceInstance) error {
 	return r.cli.Deregister(ctx, svc.ID)
 }
 
-// GetService return service by name
+// GetService 按名称获取服务
 func (r *Registry) GetService(ctx context.Context, name string) ([]*registry.ServiceInstance, error) {
 	r.lock.RLock()
 	set := r.registry[name]
@@ -171,7 +171,7 @@ func (r *Registry) GetService(ctx context.Context, name string) ([]*registry.Ser
 	return ss, nil
 }
 
-// ListServices return service list.
+// ListServices 返回所有服务
 func (r *Registry) ListServices() (allServices map[string][]*registry.ServiceInstance, err error) {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
@@ -188,7 +188,7 @@ func (r *Registry) ListServices() (allServices map[string][]*registry.ServiceIns
 	return
 }
 
-// Watch resolve service by name
+// Watch 按名称监听服务变更
 func (r *Registry) Watch(ctx context.Context, name string) (registry.Watcher, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -211,7 +211,7 @@ func (r *Registry) Watch(ctx context.Context, name string) (registry.Watcher, er
 	set.ref.Add(1)
 	r.lock.Unlock()
 
-	// init watcher
+	// 初始化 watcher
 	w := &watcher{
 		event: make(chan struct{}, 1),
 	}
@@ -223,8 +223,7 @@ func (r *Registry) Watch(ctx context.Context, name string) (registry.Watcher, er
 
 	ss, _ := set.services.Load().([]*registry.ServiceInstance)
 	if len(ss) > 0 {
-		// If the service has a value, it needs to be pushed to the watcher,
-		// otherwise the initial data may be blocked forever during the watch.
+		// 如果已有缓存数据，先推送一次，避免首次 watch 一直阻塞
 		select {
 		case w.event <- struct{}{}:
 		default:
@@ -239,6 +238,7 @@ func (r *Registry) Watch(ctx context.Context, name string) (registry.Watcher, er
 	return w, nil
 }
 
+// resolve 启动后台拉取并广播服务变更
 func (r *Registry) resolve(ctx context.Context, ss *serviceSet) error {
 	listServices := r.cli.Service
 	if r.timeout > 0 {

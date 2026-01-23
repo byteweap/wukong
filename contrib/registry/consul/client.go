@@ -24,25 +24,25 @@ const (
 	MultiDatacenter  Datacenter = "MULTI"
 )
 
-// Client is consul client config
+// Client 表示 consul 客户端配置
 type Client struct {
 	dc  Datacenter
 	cli *api.Client
 
-	// resolve service entry endpoints
+	// 解析服务条目的 endpoint
 	resolver ServiceResolver
-	// healthcheck time interval in seconds
+	// 健康检查间隔秒数
 	healthcheckInterval int
-	// heartbeat enable heartbeat
+	// 是否启用心跳
 	heartbeat bool
-	// deregisterCriticalServiceAfter time interval in seconds
+	// 多久后自动注销不健康服务，单位秒
 	deregisterCriticalServiceAfter int
-	// serviceChecks  user custom checks
+	// 用户自定义健康检查
 	serviceChecks api.AgentServiceChecks
-	// tags is service tags
+	// 服务标签
 	tags []string
 
-	// used to control heartbeat
+	// 用于控制心跳
 	lock      sync.RWMutex
 	cancelers map[string]*canceler
 }
@@ -53,6 +53,7 @@ type canceler struct {
 	done   chan struct{}
 }
 
+// defaultResolver 将 consul 条目转换为服务实例列表
 func defaultResolver(_ context.Context, entries []*api.ServiceEntry) []*registry.ServiceInstance {
 	services := make([]*registry.ServiceInstance, 0, len(entries))
 	for _, entry := range entries {
@@ -85,10 +86,10 @@ func defaultResolver(_ context.Context, entries []*api.ServiceEntry) []*registry
 	return services
 }
 
-// ServiceResolver is used to resolve service endpoints
+// ServiceResolver 用于解析服务 endpoint
 type ServiceResolver func(ctx context.Context, entries []*api.ServiceEntry) []*registry.ServiceInstance
 
-// Service get services from consul
+// Service 从 consul 获取服务实例
 func (c *Client) Service(ctx context.Context, service string, index uint64, passingOnly bool) ([]*registry.ServiceInstance, uint64, error) {
 	if c.dc == MultiDatacenter {
 		return c.multiDCService(ctx, service, index, passingOnly)
@@ -152,7 +153,7 @@ func (c *Client) singleDCEntries(service, tag string, passingOnly bool, opts *ap
 	return c.cli.Health().Service(service, tag, passingOnly, opts)
 }
 
-// Register register service instance to consul
+// Register 将服务实例注册到 consul
 func (c *Client) Register(ctx context.Context, svc *registry.ServiceInstance, enableHealthCheck bool) error {
 	addresses := make(map[string]api.ServiceAddress, len(svc.Endpoints))
 	checkAddresses := make([]string, 0, len(svc.Endpoints))
@@ -193,7 +194,7 @@ func (c *Client) Register(ctx context.Context, svc *registry.ServiceInstance, en
 				Timeout:                        "5s",
 			})
 		}
-		// custom checks
+		// 追加自定义检查
 		asr.Checks = append(asr.Checks, c.serviceChecks...)
 	}
 	if c.heartbeat {
@@ -260,7 +261,7 @@ func (c *Client) Register(ctx context.Context, svc *registry.ServiceInstance, en
 					}
 					if err != nil {
 						log.Errorf("[Consul] update ttl heartbeat to consul failed! err=%v", err)
-						// when the previous report fails, try to re register the service
+						// 上次上报失败时，尝试重新注册服务
 						if err := sleepCtx(cc.ctx, time.Duration(rand.IntN(5))*time.Second); err != nil {
 							_ = c.cli.Agent().ServiceDeregister(svc.ID)
 							return
@@ -278,6 +279,7 @@ func (c *Client) Register(ctx context.Context, svc *registry.ServiceInstance, en
 	return nil
 }
 
+// sleepCtx 在可取消上下文中等待一段时间
 func sleepCtx(ctx context.Context, d time.Duration) error {
 	t := time.NewTimer(d)
 	defer t.Stop()
@@ -289,7 +291,7 @@ func sleepCtx(ctx context.Context, d time.Duration) error {
 	}
 }
 
-// Deregister service by service ID
+// Deregister 按服务 ID 注销
 func (c *Client) Deregister(ctx context.Context, serviceID string) error {
 	c.lock.RLock()
 	cc, ok := c.cancelers[serviceID]
@@ -302,7 +304,7 @@ func (c *Client) Deregister(ctx context.Context, serviceID string) error {
 	err := c.cli.Agent().ServiceDeregisterOpts(serviceID, new(api.QueryOptions).WithContext(ctx))
 	var se api.StatusError
 	if errors.As(err, &se) && se.Code == 404 {
-		// not found
+		// 未找到时忽略错误
 		err = nil
 	}
 	return err

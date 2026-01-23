@@ -40,9 +40,8 @@ func defaultOptions() *options {
 
 	return &options{
 		application: ApplicationOptions{
-			ID:       "",
 			Name:     "gate",
-			Version:  "1.0.0",
+			Version:  "v1.0.0",
 			Metadata: make(map[string]string),
 			Addr:     "0.0.0.0:9000",
 		},
@@ -54,6 +53,7 @@ func Context(ctx context.Context) Option {
 		o.ctx = ctx
 	}
 }
+
 func ID(id string) Option {
 	return func(o *options) {
 		o.application.ID = id

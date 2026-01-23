@@ -16,7 +16,7 @@ type serviceSet struct {
 	services    *atomic.Value
 	lock        sync.RWMutex
 
-	// for cancel
+	// 用于取消
 	ctx    context.Context
 	cancel context.CancelFunc
 }

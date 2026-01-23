@@ -88,11 +88,13 @@ func (g *Gate) Stop() error {
 // setupNetwork 初始化网络服务器配置
 func (g *Gate) setupNetwork() {
 
+	// todo
 }
 
 // handlerBinaryMessage 处理接收到的二进制消息
 func (g *Gate) handlerBinaryMessage(_ network.Conn, msg []byte) {
 	fmt.Println("Gate receive binary message: ", msg)
+	// todo
 }
 
 // buildInstance 构建服务实例
@@ -119,8 +121,7 @@ func (g *Gate) registerService() error {
 	instance := g.instance
 	g.mu.Unlock()
 	if g.opts.registry == nil {
-		// 如果注册器为空，则不进行注册
-		return nil
+		return nil // 如果注册器为空，则不进行注册
 	}
 	if instance == nil {
 		return fmt.Errorf("service instance is nil")

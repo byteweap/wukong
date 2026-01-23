@@ -10,7 +10,7 @@ type watcher struct {
 	event chan struct{}
 	set   *serviceSet
 
-	// for cancel
+	// 用于取消
 	ctx    context.Context
 	cancel context.CancelFunc
 }

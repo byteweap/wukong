@@ -527,7 +527,7 @@ func TestRegistry_IdleAndWatch(t *testing.T) {
 				go func(watch registry.Watcher, want []*registry.ServiceInstance) {
 					defer wg1.Done()
 
-					// first
+					// 首次获取
 					service, err := watch.Next() //nolint
 					if err != nil {
 						t.Error(err)
@@ -558,7 +558,7 @@ func TestRegistry_IdleAndWatch(t *testing.T) {
 				go func(watch registry.Watcher, want []*registry.ServiceInstance) {
 					defer wg2.Done()
 
-					// instance changes
+					// 实例变更
 					service, err := watch.Next() //nolint
 					if err != nil {
 						t.Error(err)
@@ -638,7 +638,7 @@ func TestRegistry_IdleAndWatch2(t *testing.T) {
 					t.Error(err1)
 				}
 				go func(_ int) {
-					// first
+					// 首次获取
 					service, err2 := watch.Next()
 					if (err2 != nil) != tt.wantErr {
 						t.Errorf("GetService() error = %v, wantErr %v", err, tt.wantErr)
@@ -667,7 +667,7 @@ func TestRegistry_IdleAndWatch2(t *testing.T) {
 			time.Sleep(time.Second * 3)
 			cancel()
 			time.Sleep(time.Second * 2)
-			// Everything is idle. Add new watch.
+			// 所有 watcher 进入空闲后，再新建一个 watch
 			watchCtx, watchCancel := context.WithCancel(context.Background())
 			watch, err := r.Watch(watchCtx, tt.args.instance.Name)
 			if err != nil {
@@ -746,7 +746,7 @@ func TestRegistry_ExitOldResolverAndReWatch(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			// first watch
+			// 第一次 watch
 			ctx, cancel := context.WithCancel(context.Background())
 			watch, err := r.Watch(ctx, tt.args.instance.Name)
 			if err != nil {
@@ -759,15 +759,15 @@ func TestRegistry_ExitOldResolverAndReWatch(t *testing.T) {
 			}
 
 			time.Sleep(time.Second * 3)
-			// The simulation entered idle mode first, but the old resolver was not closed yet, and new requests triggered a new Watch.
+			// 先进入空闲，但旧的 resolver 未退出，新请求会触发新的 Watch
 			watchCtx := context.Background()
-			// old resolver cancel
+			// 取消旧的 resolver
 			err = watch.Stop()
 			if err != nil {
 				t.Errorf("watch stop err:%v", err)
 			}
 			cancel()
-			// If it sleeps for a period of time, the old resolve goroutine will exit before the new Watch is processed, and there will be no problems at this time.
+			// 若这里睡一段时间，旧的 resolve goroutine 会先退出，新 Watch 就不会有问题
 			// time.Sleep(time.Second * 8)
 			newWatch, err := r.Watch(watchCtx, tt.args.instance.Name)
 			if err != nil {
@@ -778,7 +778,7 @@ func TestRegistry_ExitOldResolverAndReWatch(t *testing.T) {
 				t.Errorf("GetService() error = %v, wantErr %v", err, tt.wantErr)
 				t.Errorf("GetService() got = %v", service)
 			}
-			// change register info
+			// 变更注册信息
 			time.Sleep(time.Second * 1)
 			err = r.Deregister(tt.args.ctx, tt.args.initialInstance)
 			if err != nil {
@@ -880,7 +880,7 @@ func TestRegistry_ShareServiceSet(t *testing.T) {
 			t.Error(err)
 			return
 		}
-		// close previous watcher
+		// 关闭上一个 watcher
 		if prev != nil {
 			if err = prev.Stop(); err != nil {
 				t.Error(err)
@@ -979,13 +979,13 @@ func TestRegistry_MultiWatch(t *testing.T) {
 		return
 	}
 
-	// close first watcher
+	// 关闭第一个 watcher
 	if err = watch1.Stop(); err != nil {
 		t.Error(err)
 		return
 	}
 
-	// register a new instance
+	// 注册一个新实例
 	err = r.Register(context.Background(), instances[1])
 	if err != nil {
 		t.Error(err)
@@ -998,7 +998,7 @@ func TestRegistry_MultiWatch(t *testing.T) {
 		}
 	}()
 
-	// second watcher should get the new instance
+	// 第二个 watcher 应该拿到新实例
 	got, err := watch2.Next()
 	if err != nil {
 		t.Error(err)
