@@ -8,18 +8,20 @@ import (
 )
 
 type (
+	// application 应用选项
 	application struct {
 		id       string
 		name     string
 		version  string
 		metadata map[string]string
 	}
+
+	options struct {
+		ctx    context.Context
+		app    application
+		logger log.Logger
+	}
 )
-type options struct {
-	ctx    context.Context
-	app    application
-	logger log.Logger
-}
 
 func defaultOptions() *options {
 	return &options{

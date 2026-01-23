@@ -13,8 +13,9 @@ import (
 )
 
 type (
-	// Application 应用选项
-	Application struct {
+
+	// application 应用选项
+	application struct {
 		id       string
 		name     string
 		version  string
@@ -25,7 +26,7 @@ type (
 	// options 选项
 	options struct {
 		ctx             context.Context
-		app             Application
+		app             application
 		logger          log.Logger
 		netServer       network.Server    // 网络服务器
 		locator         locator.Locator   // 玩家位置定位器
@@ -40,7 +41,7 @@ type Option func(*options)
 func defaultOptions() *options {
 
 	return &options{
-		app: Application{
+		app: application{
 			id:       uuid.New().String(),
 			name:     "wukong-gate",
 			metadata: make(map[string]string),
