@@ -24,71 +24,7 @@ type tencentLog struct {
 	opts     *options
 }
 
-func (log *tencentLog) GetProducer() *cls.AsyncProducerClient {
-	return log.producer
-}
-
-type options struct {
-	topicID      string
-	accessKey    string
-	accessSecret string
-	endpoint     string
-}
-
-func defaultOptions() *options {
-	return &options{}
-}
-
-func WithEndpoint(endpoint string) Option {
-	return func(cls *options) {
-		cls.endpoint = endpoint
-	}
-}
-
-func WithTopicID(topicID string) Option {
-	return func(cls *options) {
-		cls.topicID = topicID
-	}
-}
-
-func WithAccessKey(ak string) Option {
-	return func(cls *options) {
-		cls.accessKey = ak
-	}
-}
-
-func WithAccessSecret(as string) Option {
-	return func(cls *options) {
-		cls.accessSecret = as
-	}
-}
-
-type Option func(cls *options)
-
-func (log *tencentLog) Close() error {
-	return log.producer.Close(5000)
-}
-
-func (log *tencentLog) Log(level log.Level, keyvals ...any) error {
-	contents := make([]*cls.Log_Content, 0, len(keyvals)/2+1)
-
-	contents = append(contents, &cls.Log_Content{
-		Key:   newString(level.Key()),
-		Value: newString(level.String()),
-	})
-	for i := 0; i < len(keyvals); i += 2 {
-		contents = append(contents, &cls.Log_Content{
-			Key:   newString(toString(keyvals[i])),
-			Value: newString(toString(keyvals[i+1])),
-		})
-	}
-
-	logInst := &cls.Log{
-		Time:     proto.Int64(time.Now().Unix()),
-		Contents: contents,
-	}
-	return log.producer.SendLog(log.opts.topicID, logInst, nil)
-}
+var _ Logger = (*tencentLog)(nil)
 
 func NewLogger(options ...Option) (Logger, error) {
 	opts := defaultOptions()
@@ -108,6 +44,35 @@ func NewLogger(options ...Option) (Logger, error) {
 		producer: producerInst,
 		opts:     opts,
 	}, nil
+}
+
+func (log *tencentLog) GetProducer() *cls.AsyncProducerClient {
+	return log.producer
+}
+
+func (log *tencentLog) Close() error {
+	return log.producer.Close(5000)
+}
+
+func (log *tencentLog) Log(level log.Level, kvs ...any) error {
+	contents := make([]*cls.Log_Content, 0, len(kvs)/2+1)
+
+	contents = append(contents, &cls.Log_Content{
+		Key:   newString(level.Key()),
+		Value: newString(level.String()),
+	})
+	for i := 0; i < len(kvs); i += 2 {
+		contents = append(contents, &cls.Log_Content{
+			Key:   newString(toString(kvs[i])),
+			Value: newString(toString(kvs[i+1])),
+		})
+	}
+
+	logInst := &cls.Log{
+		Time:     proto.Int64(time.Now().Unix()),
+		Contents: contents,
+	}
+	return log.producer.SendLog(log.opts.topicID, logInst, nil)
 }
 
 func newString(s string) *string {

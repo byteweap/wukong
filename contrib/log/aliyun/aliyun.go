@@ -26,56 +26,34 @@ type aliyunLog struct {
 	opts     *options
 }
 
+var _ Logger = (*aliyunLog)(nil)
+
+// NewAliyunLog new aliyun logger with options.
+func NewAliyunLog(options ...Option) (Logger, error) {
+	opts := defaultOptions()
+	for _, o := range options {
+		o(opts)
+	}
+
+	producerConfig := producer.GetDefaultProducerConfig()
+	producerConfig.Endpoint = opts.endpoint
+	producerConfig.AccessKeyID = opts.accessKey
+	producerConfig.AccessKeySecret = opts.accessSecret
+	producerInst, err := producer.NewProducer(producerConfig)
+	if err != nil {
+		return nil, err
+	}
+	producerInst.Start()
+
+	return &aliyunLog{
+		opts:     opts,
+		producer: producerInst,
+	}, nil
+}
+
 func (a *aliyunLog) GetProducer() *producer.Producer {
 	return a.producer
 }
-
-type options struct {
-	accessKey    string
-	accessSecret string
-	endpoint     string
-	project      string
-	logstore     string
-}
-
-func defaultOptions() *options {
-	return &options{
-		project:  "projectName",
-		logstore: "app",
-	}
-}
-
-func WithEndpoint(endpoint string) Option {
-	return func(alc *options) {
-		alc.endpoint = endpoint
-	}
-}
-
-func WithProject(project string) Option {
-	return func(alc *options) {
-		alc.project = project
-	}
-}
-
-func WithLogstore(logstore string) Option {
-	return func(alc *options) {
-		alc.logstore = logstore
-	}
-}
-
-func WithAccessKey(ak string) Option {
-	return func(alc *options) {
-		alc.accessKey = ak
-	}
-}
-
-func WithAccessSecret(as string) Option {
-	return func(alc *options) {
-		alc.accessSecret = as
-	}
-}
-
-type Option func(alc *options)
 
 func (a *aliyunLog) Close() error {
 	return a.producer.Close(5000)
@@ -100,29 +78,6 @@ func (a *aliyunLog) Log(level log.Level, keyvals ...any) error {
 		Contents: contents,
 	}
 	return a.producer.SendLog(a.opts.project, a.opts.logstore, "", "", logInst)
-}
-
-// NewAliyunLog new aliyun logger with options.
-func NewAliyunLog(options ...Option) (Logger, error) {
-	opts := defaultOptions()
-	for _, o := range options {
-		o(opts)
-	}
-
-	producerConfig := producer.GetDefaultProducerConfig()
-	producerConfig.Endpoint = opts.endpoint
-	producerConfig.AccessKeyID = opts.accessKey
-	producerConfig.AccessKeySecret = opts.accessSecret
-	producerInst, err := producer.NewProducer(producerConfig)
-	if err != nil {
-		return nil, err
-	}
-	producerInst.Start()
-
-	return &aliyunLog{
-		opts:     opts,
-		producer: producerInst,
-	}, nil
 }
 
 // newString string convert to *string

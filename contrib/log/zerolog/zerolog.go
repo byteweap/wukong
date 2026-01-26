@@ -5,11 +5,11 @@ import (
 	"github.com/rs/zerolog"
 )
 
-var _ log.Logger = (*Logger)(nil)
-
 type Logger struct {
 	log *zerolog.Logger
 }
+
+var _ log.Logger = (*Logger)(nil)
 
 func NewLogger(logger *zerolog.Logger) log.Logger {
 	return &Logger{
@@ -18,7 +18,9 @@ func NewLogger(logger *zerolog.Logger) log.Logger {
 }
 
 func (l *Logger) Log(level log.Level, keyvals ...any) (err error) {
+
 	var event *zerolog.Event
+
 	if len(keyvals) == 0 {
 		return nil
 	}

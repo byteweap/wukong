@@ -18,7 +18,7 @@ func NewLogger(logger *logrus.Logger) log.Logger {
 	}
 }
 
-func (l *Logger) Log(level log.Level, keyvals ...any) (err error) {
+func (l *Logger) Log(level log.Level, kvs ...any) (err error) {
 	var (
 		logrusLevel logrus.Level
 		fields      logrus.Fields = make(map[string]any)
@@ -44,22 +44,22 @@ func (l *Logger) Log(level log.Level, keyvals ...any) (err error) {
 		return
 	}
 
-	if len(keyvals) == 0 {
+	if len(kvs) == 0 {
 		return nil
 	}
-	if len(keyvals)%2 != 0 {
-		keyvals = append(keyvals, "")
+	if len(kvs)%2 != 0 {
+		kvs = append(kvs, "")
 	}
-	for i := 0; i < len(keyvals); i += 2 {
-		key, ok := keyvals[i].(string)
+	for i := 0; i < len(kvs); i += 2 {
+		key, ok := kvs[i].(string)
 		if !ok {
 			continue
 		}
 		if key == logrus.FieldKeyMsg {
-			msg, _ = keyvals[i+1].(string)
+			msg, _ = kvs[i+1].(string)
 			continue
 		}
-		fields[key] = keyvals[i+1]
+		fields[key] = kvs[i+1]
 	}
 
 	if len(fields) > 0 {
