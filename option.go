@@ -13,10 +13,10 @@ import (
 	"github.com/google/uuid"
 )
 
-// Option is an application option.
+// Option 为应用选项
 type Option func(o *options)
 
-// options is an application options.
+// options 为应用配置项集合
 type options struct {
 	id        string
 	name      string
@@ -33,13 +33,14 @@ type options struct {
 	stopTimeout     time.Duration
 	servers         []server.Server
 
-	// Before and After funcs
+	// 启停前后回调
 	beforeStart []func(context.Context) error
 	beforeStop  []func(context.Context) error
 	afterStart  []func(context.Context) error
 	afterStop   []func(context.Context) error
 }
 
+// defaultOptions 返回默认配置
 func defaultOptions() *options {
 	return &options{
 		id:              uuid.New().String(),
@@ -53,85 +54,85 @@ func defaultOptions() *options {
 	}
 }
 
-// ID with service id.
+// ID 设置服务 ID
 func ID(id string) Option {
 	return func(o *options) { o.id = id }
 }
 
-// Name with service name.
+// Name 设置服务名
 func Name(name string) Option {
 	return func(o *options) { o.name = name }
 }
 
-// Version with service version.
+// Version 设置服务版本
 func Version(version string) Option {
 	return func(o *options) { o.version = version }
 }
 
-// Metadata with service metadata.
+// Metadata 设置服务元数据
 func Metadata(md map[string]string) Option {
 	return func(o *options) { o.metadata = md }
 }
 
-// Endpoint with service endpoint.
+// Endpoint 设置服务端点
 func Endpoint(endpoints ...*url.URL) Option {
 	return func(o *options) { o.endpoints = endpoints }
 }
 
-// Context with service context.
+// Context 设置服务上下文
 func Context(ctx context.Context) Option {
 	return func(o *options) { o.ctx = ctx }
 }
 
-// Logger with service logger.
+// Logger 设置服务日志器
 func Logger(logger log.Logger) Option {
 	return func(o *options) { o.logger = logger }
 }
 
-// Signal with exit signals.
+// Signal 设置退出信号
 func Signal(sigs ...os.Signal) Option {
 	return func(o *options) { o.sigs = sigs }
 }
 
-// Registry with service registry.
+// Registry 设置服务注册中心
 func Registry(r registry.Registry) Option {
 	return func(o *options) { o.registry = r }
 }
 
-// RegistrarTimeout with registrar timeout.
+// RegistrarTimeout 设置注册超时
 func RegistrarTimeout(t time.Duration) Option {
 	return func(o *options) { o.registryTimeout = t }
 }
 
-// StopTimeout with app stop timeout.
+// StopTimeout 设置停止超时
 func StopTimeout(t time.Duration) Option {
 	return func(o *options) { o.stopTimeout = t }
 }
 
-// Before and Afters
+// 启停前后回调
 
-// BeforeStart run funcs before app starts
+// BeforeStart 添加启动前回调
 func BeforeStart(fn func(context.Context) error) Option {
 	return func(o *options) {
 		o.beforeStart = append(o.beforeStart, fn)
 	}
 }
 
-// BeforeStop run funcs before app stops
+// BeforeStop 添加停止前回调
 func BeforeStop(fn func(context.Context) error) Option {
 	return func(o *options) {
 		o.beforeStop = append(o.beforeStop, fn)
 	}
 }
 
-// AfterStart run funcs after app starts
+// AfterStart 添加启动后回调
 func AfterStart(fn func(context.Context) error) Option {
 	return func(o *options) {
 		o.afterStart = append(o.afterStart, fn)
 	}
 }
 
-// AfterStop run funcs after app stops
+// AfterStop 添加停止后回调
 func AfterStop(fn func(context.Context) error) Option {
 	return func(o *options) {
 		o.afterStop = append(o.afterStop, fn)

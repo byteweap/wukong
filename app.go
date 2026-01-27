@@ -20,6 +20,7 @@ type AppInfo interface {
 	Endpoint() []string
 }
 
+// App 代表应用实例
 type App struct {
 	opts     *options
 	ctx      context.Context
@@ -28,6 +29,7 @@ type App struct {
 	instance *registry.ServiceInstance
 }
 
+// New 创建应用实例
 func New(opts ...Option) *App {
 	o := defaultOptions()
 	for _, opt := range opts {
@@ -44,19 +46,19 @@ func New(opts ...Option) *App {
 	}
 }
 
-// ID returns app instance id.
+// ID 返回应用实例 ID
 func (a *App) ID() string { return a.opts.id }
 
-// Name returns service name.
+// Name 返回服务名
 func (a *App) Name() string { return a.opts.name }
 
-// Version returns app version.
+// Version 返回应用版本
 func (a *App) Version() string { return a.opts.version }
 
-// Metadata returns service metadata.
+// Metadata 返回服务元数据
 func (a *App) Metadata() map[string]string { return a.opts.metadata }
 
-// Endpoint returns endpoints.
+// Endpoint 返回服务端点
 func (a *App) Endpoint() []string {
 	if a.instance != nil {
 		return a.instance.Endpoints
@@ -64,7 +66,7 @@ func (a *App) Endpoint() []string {
 	return nil
 }
 
-// Run executes all OnStart hooks registered with the application's Lifecycle.
+// Run 运行应用生命周期
 func (a *App) Run() error {
 
 	if err := a.buildInstance(); err != nil {
@@ -84,7 +86,7 @@ func (a *App) Run() error {
 	for _, srv := range a.opts.servers {
 		server := srv
 		eg.Go(func() error {
-			<-ctx.Done() // wait for stop signal
+			<-ctx.Done() // 等待停止信号
 			stopCtx := context.WithoutCancel(octx)
 			if a.opts.stopTimeout > 0 {
 				var cancel context.CancelFunc
@@ -95,7 +97,7 @@ func (a *App) Run() error {
 		})
 		wg.Add(1)
 		eg.Go(func() error {
-			wg.Done() // here is to ensure server start has begun running before register, so defer is not needed
+			wg.Done() // 确保服务启动后再注册，无需 defer
 			return server.Start(octx)
 		})
 	}
@@ -131,7 +133,7 @@ func (a *App) Run() error {
 	return err
 }
 
-// Stop gracefully stops the application.
+// Stop 优雅停止应用
 func (a *App) Stop() (err error) {
 	sctx := NewContext(a.ctx, a)
 	for _, fn := range a.opts.beforeStop {
@@ -148,7 +150,7 @@ func (a *App) Stop() (err error) {
 	return err
 }
 
-// buildInstance builds a service instance.
+// buildInstance 构建服务实例
 func (a *App) buildInstance() error {
 
 	endpoints := make([]string, 0, len(a.opts.endpoints))
@@ -178,7 +180,7 @@ func (a *App) buildInstance() error {
 	return nil
 }
 
-// register registers the service with the registry.
+// register 向注册中心注册服务
 func (a *App) register(ctx context.Context) error {
 
 	a.mu.Lock()
@@ -195,7 +197,7 @@ func (a *App) register(ctx context.Context) error {
 	return nil
 }
 
-// deregister de-registers the service with the registry.
+// deregister 从注册中心注销服务
 func (a *App) deregister(ctx context.Context) error {
 
 	a.mu.Lock()
@@ -212,14 +214,15 @@ func (a *App) deregister(ctx context.Context) error {
 	return nil
 }
 
+// appKey 用于在 context 中存放 AppInfo
 type appKey struct{}
 
-// NewContext returns a new Context that carries value.
+// NewContext 返回携带 AppInfo 的新 Context
 func NewContext(ctx context.Context, s AppInfo) context.Context {
 	return context.WithValue(ctx, appKey{}, s)
 }
 
-// FromContext returns the Transport value stored in ctx, if any.
+// FromContext 从 Context 中取出 AppInfo
 func FromContext(ctx context.Context) (s AppInfo, ok bool) {
 	s, ok = ctx.Value(appKey{}).(AppInfo)
 	return
