@@ -3,7 +3,7 @@ module github.com/byteweap/wukong/contrib/broker/nats
 go 1.25.5
 
 require (
-	github.com/byteweap/wukong v0.0.0
+	github.com/byteweap/wukong v0.0.1
 	github.com/nats-io/nats-server/v2 v2.12.3
 	github.com/nats-io/nats.go v1.48.0
 	github.com/stretchr/testify v1.11.1

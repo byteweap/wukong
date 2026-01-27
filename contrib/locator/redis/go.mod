@@ -3,7 +3,7 @@ module github.com/byteweap/wukong/contrib/locator/redis
 go 1.25.5
 
 require (
-	github.com/byteweap/wukong v0.0.0
+	github.com/byteweap/wukong v0.0.1
 	github.com/redis/go-redis/v9 v9.17.2
 )
 

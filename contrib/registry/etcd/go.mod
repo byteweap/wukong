@@ -3,7 +3,7 @@ module github.com/byteweap/wukong/contrib/registry/etcd
 go 1.25.5
 
 require (
-	github.com/byteweap/wukong v0.0.0
+	github.com/byteweap/wukong v0.0.1
 	go.etcd.io/etcd/client/v3 v3.6.7
 	google.golang.org/grpc v1.78.0
 )

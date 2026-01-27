@@ -3,7 +3,7 @@ module github.com/byteweap/wukong/contrib/log/zap
 go 1.25.5
 
 require (
-	github.com/byteweap/wukong v0.0.0
+	github.com/byteweap/wukong v0.0.1
 	go.uber.org/zap v1.27.1
 )
 

@@ -3,7 +3,7 @@ module github.com/byteweap/wukong/contrib/log/tencent
 go 1.25.5
 
 require (
-	github.com/byteweap/wukong v0.0.0
+	github.com/byteweap/wukong v0.0.1
 	github.com/tencentcloud/tencentcloud-cls-sdk-go v1.0.14
 	google.golang.org/protobuf v1.36.11
 )

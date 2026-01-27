@@ -3,7 +3,7 @@ module github.com/byteweap/wukong/contrib/registry/consul
 go 1.25.5
 
 require (
-	github.com/byteweap/wukong v0.0.0
+	github.com/byteweap/wukong v0.0.1
 	github.com/hashicorp/consul/api v1.33.2
 )
 

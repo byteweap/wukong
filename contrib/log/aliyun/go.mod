@@ -4,7 +4,7 @@ go 1.25.5
 
 require (
 	github.com/aliyun/aliyun-log-go-sdk v0.1.115
-	github.com/byteweap/wukong v0.0.0
+	github.com/byteweap/wukong v0.0.1
 	google.golang.org/protobuf v1.36.11
 )
 

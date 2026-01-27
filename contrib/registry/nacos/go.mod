@@ -3,7 +3,7 @@ module github.com/byteweap/wukong/contrib/registry/nacos
 go 1.25.5
 
 require (
-	github.com/byteweap/wukong v0.0.0
+	github.com/byteweap/wukong v0.0.1
 	github.com/nacos-group/nacos-sdk-go v1.1.6
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
