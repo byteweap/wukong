@@ -27,10 +27,6 @@ type Registry struct {
 
 var _ registry.Registry = (*Registry)(nil)
 
-func (r *Registry) ID() string {
-	return "polaris"
-}
-
 func NewRegistry(provider api.ProviderAPI, consumer api.ConsumerAPI, opts ...Option) (r *Registry) {
 	op := options{
 		Namespace:    "default",
@@ -65,6 +61,10 @@ func NewRegistryWithConfig(conf config.Configuration, opts ...Option) (r *Regist
 		panic(err)
 	}
 	return NewRegistry(provider, consumer, opts...)
+}
+
+func (r *Registry) ID() string {
+	return "polaris"
 }
 
 // Register 注册服务

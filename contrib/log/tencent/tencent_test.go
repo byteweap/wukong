@@ -8,6 +8,7 @@ import (
 	"github.com/byteweap/wukong/component/log"
 )
 
+// TestWithEndpoint 测试设置服务地址
 func TestWithEndpoint(t *testing.T) {
 	opts := new(options)
 	endpoint := "eee"
@@ -18,6 +19,7 @@ func TestWithEndpoint(t *testing.T) {
 	}
 }
 
+// TestWithTopicId 测试设置主题 ID
 func TestWithTopicId(t *testing.T) {
 	opts := new(options)
 	topicID := "ee"
@@ -28,6 +30,7 @@ func TestWithTopicId(t *testing.T) {
 	}
 }
 
+// TestWithAccessKey 测试设置访问键
 func TestWithAccessKey(t *testing.T) {
 	opts := new(options)
 	accessKey := "ee"
@@ -38,6 +41,7 @@ func TestWithAccessKey(t *testing.T) {
 	}
 }
 
+// TestWithAccessSecret 测试设置访问密钥
 func TestWithAccessSecret(t *testing.T) {
 	opts := new(options)
 	accessSecret := "ee"
@@ -48,6 +52,7 @@ func TestWithAccessSecret(t *testing.T) {
 	}
 }
 
+// TestTestLogger 测试日志记录器
 func TestTestLogger(t *testing.T) {
 	topicID := "aa"
 	logger, err := NewLogger(
@@ -69,6 +74,7 @@ func TestTestLogger(t *testing.T) {
 	flog.Error("log", "test")
 }
 
+// TestLog 测试日志发送
 func TestLog(t *testing.T) {
 	topicID := "foo"
 	logger, err := NewLogger(
@@ -104,6 +110,7 @@ func TestLog(t *testing.T) {
 	}
 }
 
+// TestNewString 测试字符串指针转换
 func TestNewString(t *testing.T) {
 	ptr := newString("")
 	if kind := reflect.TypeOf(ptr).Kind(); kind != reflect.Ptr {
@@ -111,6 +118,7 @@ func TestNewString(t *testing.T) {
 	}
 }
 
+// TestToString 测试类型转换为字符串
 func TestToString(t *testing.T) {
 	tests := []struct {
 		name string

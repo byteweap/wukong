@@ -1,4 +1,4 @@
-// Package proto 定义 protobuf 编解码器。导入此包将自动注册编解码器。
+// Package proto 定义 protobuf 编解码器。导入此包将自动注册编解码器
 package proto
 
 import (
@@ -9,7 +9,7 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-// Name 是 proto 编解码器注册的名称。
+// Name 是 proto 编解码器注册的名称
 const Name = "proto"
 
 var c = &codec{}
@@ -18,7 +18,7 @@ func init() {
 	encoding.RegisterCodec(codec{})
 }
 
-// codec 是基于 protobuf 的编解码器实现，是传输的默认编解码器。
+// codec 是基于 protobuf 的编解码器实现，是传输的默认编解码器
 type codec struct{}
 
 func (codec) Marshal(v any) ([]byte, error) {

@@ -5,10 +5,10 @@ import (
 	"log"
 )
 
-// DefaultLogger 是默认日志器。
+// DefaultLogger 是默认日志器
 var DefaultLogger = NewStdLogger(log.Writer())
 
-// Logger 是日志接口。
+// Logger 是日志接口
 type Logger interface {
 	Log(level Level, keyvals ...any) error
 }
@@ -30,7 +30,7 @@ func (c *logger) Log(level Level, keyvals ...any) error {
 	return c.logger.Log(level, kvs...)
 }
 
-// With 追加日志字段。
+// With 追加日志字段
 func With(l Logger, kv ...any) Logger {
 	c, ok := l.(*logger)
 	if !ok {
@@ -47,7 +47,7 @@ func With(l Logger, kv ...any) Logger {
 	}
 }
 
-// WithContext 返回携带新 ctx 的浅拷贝，ctx 不能为空。
+// WithContext 返回携带新 ctx 的浅拷贝，ctx 不能为空
 func WithContext(ctx context.Context, l Logger) Logger {
 	switch v := l.(type) {
 	default:

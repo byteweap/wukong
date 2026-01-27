@@ -9,19 +9,23 @@ import (
 	"github.com/byteweap/wukong/component/log"
 )
 
+// testWriteSyncer 测试写入器
 type testWriteSyncer struct {
 	output []string
 }
 
+// Write 写入数据
 func (x *testWriteSyncer) Write(p []byte) (n int, err error) {
 	x.output = append(x.output, string(p))
 	return len(p), nil
 }
 
+// Sync 同步数据
 func (x *testWriteSyncer) Sync() error {
 	return nil
 }
 
+// TestLogger 测试日志记录器
 func TestLogger(t *testing.T) {
 	syncer := &testWriteSyncer{}
 	encoderCfg := zapcore.EncoderConfig{

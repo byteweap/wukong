@@ -12,6 +12,7 @@ import (
 	"github.com/byteweap/wukong/component/log"
 )
 
+// Logger 腾讯云日志记录器接口
 type Logger interface {
 	log.Logger
 
@@ -26,6 +27,7 @@ type tencentLog struct {
 
 var _ Logger = (*tencentLog)(nil)
 
+// NewLogger 创建腾讯云日志记录器
 func NewLogger(options ...Option) (Logger, error) {
 	opts := defaultOptions()
 	for _, o := range options {
@@ -46,14 +48,17 @@ func NewLogger(options ...Option) (Logger, error) {
 	}, nil
 }
 
+// GetProducer 获取生产者
 func (log *tencentLog) GetProducer() *cls.AsyncProducerClient {
 	return log.producer
 }
 
+// Close 关闭生产者
 func (log *tencentLog) Close() error {
 	return log.producer.Close(5000)
 }
 
+// Log 发送日志
 func (log *tencentLog) Log(level log.Level, kvs ...any) error {
 	contents := make([]*cls.Log_Content, 0, len(kvs)/2+1)
 
@@ -75,11 +80,12 @@ func (log *tencentLog) Log(level log.Level, kvs ...any) error {
 	return log.producer.SendLog(log.opts.topicID, logInst, nil)
 }
 
+// newString 转换为字符串指针
 func newString(s string) *string {
 	return &s
 }
 
-// toString convert any type to string
+// toString 转换为字符串
 func toString(v any) string {
 	var key string
 	if v == nil {

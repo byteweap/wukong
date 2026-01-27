@@ -6,13 +6,13 @@ import (
 	"os"
 )
 
-// DefaultMessageKey 默认消息字段名。
+// DefaultMessageKey 默认消息字段名
 var DefaultMessageKey = "msg"
 
-// Option 是 Helper 的配置项。
+// Option 是 Helper 的配置项
 type Option func(*Helper)
 
-// Helper 是日志辅助封装。
+// Helper 是日志辅助封装
 type Helper struct {
 	logger  Logger
 	msgKey  string
@@ -20,28 +20,28 @@ type Helper struct {
 	sprintf func(format string, a ...any) string
 }
 
-// WithMessageKey 设置消息字段名。
+// WithMessageKey 设置消息字段名
 func WithMessageKey(k string) Option {
 	return func(opts *Helper) {
 		opts.msgKey = k
 	}
 }
 
-// WithSprint 设置 Sprint 实现。
+// WithSprint 设置 Sprint 实现
 func WithSprint(sprint func(...any) string) Option {
 	return func(opts *Helper) {
 		opts.sprint = sprint
 	}
 }
 
-// WithSprintf 设置 Sprintf 实现。
+// WithSprintf 设置 Sprintf 实现
 func WithSprintf(sprintf func(format string, a ...any) string) Option {
 	return func(opts *Helper) {
 		opts.sprintf = sprintf
 	}
 }
 
-// NewHelper 创建日志辅助器。
+// NewHelper 创建日志辅助器
 func NewHelper(logger Logger, opts ...Option) *Helper {
 	options := &Helper{
 		msgKey:  DefaultMessageKey, // 默认消息字段名
@@ -55,7 +55,7 @@ func NewHelper(logger Logger, opts ...Option) *Helper {
 	return options
 }
 
-// WithContext 返回携带新 ctx 的浅拷贝，ctx 不能为空。
+// WithContext 返回携带新 ctx 的浅拷贝，ctx 不能为空
 func (h *Helper) WithContext(ctx context.Context) *Helper {
 	return &Helper{
 		msgKey:  h.msgKey,
@@ -65,7 +65,7 @@ func (h *Helper) WithContext(ctx context.Context) *Helper {
 	}
 }
 
-// Enabled 判断级别是否可输出，基于底层 *Filter 进行判断。
+// Enabled 判断级别是否可输出，基于底层 *Filter 进行判断
 func (h *Helper) Enabled(level Level) bool {
 	if l, ok := h.logger.(*Filter); ok {
 		return level >= l.level
@@ -73,17 +73,17 @@ func (h *Helper) Enabled(level Level) bool {
 	return true
 }
 
-// Logger 返回内部 logger。
+// Logger 返回内部 logger
 func (h *Helper) Logger() Logger {
 	return h.logger
 }
 
-// Log 按级别输出键值对。
+// Log 按级别输出键值对
 func (h *Helper) Log(level Level, keyvals ...any) {
 	_ = h.logger.Log(level, keyvals...)
 }
 
-// Debug 输出 debug 级别日志。
+// Debug 输出 debug 级别日志
 func (h *Helper) Debug(a ...any) {
 	if !h.Enabled(LevelDebug) {
 		return
@@ -91,7 +91,7 @@ func (h *Helper) Debug(a ...any) {
 	_ = h.logger.Log(LevelDebug, h.msgKey, h.sprint(a...))
 }
 
-// Debugf 输出 debug 级别格式化日志。
+// Debugf 输出 debug 级别格式化日志
 func (h *Helper) Debugf(format string, a ...any) {
 	if !h.Enabled(LevelDebug) {
 		return
@@ -99,12 +99,12 @@ func (h *Helper) Debugf(format string, a ...any) {
 	_ = h.logger.Log(LevelDebug, h.msgKey, h.sprintf(format, a...))
 }
 
-// Debugw 输出 debug 级别键值对日志。
+// Debugw 输出 debug 级别键值对日志
 func (h *Helper) Debugw(keyvals ...any) {
 	_ = h.logger.Log(LevelDebug, keyvals...)
 }
 
-// Info 输出 info 级别日志。
+// Info 输出 info 级别日志
 func (h *Helper) Info(a ...any) {
 	if !h.Enabled(LevelInfo) {
 		return
@@ -112,7 +112,7 @@ func (h *Helper) Info(a ...any) {
 	_ = h.logger.Log(LevelInfo, h.msgKey, h.sprint(a...))
 }
 
-// Infof 输出 info 级别格式化日志。
+// Infof 输出 info 级别格式化日志
 func (h *Helper) Infof(format string, a ...any) {
 	if !h.Enabled(LevelInfo) {
 		return
@@ -120,12 +120,12 @@ func (h *Helper) Infof(format string, a ...any) {
 	_ = h.logger.Log(LevelInfo, h.msgKey, h.sprintf(format, a...))
 }
 
-// Infow 输出 info 级别键值对日志。
+// Infow 输出 info 级别键值对日志
 func (h *Helper) Infow(keyvals ...any) {
 	_ = h.logger.Log(LevelInfo, keyvals...)
 }
 
-// Warn 输出 warn 级别日志。
+// Warn 输出 warn 级别日志
 func (h *Helper) Warn(a ...any) {
 	if !h.Enabled(LevelWarn) {
 		return
@@ -133,7 +133,7 @@ func (h *Helper) Warn(a ...any) {
 	_ = h.logger.Log(LevelWarn, h.msgKey, h.sprint(a...))
 }
 
-// Warnf 输出 warn 级别格式化日志。
+// Warnf 输出 warn 级别格式化日志
 func (h *Helper) Warnf(format string, a ...any) {
 	if !h.Enabled(LevelWarn) {
 		return
@@ -141,12 +141,12 @@ func (h *Helper) Warnf(format string, a ...any) {
 	_ = h.logger.Log(LevelWarn, h.msgKey, h.sprintf(format, a...))
 }
 
-// Warnw 输出 warn 级别键值对日志。
+// Warnw 输出 warn 级别键值对日志
 func (h *Helper) Warnw(keyvals ...any) {
 	_ = h.logger.Log(LevelWarn, keyvals...)
 }
 
-// Error 输出 error 级别日志。
+// Error 输出 error 级别日志
 func (h *Helper) Error(a ...any) {
 	if !h.Enabled(LevelError) {
 		return
@@ -154,7 +154,7 @@ func (h *Helper) Error(a ...any) {
 	_ = h.logger.Log(LevelError, h.msgKey, h.sprint(a...))
 }
 
-// Errorf 输出 error 级别格式化日志。
+// Errorf 输出 error 级别格式化日志
 func (h *Helper) Errorf(format string, a ...any) {
 	if !h.Enabled(LevelError) {
 		return
@@ -162,24 +162,24 @@ func (h *Helper) Errorf(format string, a ...any) {
 	_ = h.logger.Log(LevelError, h.msgKey, h.sprintf(format, a...))
 }
 
-// Errorw 输出 error 级别键值对日志。
+// Errorw 输出 error 级别键值对日志
 func (h *Helper) Errorw(keyvals ...any) {
 	_ = h.logger.Log(LevelError, keyvals...)
 }
 
-// Fatal 输出 fatal 级别日志并退出进程。
+// Fatal 输出 fatal 级别日志并退出进程
 func (h *Helper) Fatal(a ...any) {
 	_ = h.logger.Log(LevelFatal, h.msgKey, h.sprint(a...))
 	os.Exit(1)
 }
 
-// Fatalf 输出 fatal 级别格式化日志并退出进程。
+// Fatalf 输出 fatal 级别格式化日志并退出进程
 func (h *Helper) Fatalf(format string, a ...any) {
 	_ = h.logger.Log(LevelFatal, h.msgKey, h.sprintf(format, a...))
 	os.Exit(1)
 }
 
-// Fatalw 输出 fatal 级别键值对日志并退出进程。
+// Fatalw 输出 fatal 级别键值对日志并退出进程
 func (h *Helper) Fatalw(keyvals ...any) {
 	_ = h.logger.Log(LevelFatal, keyvals...)
 	os.Exit(1)

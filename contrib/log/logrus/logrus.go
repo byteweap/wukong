@@ -6,18 +6,21 @@ import (
 	"github.com/byteweap/wukong/component/log"
 )
 
-var _ log.Logger = (*Logger)(nil)
-
+// Logger 日志记录器
 type Logger struct {
 	log *logrus.Logger
 }
 
+var _ log.Logger = (*Logger)(nil)
+
+// NewLogger 创建日志记录器
 func NewLogger(logger *logrus.Logger) log.Logger {
 	return &Logger{
 		log: logger,
 	}
 }
 
+// Log 发送日志
 func (l *Logger) Log(level log.Level, kvs ...any) (err error) {
 	var (
 		logrusLevel logrus.Level

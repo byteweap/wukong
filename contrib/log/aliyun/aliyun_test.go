@@ -8,6 +8,7 @@ import (
 	"github.com/byteweap/wukong/component/log"
 )
 
+// TestWithEndpoint 测试设置服务地址
 func TestWithEndpoint(t *testing.T) {
 	opts := new(options)
 	endpoint := "foo"
@@ -18,6 +19,7 @@ func TestWithEndpoint(t *testing.T) {
 	}
 }
 
+// TestWithProject 测试设置项目名
 func TestWithProject(t *testing.T) {
 	opts := new(options)
 	project := "foo"
@@ -28,6 +30,7 @@ func TestWithProject(t *testing.T) {
 	}
 }
 
+// TestWithLogstore 测试设置日志库
 func TestWithLogstore(t *testing.T) {
 	opts := new(options)
 	logstore := "foo"
@@ -38,6 +41,7 @@ func TestWithLogstore(t *testing.T) {
 	}
 }
 
+// TestWithAccessKey 测试设置访问键
 func TestWithAccessKey(t *testing.T) {
 	opts := new(options)
 	accessKey := "foo"
@@ -48,6 +52,7 @@ func TestWithAccessKey(t *testing.T) {
 	}
 }
 
+// TestWithAccessSecret 测试设置访问密钥
 func TestWithAccessSecret(t *testing.T) {
 	opts := new(options)
 	accessSecret := "foo"
@@ -58,6 +63,7 @@ func TestWithAccessSecret(t *testing.T) {
 	}
 }
 
+// TestLogger 测试日志记录器
 func TestLogger(t *testing.T) {
 	project := "foo"
 	logger, err := NewAliyunLog(WithProject(project))
@@ -74,6 +80,7 @@ func TestLogger(t *testing.T) {
 	flog.Error("log", "test")
 }
 
+// TestLog 测试日志发送
 func TestLog(t *testing.T) {
 	project := "foo"
 	logger, err := NewAliyunLog(WithProject(project))
@@ -108,6 +115,7 @@ func TestLog(t *testing.T) {
 	}
 }
 
+// TestNewString 测试字符串指针转换
 func TestNewString(t *testing.T) {
 	ptr := newString("")
 	if kind := reflect.TypeOf(ptr).Kind(); kind != reflect.Ptr {
@@ -115,6 +123,7 @@ func TestNewString(t *testing.T) {
 	}
 }
 
+// TestToString 测试类型转换为字符串
 func TestToString(t *testing.T) {
 	tests := []struct {
 		name string

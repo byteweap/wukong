@@ -10,6 +10,7 @@ import (
 	"github.com/byteweap/wukong/component/log"
 )
 
+// TestLoggerLog 测试日志输出
 func TestLoggerLog(t *testing.T) {
 	tests := map[string]struct {
 		level     logrus.Level

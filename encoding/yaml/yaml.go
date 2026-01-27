@@ -5,7 +5,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Name 是 YAML 编解码器注册的名称。
+// Name 是 YAML 编解码器注册的名称
 const Name = "yaml"
 
 var c = &codec{}
@@ -14,7 +14,7 @@ func init() {
 	encoding.RegisterCodec(codec{})
 }
 
-// codec 是基于 YAML 的编解码器实现。
+// codec 是基于 YAML 的编解码器实现
 type codec struct{}
 
 func (codec) Marshal(v any) ([]byte, error) {

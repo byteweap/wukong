@@ -54,7 +54,7 @@ func defaultOptions() *options {
 	}
 }
 
-// WithURLs 设置 NATS 服务地址.
+// URLs 设置 NATS 服务地址
 func URLs(urls ...string) Option {
 	return func(o *options) {
 		if len(urls) > 0 {
@@ -63,7 +63,7 @@ func URLs(urls ...string) Option {
 	}
 }
 
-// Name 设置连接名称.
+// Name 设置连接名称
 func Name(name string) Option {
 	return func(o *options) {
 		if name != "" {
@@ -72,14 +72,14 @@ func Name(name string) Option {
 	}
 }
 
-// Token 使用 token 认证.
+// Token 使用 token 认证
 func Token(token string) Option {
 	return func(o *options) {
 		o.token = token
 	}
 }
 
-// UserPass 使用用户名/密码认证.
+// UserPass 使用用户名/密码认证
 func UserPass(user, pass string) Option {
 	return func(o *options) {
 		o.user = user

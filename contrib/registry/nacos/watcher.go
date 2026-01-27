@@ -11,8 +11,6 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/vo"
 )
 
-var _ registry.Watcher = (*watcher)(nil)
-
 type watcher struct {
 	serviceName    string
 	clusters       []string
@@ -24,6 +22,8 @@ type watcher struct {
 	kind           string
 	subscribeParam *vo.SubscribeParam
 }
+
+var _ registry.Watcher = (*watcher)(nil)
 
 func newWatcher(ctx context.Context, cli naming_client.INamingClient, serviceName, groupName, kind string, clusters []string) (*watcher, error) {
 	w := &watcher{

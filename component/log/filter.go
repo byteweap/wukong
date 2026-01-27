@@ -1,19 +1,19 @@
 package log
 
-// FilterOption 是过滤器选项。
+// FilterOption 是过滤器选项
 type FilterOption func(*Filter)
 
-// fuzzyStr 是脱敏占位符。
+// fuzzyStr 是脱敏占位符
 const fuzzyStr = "***"
 
-// FilterLevel 设置最低输出级别。
+// FilterLevel 设置最低输出级别
 func FilterLevel(level Level) FilterOption {
 	return func(opts *Filter) {
 		opts.level = level
 	}
 }
 
-// FilterKey 设置需要脱敏的键。
+// FilterKey 设置需要脱敏的键
 func FilterKey(key ...string) FilterOption {
 	return func(o *Filter) {
 		for _, v := range key {
@@ -22,7 +22,7 @@ func FilterKey(key ...string) FilterOption {
 	}
 }
 
-// FilterValue 设置需要脱敏的值。
+// FilterValue 设置需要脱敏的值
 func FilterValue(value ...string) FilterOption {
 	return func(o *Filter) {
 		for _, v := range value {
@@ -31,14 +31,14 @@ func FilterValue(value ...string) FilterOption {
 	}
 }
 
-// FilterFunc 设置自定义过滤函数。
+// FilterFunc 设置自定义过滤函数
 func FilterFunc(f func(level Level, keyvals ...any) bool) FilterOption {
 	return func(o *Filter) {
 		o.filter = f
 	}
 }
 
-// Filter 是日志过滤器。
+// Filter 是日志过滤器
 type Filter struct {
 	logger Logger
 	level  Level
@@ -47,7 +47,7 @@ type Filter struct {
 	filter func(level Level, keyvals ...any) bool
 }
 
-// NewFilter 创建日志过滤器。
+// NewFilter 创建日志过滤器
 func NewFilter(logger Logger, opts ...FilterOption) *Filter {
 	options := Filter{
 		logger: logger,
@@ -60,7 +60,7 @@ func NewFilter(logger Logger, opts ...FilterOption) *Filter {
 	return &options
 }
 
-// Log 按级别输出键值对日志。
+// Log 按级别输出键值对日志
 func (f *Filter) Log(level Level, keyvals ...any) error {
 	if level < f.level {
 		return nil

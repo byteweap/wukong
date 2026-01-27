@@ -13,7 +13,7 @@ import (
 	"github.com/byteweap/wukong/component/log"
 )
 
-// Logger see more detail https://github.com/aliyun/aliyun-log-go-sdk
+// Logger 阿里云日志记录器接口
 type Logger interface {
 	log.Logger
 
@@ -28,7 +28,7 @@ type aliyunLog struct {
 
 var _ Logger = (*aliyunLog)(nil)
 
-// NewAliyunLog new aliyun logger with options.
+// NewAliyunLog 创建阿里云日志记录器
 func NewAliyunLog(options ...Option) (Logger, error) {
 	opts := defaultOptions()
 	for _, o := range options {
@@ -51,25 +51,28 @@ func NewAliyunLog(options ...Option) (Logger, error) {
 	}, nil
 }
 
+// GetProducer 获取生产者
 func (a *aliyunLog) GetProducer() *producer.Producer {
 	return a.producer
 }
 
+// Close 关闭生产者
 func (a *aliyunLog) Close() error {
 	return a.producer.Close(5000)
 }
 
-func (a *aliyunLog) Log(level log.Level, keyvals ...any) error {
-	contents := make([]*sls.LogContent, 0, len(keyvals)/2+1)
+// Log 发送日志
+func (a *aliyunLog) Log(level log.Level, kvs ...any) error {
+	contents := make([]*sls.LogContent, 0, len(kvs)/2+1)
 
 	contents = append(contents, &sls.LogContent{
 		Key:   newString(level.Key()),
 		Value: newString(level.String()),
 	})
-	for i := 0; i < len(keyvals); i += 2 {
+	for i := 0; i < len(kvs); i += 2 {
 		contents = append(contents, &sls.LogContent{
-			Key:   newString(toString(keyvals[i])),
-			Value: newString(toString(keyvals[i+1])),
+			Key:   newString(toString(kvs[i])),
+			Value: newString(toString(kvs[i+1])),
 		})
 	}
 
@@ -80,12 +83,12 @@ func (a *aliyunLog) Log(level log.Level, keyvals ...any) error {
 	return a.producer.SendLog(a.opts.project, a.opts.logstore, "", "", logInst)
 }
 
-// newString string convert to *string
+// newString 转换为字符串指针
 func newString(s string) *string {
 	return &s
 }
 
-// toString convert any type to string
+// toString 转换为字符串
 func toString(v any) string {
 	var key string
 	if v == nil {

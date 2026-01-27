@@ -11,7 +11,7 @@ import (
 	"github.com/byteweap/wukong/component/log"
 )
 
-// Logger is fluent logger sdk.
+// Logger 是 fluent 日志记录器
 type Logger struct {
 	opts options
 	log  *fluent.Fluent
@@ -19,8 +19,8 @@ type Logger struct {
 
 var _ log.Logger = (*Logger)(nil)
 
-// NewLogger new a std logger with options.
-// target:
+// NewLogger 创建 fluent 日志记录器
+// target
 //
 //	tcp://127.0.0.1:24224
 //	unix://var/run/fluent/fluent.sock
@@ -71,19 +71,19 @@ func NewLogger(addr string, opts ...Option) (*Logger, error) {
 	}, nil
 }
 
-// Log print the kv pairs log.
-func (l *Logger) Log(level log.Level, keyvals ...any) error {
-	if len(keyvals) == 0 {
+// Log 发送键值对日志
+func (l *Logger) Log(level log.Level, kvs ...any) error {
+	if len(kvs) == 0 {
 		return nil
 	}
-	if len(keyvals)%2 != 0 {
-		keyvals = append(keyvals, "KEYVALS UNPAIRED")
+	if len(kvs)%2 != 0 {
+		kvs = append(kvs, "KEYVALS UNPAIRED")
 	}
 
-	data := make(map[string]string, len(keyvals)/2+1)
+	data := make(map[string]string, len(kvs)/2+1)
 
-	for i := 0; i < len(keyvals); i += 2 {
-		data[fmt.Sprint(keyvals[i])] = fmt.Sprint(keyvals[i+1])
+	for i := 0; i < len(kvs); i += 2 {
+		data[fmt.Sprint(kvs[i])] = fmt.Sprint(kvs[i+1])
 	}
 
 	if err := l.log.Post(level.String(), data); err != nil {
@@ -92,7 +92,7 @@ func (l *Logger) Log(level log.Level, keyvals ...any) error {
 	return nil
 }
 
-// Close close the logger.
+// Close 关闭日志记录器
 func (l *Logger) Close() error {
 	return l.log.Close()
 }

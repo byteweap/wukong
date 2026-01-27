@@ -9,22 +9,25 @@ import (
 	"github.com/byteweap/wukong/component/log"
 )
 
-var _ log.Logger = (*Logger)(nil)
-
-type Logger struct {
-	log    *zap.Logger
-	msgKey string
-}
-
+// Option 配置函数
 type Option func(*Logger)
 
-// WithMessageKey with message key.
+// WithMessageKey 设置消息键
 func WithMessageKey(key string) Option {
 	return func(l *Logger) {
 		l.msgKey = key
 	}
 }
 
+// Logger 日志记录器
+type Logger struct {
+	log    *zap.Logger
+	msgKey string
+}
+
+var _ log.Logger = (*Logger)(nil)
+
+// NewLogger 创建日志记录器
 func NewLogger(zlog *zap.Logger) *Logger {
 	return &Logger{
 		log:    zlog,
@@ -32,28 +35,28 @@ func NewLogger(zlog *zap.Logger) *Logger {
 	}
 }
 
-func (l *Logger) Log(level log.Level, keyvals ...any) error {
-	// If logging at this level is completely disabled, skip the overhead of
-	// string formatting.
+// Log 发送日志
+func (l *Logger) Log(level log.Level, kvs ...any) error {
+	// 若该级别被禁用则跳过格式化开销
 	if zapcore.Level(level) < zapcore.DPanicLevel && !l.log.Core().Enabled(zapcore.Level(level)) {
 		return nil
 	}
 	var (
 		msg    = ""
-		keylen = len(keyvals)
+		keylen = len(kvs)
 	)
 	if keylen == 0 || keylen%2 != 0 {
-		l.log.Warn(fmt.Sprint("Keyvalues must appear in pairs: ", keyvals))
+		l.log.Warn(fmt.Sprint("Keyvalues must appear in pairs: ", kvs))
 		return nil
 	}
 
 	data := make([]zap.Field, 0, (keylen/2)+1)
 	for i := 0; i < keylen; i += 2 {
-		if keyvals[i].(string) == l.msgKey {
-			msg, _ = keyvals[i+1].(string)
+		if kvs[i].(string) == l.msgKey {
+			msg, _ = kvs[i+1].(string)
 			continue
 		}
-		data = append(data, zap.Any(fmt.Sprint(keyvals[i]), keyvals[i+1]))
+		data = append(data, zap.Any(fmt.Sprint(kvs[i]), kvs[i+1]))
 	}
 
 	switch level {
@@ -71,10 +74,12 @@ func (l *Logger) Log(level log.Level, keyvals ...any) error {
 	return nil
 }
 
+// Sync 刷新日志
 func (l *Logger) Sync() error {
 	return l.log.Sync()
 }
 
+// Close 关闭日志记录器
 func (l *Logger) Close() error {
 	return l.Sync()
 }

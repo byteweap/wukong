@@ -21,11 +21,11 @@ type Registry struct {
 	ctxMap map[string]*serviceCancel
 }
 
+var _ registry.Registry = (*Registry)(nil)
+
 func (r *Registry) ID() string {
 	return "etcd"
 }
-
-var _ registry.Registry = (*Registry)(nil)
 
 type serviceCancel struct {
 	service *registry.ServiceInstance

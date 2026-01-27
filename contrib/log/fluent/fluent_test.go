@@ -10,6 +10,7 @@ import (
 	"github.com/byteweap/wukong/component/log"
 )
 
+// TestMain 启动测试监听器
 func TestMain(m *testing.M) {
 	listener := func(ln net.Listener) {
 		conn, err := ln.Accept()
@@ -35,6 +36,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
+// TestWithTimeout 测试设置超时
 func TestWithTimeout(t *testing.T) {
 	opts := new(options)
 	var duration time.Duration = 1000000000
@@ -45,6 +47,7 @@ func TestWithTimeout(t *testing.T) {
 	}
 }
 
+// TestWithWriteTimeout 测试设置写入超时
 func TestWithWriteTimeout(t *testing.T) {
 	opts := new(options)
 	var duration time.Duration = 1000000000
@@ -55,6 +58,7 @@ func TestWithWriteTimeout(t *testing.T) {
 	}
 }
 
+// TestWithBufferLimit 测试设置缓冲上限
 func TestWithBufferLimit(t *testing.T) {
 	opts := new(options)
 	bufferLimit := 1000000000
@@ -65,6 +69,7 @@ func TestWithBufferLimit(t *testing.T) {
 	}
 }
 
+// TestWithRetryWait 测试设置重试间隔
 func TestWithRetryWait(t *testing.T) {
 	opts := new(options)
 	retryWait := 1000000000
@@ -75,6 +80,7 @@ func TestWithRetryWait(t *testing.T) {
 	}
 }
 
+// TestWithMaxRetry 测试设置最大重试次数
 func TestWithMaxRetry(t *testing.T) {
 	opts := new(options)
 	maxRetry := 1000000000
@@ -85,6 +91,7 @@ func TestWithMaxRetry(t *testing.T) {
 	}
 }
 
+// TestWithMaxRetryWait 测试设置最大重试等待
 func TestWithMaxRetryWait(t *testing.T) {
 	opts := new(options)
 	maxRetryWait := 1000000000
@@ -95,6 +102,7 @@ func TestWithMaxRetryWait(t *testing.T) {
 	}
 }
 
+// TestWithTagPrefix 测试设置标签前缀
 func TestWithTagPrefix(t *testing.T) {
 	opts := new(options)
 	tagPrefix := "tag_prefix"
@@ -105,6 +113,7 @@ func TestWithTagPrefix(t *testing.T) {
 	}
 }
 
+// TestWithAsync 测试设置异步发送
 func TestWithAsync(t *testing.T) {
 	opts := new(options)
 	async := true
@@ -115,6 +124,7 @@ func TestWithAsync(t *testing.T) {
 	}
 }
 
+// TestWithForceStopAsyncSend 测试强制停止异步发送
 func TestWithForceStopAsyncSend(t *testing.T) {
 	opts := new(options)
 	forceStopAsyncSend := true
@@ -125,6 +135,7 @@ func TestWithForceStopAsyncSend(t *testing.T) {
 	}
 }
 
+// TestLogger 测试日志记录器
 func TestLogger(t *testing.T) {
 	logger, err := NewLogger("tcp://127.0.0.1:24224")
 	if err != nil {
@@ -139,6 +150,7 @@ func TestLogger(t *testing.T) {
 	flog.Error("log", "test")
 }
 
+// TestLoggerWithOpt 测试带配置的日志记录器
 func TestLoggerWithOpt(t *testing.T) {
 	var duration time.Duration = 1000000000
 	logger, err := NewLogger("tcp://127.0.0.1:24224", WithTimeout(duration))
@@ -154,6 +166,7 @@ func TestLoggerWithOpt(t *testing.T) {
 	flog.Error("log", "test")
 }
 
+// TestLoggerError 测试错误地址
 func TestLoggerError(t *testing.T) {
 	errCase := []string{
 		"foo",
@@ -171,6 +184,7 @@ func TestLoggerError(t *testing.T) {
 	}
 }
 
+// BenchmarkLoggerPrint 基准测试日志输出
 func BenchmarkLoggerPrint(b *testing.B) {
 	b.SetParallelism(100)
 	logger, err := NewLogger("tcp://127.0.0.1:24224")
@@ -186,6 +200,7 @@ func BenchmarkLoggerPrint(b *testing.B) {
 	})
 }
 
+// BenchmarkLoggerHelperV 基准测试日志助手
 func BenchmarkLoggerHelperV(b *testing.B) {
 	b.SetParallelism(100)
 	logger, err := NewLogger("tcp://127.0.0.1:24224")
@@ -200,6 +215,7 @@ func BenchmarkLoggerHelperV(b *testing.B) {
 	})
 }
 
+// BenchmarkLoggerHelperInfo 基准测试信息日志
 func BenchmarkLoggerHelperInfo(b *testing.B) {
 	b.SetParallelism(100)
 	logger, err := NewLogger("tcp://127.0.0.1:24224")
@@ -215,6 +231,7 @@ func BenchmarkLoggerHelperInfo(b *testing.B) {
 	})
 }
 
+// BenchmarkLoggerHelperInfof 基准测试格式化日志
 func BenchmarkLoggerHelperInfof(b *testing.B) {
 	b.SetParallelism(100)
 	logger, err := NewLogger("tcp://127.0.0.1:24224")
@@ -230,6 +247,7 @@ func BenchmarkLoggerHelperInfof(b *testing.B) {
 	})
 }
 
+// BenchmarkLoggerHelperInfow 基准测试键值日志
 func BenchmarkLoggerHelperInfow(b *testing.B) {
 	b.SetParallelism(100)
 	logger, err := NewLogger("tcp://127.0.0.1:24224")

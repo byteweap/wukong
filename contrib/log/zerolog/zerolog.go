@@ -5,27 +5,30 @@ import (
 	"github.com/rs/zerolog"
 )
 
+// Logger 日志记录器
 type Logger struct {
 	log *zerolog.Logger
 }
 
 var _ log.Logger = (*Logger)(nil)
 
+// NewLogger 创建日志记录器
 func NewLogger(logger *zerolog.Logger) log.Logger {
 	return &Logger{
 		log: logger,
 	}
 }
 
-func (l *Logger) Log(level log.Level, keyvals ...any) (err error) {
+// Log 发送日志
+func (l *Logger) Log(level log.Level, kvs ...any) (err error) {
 
 	var event *zerolog.Event
 
-	if len(keyvals) == 0 {
+	if len(kvs) == 0 {
 		return nil
 	}
-	if len(keyvals)%2 != 0 {
-		keyvals = append(keyvals, "")
+	if len(kvs)%2 != 0 {
+		kvs = append(kvs, "")
 	}
 
 	switch level {
@@ -43,12 +46,12 @@ func (l *Logger) Log(level log.Level, keyvals ...any) (err error) {
 		event = l.log.Debug()
 	}
 
-	for i := 0; i < len(keyvals); i += 2 {
-		key, ok := keyvals[i].(string)
+	for i := 0; i < len(kvs); i += 2 {
+		key, ok := kvs[i].(string)
 		if !ok {
 			continue
 		}
-		event = event.Any(key, keyvals[i+1])
+		event = event.Any(key, kvs[i+1])
 	}
 	event.Send()
 	return
