@@ -99,8 +99,8 @@ func Registry(r registry.Registry) Option {
 	return func(o *options) { o.registry = r }
 }
 
-// RegistrarTimeout 设置注册超时
-func RegistrarTimeout(t time.Duration) Option {
+// RegistryTimeout 设置注册超时
+func RegistryTimeout(t time.Duration) Option {
 	return func(o *options) { o.registryTimeout = t }
 }
 
