@@ -187,7 +187,7 @@ func (a *App) register(ctx context.Context) error {
 	instance := a.instance
 	a.mu.Unlock()
 
-	if a.opts.registry != nil {
+	if a.opts.registry != nil && instance != nil {
 		regCtx, regCancel := context.WithTimeout(ctx, a.opts.registryTimeout)
 		defer regCancel()
 		if err := a.opts.registry.Register(regCtx, instance); err != nil {
