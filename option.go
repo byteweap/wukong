@@ -13,32 +13,37 @@ import (
 	"github.com/google/uuid"
 )
 
-// Option 为应用选项
-type Option func(o *options)
+type (
 
-// options 为应用配置项集合
-type options struct {
-	id        string
-	name      string
-	version   string
-	metadata  map[string]string
-	endpoints []*url.URL
+	// Hook 为应用钩子
+	Hook func(context.Context) error
 
-	ctx  context.Context
-	sigs []os.Signal
+	// options 为应用配置项集合
+	options struct {
+		id        string
+		name      string
+		version   string
+		metadata  map[string]string
+		endpoints []*url.URL
 
-	logger          log.Logger
-	registry        registry.Registry
-	registryTimeout time.Duration
-	stopTimeout     time.Duration
-	servers         []server.Server
+		ctx  context.Context
+		sigs []os.Signal
 
-	// 启停前后回调
-	beforeStart []func(context.Context) error
-	beforeStop  []func(context.Context) error
-	afterStart  []func(context.Context) error
-	afterStop   []func(context.Context) error
-}
+		logger          log.Logger
+		registry        registry.Registry
+		registryTimeout time.Duration
+		stopTimeout     time.Duration
+		servers         []server.Server
+
+		preStartHooks  []Hook // 启动前钩子
+		preStopHooks   []Hook // 停止前钩子
+		postStartHooks []Hook // 启动后钩子
+		postStopHooks  []Hook // 停止后钩子
+	}
+
+	// Option 为应用选项
+	Option func(o *options)
+)
 
 // defaultOptions 返回默认配置
 func defaultOptions() *options {
@@ -109,32 +114,30 @@ func StopTimeout(t time.Duration) Option {
 	return func(o *options) { o.stopTimeout = t }
 }
 
-// 启停前后回调
-
-// BeforeStart 添加启动前回调
-func BeforeStart(fn func(context.Context) error) Option {
+// PreStart 添加启动前回调
+func PreStart(hook Hook) Option {
 	return func(o *options) {
-		o.beforeStart = append(o.beforeStart, fn)
+		o.preStartHooks = append(o.preStartHooks, hook)
 	}
 }
 
-// BeforeStop 添加停止前回调
-func BeforeStop(fn func(context.Context) error) Option {
+// PreStop 添加停止前回调
+func PreStop(hook Hook) Option {
 	return func(o *options) {
-		o.beforeStop = append(o.beforeStop, fn)
+		o.preStopHooks = append(o.preStopHooks, hook)
 	}
 }
 
-// AfterStart 添加启动后回调
-func AfterStart(fn func(context.Context) error) Option {
+// PostStart 添加启动后回调
+func PostStart(hook Hook) Option {
 	return func(o *options) {
-		o.afterStart = append(o.afterStart, fn)
+		o.postStartHooks = append(o.postStartHooks, hook)
 	}
 }
 
-// AfterStop 添加停止后回调
-func AfterStop(fn func(context.Context) error) Option {
+// PostStop 添加停止后回调
+func PostStop(hook Hook) Option {
 	return func(o *options) {
-		o.afterStop = append(o.afterStop, fn)
+		o.postStopHooks = append(o.postStopHooks, hook)
 	}
 }

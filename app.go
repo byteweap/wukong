@@ -77,7 +77,7 @@ func (a *App) Run() error {
 	eg, ctx := errgroup.WithContext(sctx)
 	wg := sync.WaitGroup{}
 
-	for _, fn := range a.opts.beforeStart {
+	for _, fn := range a.opts.preStartHooks {
 		if err := fn(sctx); err != nil {
 			return err
 		}
@@ -107,7 +107,7 @@ func (a *App) Run() error {
 		return err
 	}
 
-	for _, fn := range a.opts.afterStart {
+	for _, fn := range a.opts.postStartHooks {
 		if err := fn(sctx); err != nil {
 			return err
 		}
@@ -127,7 +127,7 @@ func (a *App) Run() error {
 		return err
 	}
 	var err error
-	for _, fn := range a.opts.afterStop {
+	for _, fn := range a.opts.postStopHooks {
 		err = fn(sctx)
 	}
 	return err
@@ -136,7 +136,7 @@ func (a *App) Run() error {
 // Stop 优雅停止应用
 func (a *App) Stop() (err error) {
 	sctx := NewContext(a.ctx, a)
-	for _, fn := range a.opts.beforeStop {
+	for _, fn := range a.opts.preStopHooks {
 		err = fn(sctx)
 	}
 
