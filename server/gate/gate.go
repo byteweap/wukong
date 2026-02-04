@@ -70,6 +70,7 @@ func (g *Gate) setup(appID string) {
 		log.Infof("gate stop success")
 	})
 	ns.OnConnect(func(conn network.Conn) {
+		// todo
 		log.Infof("gate connection established, remote addr: %s", conn.RemoteAddr())
 	})
 	ns.OnDisconnect(func(conn network.Conn) {
