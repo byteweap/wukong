@@ -31,20 +31,20 @@ func NewStdLogger(w io.Writer) Logger {
 }
 
 // Log 输出键值对日志
-func (l *stdLogger) Log(level Level, keyvals ...any) error {
-	if l.isDiscard || len(keyvals) == 0 {
+func (l *stdLogger) Log(level Level, kvs ...any) error {
+	if l.isDiscard || len(kvs) == 0 {
 		return nil
 	}
-	if (len(keyvals) & 1) == 1 {
-		keyvals = append(keyvals, "KEYVALS UNPAIRED")
+	if (len(kvs) & 1) == 1 {
+		kvs = append(kvs, "KVS UNPAIRED")
 	}
 
 	buf := l.pool.Get().(*bytes.Buffer)
 	defer l.pool.Put(buf)
 
 	buf.WriteString(level.String())
-	for i := 0; i < len(keyvals); i += 2 {
-		_, _ = fmt.Fprintf(buf, " %s=%v", keyvals[i], keyvals[i+1])
+	for i := 0; i < len(kvs); i += 2 {
+		_, _ = fmt.Fprintf(buf, " %s=%v", kvs[i], kvs[i+1])
 	}
 	buf.WriteByte('\n')
 	defer buf.Reset()

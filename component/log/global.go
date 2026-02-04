@@ -39,8 +39,8 @@ func GetLogger() Logger {
 }
 
 // Log 按级别输出键值对日志
-func Log(level Level, keyvals ...any) {
-	_ = global.Log(level, keyvals...)
+func Log(level Level, kvs ...any) {
+	_ = global.Log(level, kvs...)
 }
 
 // Context 返回带上下文的日志辅助器
@@ -59,8 +59,8 @@ func Debugf(format string, a ...any) {
 }
 
 // Debugw 输出 debug 级别键值对日志
-func Debugw(keyvals ...any) {
-	_ = global.Log(LevelDebug, keyvals...)
+func Debugw(kvs ...any) {
+	_ = global.Log(LevelDebug, kvs...)
 }
 
 // Info 输出 info 级别日志
@@ -74,8 +74,8 @@ func Infof(format string, a ...any) {
 }
 
 // Infow 输出 info 级别键值对日志
-func Infow(keyvals ...any) {
-	_ = global.Log(LevelInfo, keyvals...)
+func Infow(kvs ...any) {
+	_ = global.Log(LevelInfo, kvs...)
 }
 
 // Warn 输出 warn 级别日志
@@ -89,8 +89,8 @@ func Warnf(format string, a ...any) {
 }
 
 // Warnw 输出 warn 级别键值对日志
-func Warnw(keyvals ...any) {
-	_ = global.Log(LevelWarn, keyvals...)
+func Warnw(kvs ...any) {
+	_ = global.Log(LevelWarn, kvs...)
 }
 
 // Error 输出 error 级别日志
@@ -104,8 +104,8 @@ func Errorf(format string, a ...any) {
 }
 
 // Errorw 输出 error 级别键值对日志
-func Errorw(keyvals ...any) {
-	_ = global.Log(LevelError, keyvals...)
+func Errorw(kvs ...any) {
+	_ = global.Log(LevelError, kvs...)
 }
 
 // Fatal 输出 fatal 级别日志并退出进程
@@ -121,7 +121,7 @@ func Fatalf(format string, a ...any) {
 }
 
 // Fatalw 输出 fatal 级别键值对日志并退出进程
-func Fatalw(keyvals ...any) {
-	_ = global.Log(LevelFatal, keyvals...)
+func Fatalw(kvs ...any) {
+	_ = global.Log(LevelFatal, kvs...)
 	os.Exit(1)
 }

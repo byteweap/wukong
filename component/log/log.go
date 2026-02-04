@@ -10,7 +10,7 @@ var DefaultLogger = NewStdLogger(log.Writer())
 
 // Logger 是日志接口
 type Logger interface {
-	Log(level Level, keyvals ...any) error
+	Log(level Level, kvs ...any) error
 }
 
 type logger struct {

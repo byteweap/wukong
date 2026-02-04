@@ -79,8 +79,8 @@ func (h *Helper) Logger() Logger {
 }
 
 // Log 按级别输出键值对
-func (h *Helper) Log(level Level, keyvals ...any) {
-	_ = h.logger.Log(level, keyvals...)
+func (h *Helper) Log(level Level, kvs ...any) {
+	_ = h.logger.Log(level, kvs...)
 }
 
 // Debug 输出 debug 级别日志
@@ -100,8 +100,8 @@ func (h *Helper) Debugf(format string, a ...any) {
 }
 
 // Debugw 输出 debug 级别键值对日志
-func (h *Helper) Debugw(keyvals ...any) {
-	_ = h.logger.Log(LevelDebug, keyvals...)
+func (h *Helper) Debugw(kvs ...any) {
+	_ = h.logger.Log(LevelDebug, kvs...)
 }
 
 // Info 输出 info 级别日志
@@ -121,8 +121,8 @@ func (h *Helper) Infof(format string, a ...any) {
 }
 
 // Infow 输出 info 级别键值对日志
-func (h *Helper) Infow(keyvals ...any) {
-	_ = h.logger.Log(LevelInfo, keyvals...)
+func (h *Helper) Infow(kvs ...any) {
+	_ = h.logger.Log(LevelInfo, kvs...)
 }
 
 // Warn 输出 warn 级别日志
@@ -142,8 +142,8 @@ func (h *Helper) Warnf(format string, a ...any) {
 }
 
 // Warnw 输出 warn 级别键值对日志
-func (h *Helper) Warnw(keyvals ...any) {
-	_ = h.logger.Log(LevelWarn, keyvals...)
+func (h *Helper) Warnw(kvs ...any) {
+	_ = h.logger.Log(LevelWarn, kvs...)
 }
 
 // Error 输出 error 级别日志
@@ -163,8 +163,8 @@ func (h *Helper) Errorf(format string, a ...any) {
 }
 
 // Errorw 输出 error 级别键值对日志
-func (h *Helper) Errorw(keyvals ...any) {
-	_ = h.logger.Log(LevelError, keyvals...)
+func (h *Helper) Errorw(kvs ...any) {
+	_ = h.logger.Log(LevelError, kvs...)
 }
 
 // Fatal 输出 fatal 级别日志并退出进程
@@ -180,7 +180,7 @@ func (h *Helper) Fatalf(format string, a ...any) {
 }
 
 // Fatalw 输出 fatal 级别键值对日志并退出进程
-func (h *Helper) Fatalw(keyvals ...any) {
-	_ = h.logger.Log(LevelFatal, keyvals...)
+func (h *Helper) Fatalw(kvs ...any) {
+	_ = h.logger.Log(LevelFatal, kvs...)
 	os.Exit(1)
 }

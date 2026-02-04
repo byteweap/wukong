@@ -48,18 +48,18 @@ func Timestamp(layout string) Valuer {
 }
 
 // bindValues 将 Valuer 绑定为实际值
-func bindValues(ctx context.Context, keyvals []any) {
-	for i := 1; i < len(keyvals); i += 2 {
-		if v, ok := keyvals[i].(Valuer); ok {
-			keyvals[i] = v(ctx)
+func bindValues(ctx context.Context, kvs []any) {
+	for i := 1; i < len(kvs); i += 2 {
+		if v, ok := kvs[i].(Valuer); ok {
+			kvs[i] = v(ctx)
 		}
 	}
 }
 
 // containsValuer 判断键值对中是否包含 Valuer
-func containsValuer(keyvals []any) bool {
-	for i := 1; i < len(keyvals); i += 2 {
-		if _, ok := keyvals[i].(Valuer); ok {
+func containsValuer(kvs []any) bool {
+	for i := 1; i < len(kvs); i += 2 {
+		if _, ok := kvs[i].(Valuer); ok {
 			return true
 		}
 	}

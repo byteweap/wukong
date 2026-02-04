@@ -83,13 +83,13 @@ func BenchmarkFilterFunc(b *testing.B) {
 	}
 }
 
-func testFilterFunc(level Level, keyvals ...any) bool {
+func testFilterFunc(level Level, kvs ...any) bool {
 	if level == LevelWarn {
 		return true
 	}
-	for i := 0; i < len(keyvals); i++ {
-		if keyvals[i] == "password" {
-			keyvals[i+1] = fuzzyStr
+	for i := 0; i < len(kvs); i++ {
+		if kvs[i] == "password" {
+			kvs[i+1] = fuzzyStr
 		}
 	}
 	return false
@@ -130,16 +130,16 @@ func TestFilterFuncWitchLoggerPrefix(t *testing.T) {
 	}
 }
 
-func testFilterFuncWithLoggerPrefix(level Level, keyvals ...any) bool {
+func testFilterFuncWithLoggerPrefix(level Level, kvs ...any) bool {
 	if level == LevelWarn {
 		return true
 	}
-	for i := 0; i < len(keyvals); i += 2 {
-		if keyvals[i] == "prefix" {
+	for i := 0; i < len(kvs); i += 2 {
+		if kvs[i] == "prefix" {
 			return true
 		}
-		if keyvals[i] == "filtered" {
-			keyvals[i+1] = fuzzyStr
+		if kvs[i] == "filtered" {
+			kvs[i+1] = fuzzyStr
 		}
 	}
 	return false

@@ -32,7 +32,7 @@ func FilterValue(value ...string) FilterOption {
 }
 
 // FilterFunc 设置自定义过滤函数
-func FilterFunc(f func(level Level, keyvals ...any) bool) FilterOption {
+func FilterFunc(f func(level Level, kvs ...any) bool) FilterOption {
 	return func(o *Filter) {
 		o.filter = f
 	}
@@ -44,7 +44,7 @@ type Filter struct {
 	level  Level
 	key    map[any]struct{}
 	value  map[any]struct{}
-	filter func(level Level, keyvals ...any) bool
+	filter func(level Level, kvs ...any) bool
 }
 
 // NewFilter 创建日志过滤器
@@ -61,7 +61,7 @@ func NewFilter(logger Logger, opts ...FilterOption) *Filter {
 }
 
 // Log 按级别输出键值对日志
-func (f *Filter) Log(level Level, keyvals ...any) error {
+func (f *Filter) Log(level Level, kvs ...any) error {
 	if level < f.level {
 		return nil
 	}
@@ -73,23 +73,23 @@ func (f *Filter) Log(level Level, keyvals ...any) error {
 		prefixkv = append(prefixkv, l.prefix...)
 	}
 
-	if f.filter != nil && (f.filter(level, prefixkv...) || f.filter(level, keyvals...)) {
+	if f.filter != nil && (f.filter(level, prefixkv...) || f.filter(level, kvs...)) {
 		return nil
 	}
 
 	if len(f.key) > 0 || len(f.value) > 0 {
-		for i := 0; i < len(keyvals); i += 2 {
+		for i := 0; i < len(kvs); i += 2 {
 			v := i + 1
-			if v >= len(keyvals) {
+			if v >= len(kvs) {
 				break
 			}
-			if _, ok := f.key[keyvals[i]]; ok {
-				keyvals[v] = fuzzyStr
+			if _, ok := f.key[kvs[i]]; ok {
+				kvs[v] = fuzzyStr
 			}
-			if _, ok := f.value[keyvals[v]]; ok {
-				keyvals[v] = fuzzyStr
+			if _, ok := f.value[kvs[v]]; ok {
+				kvs[v] = fuzzyStr
 			}
 		}
 	}
-	return f.logger.Log(level, keyvals...)
+	return f.logger.Log(level, kvs...)
 }
