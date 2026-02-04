@@ -22,11 +22,11 @@ const (
 )
 
 type options struct {
-	SendQueueSize  int
-	MaxMessageSize int64
-	ReadTimeout    time.Duration // 0 表示不设置
-	WriteTimeout   time.Duration // 0 表示不设置
-	Backpressure   BackpressureMode
+	sendQueueSize  int
+	maxMessageSize int64
+	readTimeout    time.Duration // 0 表示不设置
+	writeTimeout   time.Duration // 0 表示不设置
+	backpressure   BackpressureMode
 
 	// Upgrade 校验：可选
 	CheckOrigin func(origin string) bool
@@ -41,40 +41,40 @@ type Option func(*options)
 
 func defaultOptions() *options {
 	return &options{
-		SendQueueSize:  256,
-		MaxMessageSize: 64 * 1024,
-		ReadTimeout:    0,
-		WriteTimeout:   0,
-		Backpressure:   BackpressureKick,
+		sendQueueSize:  256,
+		maxMessageSize: 64 * 1024,
+		readTimeout:    0,
+		writeTimeout:   0,
+		backpressure:   BackpressureKick,
 	}
 }
 
 func SendQueueSize(size int) Option {
 	return func(o *options) {
-		o.SendQueueSize = size
+		o.sendQueueSize = size
 	}
 }
 
 func MaxMessageSize(size int64) Option {
 	return func(o *options) {
-		o.MaxMessageSize = size
+		o.maxMessageSize = size
 	}
 }
 func ReadTimeout(timeout time.Duration) Option {
 	return func(o *options) {
-		o.ReadTimeout = timeout
+		o.readTimeout = timeout
 	}
 }
 
 func WriteTimeout(timeout time.Duration) Option {
 	return func(o *options) {
-		o.WriteTimeout = timeout
+		o.writeTimeout = timeout
 	}
 }
 
 func Backpressure(mode BackpressureMode) Option {
 	return func(o *options) {
-		o.Backpressure = mode
+		o.backpressure = mode
 	}
 }
 

@@ -91,7 +91,7 @@ func (s *Conn) write(op ws.OpCode, msg []byte) error {
 	cp := make([]byte, len(msg))
 	copy(cp, msg)
 
-	switch s.opts.Backpressure {
+	switch s.opts.backpressure {
 	case BackpressureBlock:
 		select {
 		case s.sendQ <- sendItem{op: op, msg: cp}:
@@ -127,8 +127,8 @@ func (s *Conn) writeLoop() {
 		case <-s.ctx.Done():
 			return
 		case item := <-s.sendQ:
-			if s.opts.WriteTimeout > 0 {
-				_ = s.raw.SetWriteDeadline(time.Now().Add(s.opts.WriteTimeout))
+			if s.opts.writeTimeout > 0 {
+				_ = s.raw.SetWriteDeadline(time.Now().Add(s.opts.writeTimeout))
 			}
 			if item.op != ws.OpBinary && item.op != ws.OpText {
 				continue
@@ -157,8 +157,8 @@ func (s *Conn) readLoop() error {
 	}
 
 	for {
-		if s.opts.ReadTimeout > 0 {
-			_ = s.raw.SetReadDeadline(time.Now().Add(s.opts.ReadTimeout))
+		if s.opts.readTimeout > 0 {
+			_ = s.raw.SetReadDeadline(time.Now().Add(s.opts.readTimeout))
 		}
 
 		hdr, err := rd.NextFrame()
@@ -188,7 +188,7 @@ func (s *Conn) readLoop() error {
 		for {
 			n, err := rd.Read(tmp[:])
 			if n > 0 {
-				if s.opts.MaxMessageSize > 0 && int64(len(buf)+n) > s.opts.MaxMessageSize {
+				if s.opts.maxMessageSize > 0 && int64(len(buf)+n) > s.opts.maxMessageSize {
 					readBufPool.Put(bp)
 					return wsutil.ErrFrameTooLarge
 				}

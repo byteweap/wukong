@@ -62,7 +62,7 @@ func (h *hub) allocate(parent context.Context, opts *options, conn net.Conn) {
 	s := &Conn{
 		id:     id,
 		raw:    conn,
-		sendQ:  make(chan sendItem, opts.SendQueueSize),
+		sendQ:  make(chan sendItem, opts.sendQueueSize),
 		ctx:    ctx,
 		cancel: cancel,
 	}
