@@ -26,9 +26,9 @@ func New(opts ...Option) *Pulse {
 func (p *Pulse) HandleRequest(w http.ResponseWriter, r *http.Request) error {
 
 	// Origin 校验
-	if p.opts.CheckOrigin != nil {
+	if p.opts.checkOrigin != nil {
 		origin := r.Header.Get("Origin")
-		if origin != "" && !p.opts.CheckOrigin(origin) {
+		if origin != "" && !p.opts.checkOrigin(origin) {
 			http.Error(w, "forbidden", http.StatusForbidden)
 			return context.Canceled
 		}

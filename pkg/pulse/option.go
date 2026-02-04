@@ -29,7 +29,7 @@ type options struct {
 	backpressure   BackpressureMode
 
 	// Upgrade 校验：可选
-	CheckOrigin func(origin string) bool
+	checkOrigin func(origin string) bool
 
 	onConnect    OnConnectHandler
 	onDisconnect OnDisconnectHandler
@@ -80,7 +80,7 @@ func Backpressure(mode BackpressureMode) Option {
 
 func CheckOrigin(check func(origin string) bool) Option {
 	return func(o *options) {
-		o.CheckOrigin = check
+		o.checkOrigin = check
 	}
 }
 
