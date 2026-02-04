@@ -73,6 +73,15 @@ func BenchmarkStrconv(b *testing.B) {
 	}
 }
 
+func BenchmarkHashMix64(b *testing.B) {
+	var key uint64 = 123456789
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		key += uint64(i)
+		_ = Mix64(key)
+	}
+}
+
 func BenchmarkSingleInsertAbsent(b *testing.B) {
 	b.Run("cmap", func(b *testing.B) {
 		m := New[string, string](FNV1a)

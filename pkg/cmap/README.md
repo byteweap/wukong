@@ -30,25 +30,12 @@ m.Remove(playerID)
 m := cmap.New[MyKey, *Session](cmap.FNV1aStr[MyKey])
 ```
 
-## int64 用户 ID 的推荐分片
+## uint64 用户 ID 的推荐分片
 
-如果 key 是 `int64` 类型的用户 ID，建议先做 64 位混合（mix）再取低 32 位，以改善分布：
+如果 key 是 `uint64` 类型的用户 ID，建议先做 64 位混合（mix）再取低 32 位，以改善分布：
 
 ```go
-func mix64(x uint64) uint64 {
-    x ^= x >> 33
-    x *= 0xff51afd7ed558ccd
-    x ^= x >> 33
-    x *= 0xc4ceb9fe1a85ec53
-    x ^= x >> 33
-    return x
-}
-
-func shardingInt64(id int64) uint32 {
-    return uint32(mix64(uint64(id)))
-}
-
-m := cmap.New[int64, *Session](shardingInt64)
+m := cmap.New[uint64, *Session](cmap.Mix64)
 ```
 
 ## 内置分片算法（hash.go）

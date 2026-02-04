@@ -36,16 +36,6 @@ func create[K comparable, V any](sharding func(key K) uint32) *ConcurrentMap[K, 
 	return m
 }
 
-//// New 创建并发 map (key: string)
-//func New[V any]() *ConcurrentMap[string, V] {
-//	return create[string, V](FNV1a)
-//}
-//
-//// NewStringer 创建并发 map (key: Stringer)
-//func NewStringer[K Stringer, V any]() *ConcurrentMap[K, V] {
-//	return create[K, V](FNV1aStr[K])
-//}
-
 // New 创建并发 map
 // sharding: 分片函数
 func New[K comparable, V any](sharding func(key K) uint32) *ConcurrentMap[K, V] {

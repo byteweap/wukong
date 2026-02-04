@@ -18,3 +18,14 @@ func FNV1a(key string) uint32 {
 	}
 	return hash
 }
+
+// Mix64 对 uint64 做高质量混合，并返回低 32 位
+// 适合 int64/uint64 类型作为 key 时做分片
+func Mix64(key uint64) uint32 {
+	key ^= key >> 33
+	key *= 0xff51afd7ed558ccd
+	key ^= key >> 33
+	key *= 0xc4ceb9fe1a85ec53
+	key ^= key >> 33
+	return uint32(key)
+}
