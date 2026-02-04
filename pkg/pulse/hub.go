@@ -22,29 +22,35 @@ func newHub() *hub {
 	return h
 }
 
-func (m *hub) add(s *Conn) {
-	m.mu.Lock()
-	m.cs[s] = struct{}{}
-	m.mu.Unlock()
+func (h *hub) register(s *Conn) {
+	h.mu.Lock()
+	h.cs[s] = struct{}{}
+	h.mu.Unlock()
 }
 
-func (m *hub) remove(s *Conn) {
-	m.mu.Lock()
-	delete(m.cs, s)
-	m.mu.Unlock()
+func (h *hub) unregister(s *Conn) {
+	h.mu.Lock()
+	delete(h.cs, s)
+	h.mu.Unlock()
 }
 
-func (m *hub) rangeAll(fn func(*Conn)) {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
-	for c, _ := range m.cs {
+func (h *hub) rangeAll(fn func(*Conn)) {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+	for c, _ := range h.cs {
 		fn(c)
 	}
 }
 
-func (m *hub) broadcast(msg []byte) {
-	m.rangeAll(func(s *Conn) {
-		_ = s.Write(msg)
+func (h *hub) broadcastBinary(msg []byte) {
+	h.rangeAll(func(s *Conn) {
+		_ = s.WriteBinary(msg)
+	})
+}
+
+func (h *hub) broadcastText(msg []byte) {
+	h.rangeAll(func(s *Conn) {
+		_ = s.WriteText(msg)
 	})
 }
 
@@ -56,13 +62,13 @@ func (h *hub) allocate(parent context.Context, opts *options, conn net.Conn) {
 	s := &Conn{
 		id:     id,
 		raw:    conn,
-		sendQ:  make(chan []byte, opts.SendQueueSize),
+		sendQ:  make(chan sendItem, opts.SendQueueSize),
 		ctx:    ctx,
 		cancel: cancel,
 	}
 	s.touch()
 
-	h.add(s)
+	h.register(s)
 
 	if opts.onConnect != nil {
 		opts.onConnect(s)
@@ -75,7 +81,7 @@ func (h *hub) allocate(parent context.Context, opts *options, conn net.Conn) {
 	readErr := s.readLoop()
 
 	// 清理
-	h.remove(s)
+	h.unregister(s)
 	s.Close()
 
 	if readErr != nil && opts.onError != nil {

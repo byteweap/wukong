@@ -1,11 +1,15 @@
 package pulse
 
-import "time"
+import (
+	"time"
+
+	"github.com/gobwas/ws"
+)
 
 type (
 	OnConnectHandler    func(*Conn)
 	OnDisconnectHandler func(*Conn, error)
-	OnMessageHandler    func(*Conn, []byte)
+	OnMessageHandler    func(*Conn, ws.OpCode, []byte)
 	OnErrorHandler      func(*Conn, error)
 )
 
@@ -19,7 +23,7 @@ const (
 
 type options struct {
 	SendQueueSize  int
-	MaxMessageSize int
+	MaxMessageSize int64
 	ReadTimeout    time.Duration // 0 表示不设置
 	WriteTimeout   time.Duration // 0 表示不设置
 	Backpressure   BackpressureMode
@@ -51,7 +55,7 @@ func SendQueueSize(size int) Option {
 	}
 }
 
-func MaxMessageSize(size int) Option {
+func MaxMessageSize(size int64) Option {
 	return func(o *options) {
 		o.MaxMessageSize = size
 	}

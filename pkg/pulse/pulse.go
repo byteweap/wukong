@@ -44,9 +44,14 @@ func (p *Pulse) HandleRequest(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-// Broadcast 广播
+// BroadcastBinary 广播二进制帧
 // 注意这里默认每个连接都会 copy 一份（Write 内部 copy）
 // 若你要极致优化：可以增加 BroadcastNoCopy + 强约束 msg 不可复用/修改
-func (p *Pulse) Broadcast(msg []byte) {
-	p.hub.broadcast(msg)
+func (p *Pulse) BroadcastBinary(msg []byte) {
+	p.hub.broadcastBinary(msg)
+}
+
+// BroadcastText 广播文本帧
+func (p *Pulse) BroadcastText(msg []byte) {
+	p.hub.broadcastText(msg)
 }

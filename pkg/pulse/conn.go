@@ -2,6 +2,8 @@ package pulse
 
 import (
 	"context"
+	"errors"
+	"io"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -11,13 +13,26 @@ import (
 	"github.com/gobwas/ws/wsutil"
 )
 
+const (
+	readChunkSize = 32 * 1024
+	readPoolCap   = 64 * 1024
+	readPoolMax   = 256 * 1024
+)
+
+var readBufPool = sync.Pool{
+	New: func() any {
+		b := make([]byte, 0, readPoolCap)
+		return &b
+	},
+}
+
 type Conn struct {
 	id   int64
 	uid  atomic.Int64
 	raw  net.Conn
 	opts *options
 
-	sendQ chan []byte
+	sendQ chan sendItem
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -27,6 +42,11 @@ type Conn struct {
 	lastSeen atomic.Int64 // unix nano
 
 	kv sync.Map
+}
+
+type sendItem struct {
+	op  ws.OpCode
+	msg []byte
 }
 
 func (s *Conn) ID() int64 { return s.id }
@@ -54,7 +74,15 @@ func (s *Conn) Close() {
 	}
 }
 
-func (s *Conn) Write(msg []byte) error {
+func (s *Conn) WriteBinary(msg []byte) error {
+	return s.write(ws.OpBinary, msg)
+}
+
+func (s *Conn) WriteText(msg []byte) error {
+	return s.write(ws.OpText, msg)
+}
+
+func (s *Conn) write(op ws.OpCode, msg []byte) error {
 	if s.closed.Load() {
 		return net.ErrClosed
 	}
@@ -66,21 +94,21 @@ func (s *Conn) Write(msg []byte) error {
 	switch s.opts.Backpressure {
 	case BackpressureBlock:
 		select {
-		case s.sendQ <- cp:
+		case s.sendQ <- sendItem{op: op, msg: cp}:
 			return nil
 		case <-s.ctx.Done():
 			return context.Canceled
 		}
 	case BackpressureDrop:
 		select {
-		case s.sendQ <- cp:
+		case s.sendQ <- sendItem{op: op, msg: cp}:
 			return nil
 		default:
 			return nil
 		}
 	default: // Kick
 		select {
-		case s.sendQ <- cp:
+		case s.sendQ <- sendItem{op: op, msg: cp}:
 			return nil
 		default:
 			s.Close()
@@ -92,16 +120,24 @@ func (s *Conn) Write(msg []byte) error {
 func (s *Conn) writeLoop() {
 	defer s.Close()
 
+	w := wsutil.NewWriter(s.raw, ws.StateServerSide, ws.OpBinary)
+
 	for {
 		select {
 		case <-s.ctx.Done():
 			return
-		case msg := <-s.sendQ:
+		case item := <-s.sendQ:
 			if s.opts.WriteTimeout > 0 {
 				_ = s.raw.SetWriteDeadline(time.Now().Add(s.opts.WriteTimeout))
 			}
-			// 二进制帧（游戏更常用）
-			if err := wsutil.WriteServerBinary(s.raw, msg); err != nil {
+			if item.op != ws.OpBinary && item.op != ws.OpText {
+				continue
+			}
+			w.ResetOp(item.op)
+			if _, err := w.Write(item.msg); err != nil {
+				return
+			}
+			if err := w.Flush(); err != nil {
 				return
 			}
 		}
@@ -111,31 +147,74 @@ func (s *Conn) writeLoop() {
 func (s *Conn) readLoop() error {
 	defer s.Close()
 
+	controlHandler := wsutil.ControlFrameHandler(s.raw, ws.StateServerSide)
+	rd := wsutil.Reader{
+		Source:          s.raw,
+		State:           ws.StateServerSide,
+		CheckUTF8:       true,
+		SkipHeaderCheck: false,
+		OnIntermediate:  controlHandler,
+	}
+
 	for {
 		if s.opts.ReadTimeout > 0 {
 			_ = s.raw.SetReadDeadline(time.Now().Add(s.opts.ReadTimeout))
 		}
-		// 读取完整 message(简化：data + opcode)
-		data, op, err := wsutil.ReadClientData(s.raw)
+
+		hdr, err := rd.NextFrame()
 		if err != nil {
 			return err
 		}
+
+		// 控制帧交给ws处理,如: ping pong close
+		if hdr.OpCode.IsControl() {
+			if err = controlHandler(hdr, &rd); err != nil {
+				return err
+			}
+			continue
+		}
+
+		if hdr.OpCode != ws.OpBinary && hdr.OpCode != ws.OpText {
+			if err = rd.Discard(); err != nil {
+				return err
+			}
+			continue
+		}
+
+		bp := readBufPool.Get().(*[]byte)
+		buf := (*bp)[:0]
+		var tmp [readChunkSize]byte
+
+		for {
+			n, err := rd.Read(tmp[:])
+			if n > 0 {
+				if s.opts.MaxMessageSize > 0 && int64(len(buf)+n) > s.opts.MaxMessageSize {
+					readBufPool.Put(bp)
+					return wsutil.ErrFrameTooLarge
+				}
+				buf = append(buf, tmp[:n]...)
+			}
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			if err != nil {
+				readBufPool.Put(bp)
+				return err
+			}
+		}
+
 		s.touch()
 
-		// 限制消息大小（防御）
-		if s.opts.MaxMessageSize > 0 && len(data) > s.opts.MaxMessageSize {
-			return wsutil.ErrFrameTooLarge
+		if s.opts.onMessage != nil {
+			s.opts.onMessage(s, hdr.OpCode, buf)
 		}
 
-		switch op {
-		case ws.OpBinary, ws.OpText:
-			s.opts.onMessage(s, data)
-		case ws.OpPing:
-			_ = ws.WriteFrame(s.raw, ws.NewPongFrame(nil))
-		case ws.OpClose:
-			return nil
-		default:
-			// ignore
+		if cap(buf) > readPoolMax {
+			b := make([]byte, 0, readPoolCap)
+			*bp = b
+		} else {
+			*bp = buf[:0]
 		}
+		readBufPool.Put(bp)
 	}
 }
