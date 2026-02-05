@@ -34,24 +34,33 @@ func (h *hub) unregister(s *Conn) {
 	h.mu.Unlock()
 }
 
-func (h *hub) rangeAll(fn func(*Conn)) {
+func (h *hub) broadcastBinary(msg []byte, filters ...func(conn *Conn) bool) {
+
 	h.mu.RLock()
 	defer h.mu.RUnlock()
+
 	for c, _ := range h.cs {
-		fn(c)
+		for _, filter := range filters {
+			if !filter(c) {
+				return
+			}
+		}
+		_ = c.WriteBinary(msg)
 	}
 }
 
-func (h *hub) broadcastBinary(msg []byte) {
-	h.rangeAll(func(s *Conn) {
-		_ = s.WriteBinary(msg)
-	})
-}
+func (h *hub) broadcastText(msg []byte, filters ...func(conn *Conn) bool) {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
 
-func (h *hub) broadcastText(msg []byte) {
-	h.rangeAll(func(s *Conn) {
-		_ = s.WriteText(msg)
-	})
+	for c, _ := range h.cs {
+		for _, filter := range filters {
+			if !filter(c) {
+				return
+			}
+		}
+		_ = c.WriteText(msg)
+	}
 }
 
 func (h *hub) allocate(parent context.Context, opts *options, conn net.Conn) {
