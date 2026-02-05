@@ -1,0 +1,14 @@
+{
+  "outdir": "/reports/servers",
+  "servers": [
+    {
+      "agent": "pulse",
+      "url": "ws://host.docker.internal:9001/ws"
+    }
+  ],
+  "cases": ["*"],
+  "exclude-cases": [],
+  "options": {
+    "failByDrop": false
+  }
+}

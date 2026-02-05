@@ -18,7 +18,7 @@ const (
 	serverReadPoolMax   = 256 * 1024
 )
 
-var serverReadBufPool = sync.Pool{
+var bufPool = sync.Pool{
 	New: func() any {
 		b := make([]byte, 0, serverReadPoolCap)
 		return &b
@@ -178,6 +178,7 @@ func (s *ServerConn) readLoop() error {
 		State:           ws.StateServerSide,
 		CheckUTF8:       true,
 		SkipHeaderCheck: false,
+		MaxFrameSize:    s.opts.maxMessageSize,
 		OnIntermediate:  controlHandler,
 	}
 
@@ -206,24 +207,20 @@ func (s *ServerConn) readLoop() error {
 			continue
 		}
 
-		bp := serverReadBufPool.Get().(*[]byte)
+		bp := bufPool.Get().(*[]byte)
 		buf := (*bp)[:0]
 		var tmp [serverReadChunkSize]byte
 
 		for {
 			n, err := rd.Read(tmp[:])
 			if n > 0 {
-				if s.opts.maxMessageSize > 0 && int64(len(buf)+n) > s.opts.maxMessageSize {
-					serverReadBufPool.Put(bp)
-					return wsutil.ErrFrameTooLarge
-				}
 				buf = append(buf, tmp[:n]...)
 			}
 			if errors.Is(err, io.EOF) {
 				break
 			}
 			if err != nil {
-				serverReadBufPool.Put(bp)
+				bufPool.Put(bp)
 				return err
 			}
 		}
@@ -240,6 +237,6 @@ func (s *ServerConn) readLoop() error {
 		} else {
 			*bp = buf[:0]
 		}
-		serverReadBufPool.Put(bp)
+		bufPool.Put(bp)
 	}
 }

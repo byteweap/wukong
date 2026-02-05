@@ -206,6 +206,7 @@ func (c *ClientConn) readLoop() error {
 		CheckUTF8:       true,
 		SkipHeaderCheck: false,
 		OnIntermediate:  controlHandler,
+		MaxFrameSize:    c.opts.maxMessageSize,
 	}
 
 	for {
@@ -242,10 +243,6 @@ func (c *ClientConn) readLoop() error {
 		for {
 			n, err := rd.Read(tmp[:])
 			if n > 0 {
-				if c.opts.maxMessageSize > 0 && int64(len(buf)+n) > c.opts.maxMessageSize {
-					clientReadBufPool.Put(bp)
-					return wsutil.ErrFrameTooLarge
-				}
 				buf = append(buf, tmp[:n]...)
 			}
 			if errors.Is(err, io.EOF) {
