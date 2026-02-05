@@ -155,7 +155,7 @@ func (c *ClientConn) write(op ws.OpCode, msg []byte) error {
 func (c *ClientConn) writeLoop() error {
 	defer c.Close()
 
-	w := wsutil.NewWriter(c.raw, ws.StateClientSide, ws.OpBinary)
+	w := wsutil.NewWriter(c.raw, ws.StateClientSide, ws.OpBinary) // w.ResetOp 会重置 op，所以这里先设置好
 
 	for {
 		select {

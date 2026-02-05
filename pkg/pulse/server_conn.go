@@ -139,7 +139,7 @@ func (s *ServerConn) write(op ws.OpCode, msg []byte) error {
 func (s *ServerConn) writeLoop() {
 	defer s.Close()
 
-	w := wsutil.NewWriter(s.raw, ws.StateServerSide, ws.OpBinary) //w.ResetOp 会重置 op，所以这里先设置好
+	w := wsutil.NewWriter(s.raw, ws.StateServerSide, ws.OpBinary) // w.ResetOp 会重置 op，所以这里先设置好
 
 	for {
 		select {
