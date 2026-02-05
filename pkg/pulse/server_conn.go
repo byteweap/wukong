@@ -60,9 +60,33 @@ func (s *ServerConn) LastSeen() time.Time { return time.Unix(0, s.lastSeen.Load(
 
 func (s *ServerConn) Close() {
 	if s.closed.CompareAndSwap(false, true) {
+		s.trySendCloseFrame()
 		close(s.done)
 		_ = s.raw.Close()
 	}
+}
+
+func (s *ServerConn) trySendCloseFrame() {
+	payload := ws.NewCloseFrameBody(ws.StatusNormalClosure, "")
+	if s.sendQ != nil {
+		select {
+		case s.sendQ <- serverSendItem{op: ws.OpClose, msg: payload}:
+			return
+		default:
+		}
+	}
+	s.writeCloseFrameDirect(payload)
+}
+
+func (s *ServerConn) writeCloseFrameDirect(payload []byte) {
+	if s.raw == nil {
+		return
+	}
+	if s.opts != nil && s.opts.writeTimeout > 0 {
+		_ = s.raw.SetWriteDeadline(time.Now().Add(s.opts.writeTimeout))
+	}
+	frame := ws.NewCloseFrame(payload)
+	_ = ws.WriteFrame(s.raw, frame)
 }
 
 func (s *ServerConn) WriteBinary(msg []byte) error {
@@ -115,7 +139,7 @@ func (s *ServerConn) write(op ws.OpCode, msg []byte) error {
 func (s *ServerConn) writeLoop() {
 	defer s.Close()
 
-	w := wsutil.NewWriter(s.raw, ws.StateServerSide, ws.OpBinary)
+	w := wsutil.NewWriter(s.raw, ws.StateServerSide, ws.OpBinary) //w.ResetOp 会重置 op，所以这里先设置好
 
 	for {
 		select {
@@ -125,7 +149,10 @@ func (s *ServerConn) writeLoop() {
 			if s.opts.writeTimeout > 0 {
 				_ = s.raw.SetWriteDeadline(time.Now().Add(s.opts.writeTimeout))
 			}
-			if item.op != ws.OpBinary && item.op != ws.OpText {
+			switch item.op {
+			case ws.OpBinary, ws.OpText, ws.OpClose:
+				// ok
+			default:
 				continue
 			}
 			w.ResetOp(item.op)
@@ -133,6 +160,9 @@ func (s *ServerConn) writeLoop() {
 				return
 			}
 			if err := w.Flush(); err != nil {
+				return
+			}
+			if item.op == ws.OpClose {
 				return
 			}
 		}

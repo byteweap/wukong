@@ -5,6 +5,8 @@ import (
 	"net"
 	"testing"
 	"time"
+
+	"github.com/gobwas/ws"
 )
 
 func TestServerBackpressureKick(t *testing.T) {
@@ -78,5 +80,68 @@ func TestClientNextBackoff(t *testing.T) {
 	}
 	if got := c.nextBackoff(200 * time.Millisecond); got != 250*time.Millisecond {
 		t.Fatalf("expected 250ms (capped), got %v", got)
+	}
+}
+
+func TestServerCloseSendsCloseFrameWhenQueueFull(t *testing.T) {
+	c1, c2 := net.Pipe()
+	defer c2.Close()
+
+	opts := &serverOptions{
+		sendQueueSize: 1,
+		backpressure:  BackpressureBlock,
+	}
+
+	conn := &ServerConn{
+		raw:   c1,
+		opts:  opts,
+		sendQ: make(chan serverSendItem, opts.sendQueueSize),
+		done:  make(chan struct{}),
+	}
+
+	conn.sendQ <- serverSendItem{op: ws.OpText, msg: []byte("full")}
+
+	conn.Close()
+
+	_ = c2.SetReadDeadline(time.Now().Add(1 * time.Second))
+	frame, err := ws.ReadFrame(c2)
+	if err != nil {
+		t.Fatalf("read frame failed: %v", err)
+	}
+	if frame.Header.OpCode != ws.OpClose {
+		t.Fatalf("expected close frame, got %v", frame.Header.OpCode)
+	}
+}
+
+func TestClientCloseSendsCloseFrameWhenQueueFull(t *testing.T) {
+	c1, c2 := net.Pipe()
+	defer c2.Close()
+
+	opts := &clientOptions{
+		sendQueueSize: 1,
+		backpressure:  BackpressureBlock,
+	}
+
+	conn := &ClientConn{
+		raw:   c1,
+		opts:  opts,
+		sendQ: make(chan clientSendItem, opts.sendQueueSize),
+		done:  make(chan struct{}),
+	}
+
+	conn.sendQ <- clientSendItem{op: ws.OpText, msg: []byte("full")}
+
+	conn.Close()
+
+	_ = c2.SetReadDeadline(time.Now().Add(1 * time.Second))
+	frame, err := ws.ReadFrame(c2)
+	if err != nil {
+		t.Fatalf("read frame failed: %v", err)
+	}
+	if frame.Header.OpCode != ws.OpClose {
+		t.Fatalf("expected close frame, got %v", frame.Header.OpCode)
+	}
+	if !frame.Header.Masked {
+		t.Fatalf("expected masked close frame from client")
 	}
 }

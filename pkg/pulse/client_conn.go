@@ -75,9 +75,34 @@ func (c *ClientConn) LastSeen() time.Time { return time.Unix(0, c.lastSeen.Load(
 
 func (c *ClientConn) Close() {
 	if c.closed.CompareAndSwap(false, true) {
+		c.trySendCloseFrame()
 		close(c.done)
 		_ = c.raw.Close()
 	}
+}
+
+func (c *ClientConn) trySendCloseFrame() {
+	payload := ws.NewCloseFrameBody(ws.StatusNormalClosure, "")
+	if c.sendQ != nil {
+		select {
+		case c.sendQ <- clientSendItem{op: ws.OpClose, msg: payload}:
+			return
+		default:
+		}
+	}
+	c.writeCloseFrameDirect(payload)
+}
+
+func (c *ClientConn) writeCloseFrameDirect(payload []byte) {
+	if c.raw == nil {
+		return
+	}
+	if c.opts != nil && c.opts.writeTimeout > 0 {
+		_ = c.raw.SetWriteDeadline(time.Now().Add(c.opts.writeTimeout))
+	}
+	frame := ws.NewCloseFrame(payload)
+	ws.MaskFrameInPlace(frame)
+	_ = ws.WriteFrame(c.raw, frame)
 }
 
 func (c *ClientConn) WriteBinary(msg []byte) error {
@@ -141,7 +166,7 @@ func (c *ClientConn) writeLoop() error {
 				_ = c.raw.SetWriteDeadline(time.Now().Add(c.opts.writeTimeout))
 			}
 			switch item.op {
-			case ws.OpBinary, ws.OpText, ws.OpPing, ws.OpPong:
+			case ws.OpBinary, ws.OpText, ws.OpPing, ws.OpPong, ws.OpClose:
 				// ok
 			default:
 				continue
@@ -152,6 +177,9 @@ func (c *ClientConn) writeLoop() error {
 			}
 			if err := w.Flush(); err != nil {
 				return err
+			}
+			if item.op == ws.OpClose {
+				return nil
 			}
 		}
 	}
