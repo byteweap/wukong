@@ -13,24 +13,24 @@ import (
 )
 
 const (
-	readChunkSize = 32 * 1024
-	readPoolCap   = 64 * 1024
-	readPoolMax   = 256 * 1024
+	serverReadChunkSize = 32 * 1024
+	serverReadPoolCap   = 64 * 1024
+	serverReadPoolMax   = 256 * 1024
 )
 
-var readBufPool = sync.Pool{
+var serverReadBufPool = sync.Pool{
 	New: func() any {
-		b := make([]byte, 0, readPoolCap)
+		b := make([]byte, 0, serverReadPoolCap)
 		return &b
 	},
 }
 
-type Conn struct {
+type ServerConn struct {
 	id   int64
 	raw  net.Conn
-	opts *options
+	opts *serverOptions
 
-	sendQ chan sendItem
+	sendQ chan serverSendItem
 
 	done chan struct{}
 
@@ -41,39 +41,39 @@ type Conn struct {
 	kv sync.Map
 }
 
-type sendItem struct {
+type serverSendItem struct {
 	op  ws.OpCode
 	msg []byte
 }
 
-func (s *Conn) ID() int64 { return s.id }
+func (s *ServerConn) ID() int64 { return s.id }
 
-func (s *Conn) RemoteAddr() net.Addr { return s.raw.RemoteAddr() }
+func (s *ServerConn) RemoteAddr() net.Addr { return s.raw.RemoteAddr() }
 
-func (s *Conn) Set(key string, val any) { s.kv.Store(key, val) }
+func (s *ServerConn) Set(key string, val any) { s.kv.Store(key, val) }
 
-func (s *Conn) Get(key string) (any, bool) { return s.kv.Load(key) }
+func (s *ServerConn) Get(key string) (any, bool) { return s.kv.Load(key) }
 
-func (s *Conn) touch() { s.lastSeen.Store(time.Now().UnixNano()) }
+func (s *ServerConn) touch() { s.lastSeen.Store(time.Now().UnixNano()) }
 
-func (s *Conn) LastSeen() time.Time { return time.Unix(0, s.lastSeen.Load()) }
+func (s *ServerConn) LastSeen() time.Time { return time.Unix(0, s.lastSeen.Load()) }
 
-func (s *Conn) Close() {
+func (s *ServerConn) Close() {
 	if s.closed.CompareAndSwap(false, true) {
 		close(s.done)
 		_ = s.raw.Close()
 	}
 }
 
-func (s *Conn) WriteBinary(msg []byte) error {
+func (s *ServerConn) WriteBinary(msg []byte) error {
 	return s.write(ws.OpBinary, msg)
 }
 
-func (s *Conn) WriteText(msg []byte) error {
+func (s *ServerConn) WriteText(msg []byte) error {
 	return s.write(ws.OpText, msg)
 }
 
-func (s *Conn) write(op ws.OpCode, msg []byte) error {
+func (s *ServerConn) write(op ws.OpCode, msg []byte) error {
 	if s.closed.Load() {
 		return net.ErrClosed
 	}
@@ -85,14 +85,14 @@ func (s *Conn) write(op ws.OpCode, msg []byte) error {
 	switch s.opts.backpressure {
 	case BackpressureBlock:
 		select {
-		case s.sendQ <- sendItem{op: op, msg: cp}:
+		case s.sendQ <- serverSendItem{op: op, msg: cp}:
 			return nil
 		case <-s.done:
 			return net.ErrClosed
 		}
 	case BackpressureDrop:
 		select {
-		case s.sendQ <- sendItem{op: op, msg: cp}:
+		case s.sendQ <- serverSendItem{op: op, msg: cp}:
 			return nil
 		case <-s.done:
 			return net.ErrClosed
@@ -101,7 +101,7 @@ func (s *Conn) write(op ws.OpCode, msg []byte) error {
 		}
 	default: // Kick
 		select {
-		case s.sendQ <- sendItem{op: op, msg: cp}:
+		case s.sendQ <- serverSendItem{op: op, msg: cp}:
 			return nil
 		case <-s.done:
 			return net.ErrClosed
@@ -112,7 +112,7 @@ func (s *Conn) write(op ws.OpCode, msg []byte) error {
 	}
 }
 
-func (s *Conn) writeLoop() {
+func (s *ServerConn) writeLoop() {
 	defer s.Close()
 
 	w := wsutil.NewWriter(s.raw, ws.StateServerSide, ws.OpBinary)
@@ -139,7 +139,7 @@ func (s *Conn) writeLoop() {
 	}
 }
 
-func (s *Conn) readLoop() error {
+func (s *ServerConn) readLoop() error {
 	defer s.Close()
 
 	controlHandler := wsutil.ControlFrameHandler(s.raw, ws.StateServerSide)
@@ -176,15 +176,15 @@ func (s *Conn) readLoop() error {
 			continue
 		}
 
-		bp := readBufPool.Get().(*[]byte)
+		bp := serverReadBufPool.Get().(*[]byte)
 		buf := (*bp)[:0]
-		var tmp [readChunkSize]byte
+		var tmp [serverReadChunkSize]byte
 
 		for {
 			n, err := rd.Read(tmp[:])
 			if n > 0 {
 				if s.opts.maxMessageSize > 0 && int64(len(buf)+n) > s.opts.maxMessageSize {
-					readBufPool.Put(bp)
+					serverReadBufPool.Put(bp)
 					return wsutil.ErrFrameTooLarge
 				}
 				buf = append(buf, tmp[:n]...)
@@ -193,7 +193,7 @@ func (s *Conn) readLoop() error {
 				break
 			}
 			if err != nil {
-				readBufPool.Put(bp)
+				serverReadBufPool.Put(bp)
 				return err
 			}
 		}
@@ -204,12 +204,12 @@ func (s *Conn) readLoop() error {
 			s.opts.onMessage(s, hdr.OpCode, buf)
 		}
 
-		if cap(buf) > readPoolMax {
-			b := make([]byte, 0, readPoolCap)
+		if cap(buf) > serverReadPoolMax {
+			b := make([]byte, 0, serverReadPoolCap)
 			*bp = b
 		} else {
 			*bp = buf[:0]
 		}
-		readBufPool.Put(bp)
+		serverReadBufPool.Put(bp)
 	}
 }

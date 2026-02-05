@@ -6,16 +6,16 @@ import (
 	"sync/atomic"
 )
 
-type hub struct {
+type serverHub struct {
 	mu     sync.RWMutex
-	cs     map[*Conn]struct{}
+	cs     map[*ServerConn]struct{}
 	nextID atomic.Int64
 	open   atomic.Bool
 }
 
-func newHub() *hub {
-	h := &hub{
-		cs:     make(map[*Conn]struct{}),
+func newServerHub() *serverHub {
+	h := &serverHub{
+		cs:     make(map[*ServerConn]struct{}),
 		nextID: atomic.Int64{},
 	}
 	h.nextID.Store(0)
@@ -23,28 +23,28 @@ func newHub() *hub {
 	return h
 }
 
-func (h *hub) closed() bool {
+func (h *serverHub) closed() bool {
 	return !h.open.Load()
 }
 
-func (h *hub) register(s *Conn) {
+func (h *serverHub) register(s *ServerConn) {
 	h.mu.Lock()
 	h.cs[s] = struct{}{}
 	h.mu.Unlock()
 }
 
-func (h *hub) unregister(s *Conn) {
+func (h *serverHub) unregister(s *ServerConn) {
 	h.mu.Lock()
 	delete(h.cs, s)
 	h.mu.Unlock()
 }
 
-func (h *hub) broadcastBinary(msg []byte, filters ...func(conn *Conn) bool) {
+func (h *serverHub) broadcastBinary(msg []byte, filters ...func(conn *ServerConn) bool) {
 
 	h.mu.RLock()
 	defer h.mu.RUnlock()
 
-	for c, _ := range h.cs {
+	for c := range h.cs {
 		for _, filter := range filters {
 			if !filter(c) {
 				break
@@ -54,11 +54,11 @@ func (h *hub) broadcastBinary(msg []byte, filters ...func(conn *Conn) bool) {
 	}
 }
 
-func (h *hub) broadcastText(msg []byte, filters ...func(conn *Conn) bool) {
+func (h *serverHub) broadcastText(msg []byte, filters ...func(conn *ServerConn) bool) {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
 
-	for c, _ := range h.cs {
+	for c := range h.cs {
 		for _, filter := range filters {
 			if !filter(c) {
 				break
@@ -68,18 +68,18 @@ func (h *hub) broadcastText(msg []byte, filters ...func(conn *Conn) bool) {
 	}
 }
 
-func (h *hub) allocate(opts *options, conn net.Conn) error {
+func (h *serverHub) allocate(opts *serverOptions, conn net.Conn) error {
 
 	if h.closed() {
 		return ErrClosed
 	}
 
 	id := h.nextID.Add(1)
-	s := &Conn{
+	s := &ServerConn{
 		id:    id,
 		opts:  opts,
 		raw:   conn,
-		sendQ: make(chan sendItem, opts.sendQueueSize),
+		sendQ: make(chan serverSendItem, opts.sendQueueSize),
 		done:  make(chan struct{}),
 	}
 	s.touch()
@@ -110,9 +110,9 @@ func (h *hub) allocate(opts *options, conn net.Conn) error {
 	return nil
 }
 
-func (h *hub) closeAll() {
+func (h *serverHub) closeAll() {
 	h.mu.RLock()
-	conns := make([]*Conn, 0, len(h.cs))
+	conns := make([]*ServerConn, 0, len(h.cs))
 	for c := range h.cs {
 		conns = append(conns, c)
 	}
@@ -123,7 +123,7 @@ func (h *hub) closeAll() {
 	}
 }
 
-func (h *hub) close() {
+func (h *serverHub) close() {
 	if !h.open.CompareAndSwap(true, false) {
 		return
 	}
