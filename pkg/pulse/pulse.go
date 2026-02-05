@@ -39,9 +39,7 @@ func (p *Pulse) HandleRequest(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 
-	p.hub.allocate(context.Background(), p.opts, raw)
-
-	return nil
+	return p.hub.allocate(p.opts, raw)
 }
 
 // BroadcastBinary 广播二进制消息
@@ -54,4 +52,9 @@ func (p *Pulse) BroadcastBinary(msg []byte, filters ...func(conn *Conn) bool) {
 // filters: 条件过滤器, 返回true则发送消息,否则不发
 func (p *Pulse) BroadcastText(msg []byte, filters ...func(conn *Conn) bool) {
 	p.hub.broadcastText(msg, filters...)
+}
+
+func (p *Pulse) Close() error {
+	p.hub.close()
+	return nil
 }

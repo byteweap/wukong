@@ -1,7 +1,6 @@
 package pulse
 
 import (
-	"context"
 	"net"
 	"sync"
 	"sync/atomic"
@@ -11,6 +10,7 @@ type hub struct {
 	mu     sync.RWMutex
 	cs     map[*Conn]struct{}
 	nextID atomic.Int64
+	open   atomic.Bool
 }
 
 func newHub() *hub {
@@ -19,7 +19,12 @@ func newHub() *hub {
 		nextID: atomic.Int64{},
 	}
 	h.nextID.Store(0)
+	h.open.Store(true)
 	return h
+}
+
+func (h *hub) closed() bool {
+	return !h.open.Load()
 }
 
 func (h *hub) register(s *Conn) {
@@ -42,7 +47,7 @@ func (h *hub) broadcastBinary(msg []byte, filters ...func(conn *Conn) bool) {
 	for c, _ := range h.cs {
 		for _, filter := range filters {
 			if !filter(c) {
-				return
+				break
 			}
 		}
 		_ = c.WriteBinary(msg)
@@ -56,24 +61,26 @@ func (h *hub) broadcastText(msg []byte, filters ...func(conn *Conn) bool) {
 	for c, _ := range h.cs {
 		for _, filter := range filters {
 			if !filter(c) {
-				return
+				break
 			}
 		}
 		_ = c.WriteText(msg)
 	}
 }
 
-func (h *hub) allocate(parent context.Context, opts *options, conn net.Conn) {
+func (h *hub) allocate(opts *options, conn net.Conn) error {
 
-	ctx, cancel := context.WithCancel(parent)
+	if h.closed() {
+		return ErrClosed
+	}
 
 	id := h.nextID.Add(1)
 	s := &Conn{
-		id:     id,
-		raw:    conn,
-		sendQ:  make(chan sendItem, opts.sendQueueSize),
-		ctx:    ctx,
-		cancel: cancel,
+		id:    id,
+		opts:  opts,
+		raw:   conn,
+		sendQ: make(chan sendItem, opts.sendQueueSize),
+		done:  make(chan struct{}),
 	}
 	s.touch()
 
@@ -99,4 +106,26 @@ func (h *hub) allocate(parent context.Context, opts *options, conn net.Conn) {
 	if opts.onDisconnect != nil {
 		opts.onDisconnect(s, readErr)
 	}
+
+	return nil
+}
+
+func (h *hub) closeAll() {
+	h.mu.RLock()
+	conns := make([]*Conn, 0, len(h.cs))
+	for c := range h.cs {
+		conns = append(conns, c)
+	}
+	h.mu.RUnlock()
+
+	for _, c := range conns {
+		c.Close()
+	}
+}
+
+func (h *hub) close() {
+	if !h.open.CompareAndSwap(true, false) {
+		return
+	}
+	h.closeAll()
 }

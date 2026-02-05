@@ -1,7 +1,6 @@
 package pulse
 
 import (
-	"context"
 	"errors"
 	"io"
 	"net"
@@ -28,14 +27,12 @@ var readBufPool = sync.Pool{
 
 type Conn struct {
 	id   int64
-	uid  atomic.Int64
 	raw  net.Conn
 	opts *options
 
 	sendQ chan sendItem
 
-	ctx    context.Context
-	cancel context.CancelFunc
+	done chan struct{}
 
 	closed atomic.Bool
 
@@ -51,12 +48,6 @@ type sendItem struct {
 
 func (s *Conn) ID() int64 { return s.id }
 
-func (s *Conn) UID() int64 { return s.uid.Load() }
-
-func (s *Conn) BindUID(uid int64) {
-	s.uid.Store(uid)
-}
-
 func (s *Conn) RemoteAddr() net.Addr { return s.raw.RemoteAddr() }
 
 func (s *Conn) Set(key string, val any) { s.kv.Store(key, val) }
@@ -69,7 +60,7 @@ func (s *Conn) LastSeen() time.Time { return time.Unix(0, s.lastSeen.Load()) }
 
 func (s *Conn) Close() {
 	if s.closed.CompareAndSwap(false, true) {
-		s.cancel()
+		close(s.done)
 		_ = s.raw.Close()
 	}
 }
@@ -96,13 +87,15 @@ func (s *Conn) write(op ws.OpCode, msg []byte) error {
 		select {
 		case s.sendQ <- sendItem{op: op, msg: cp}:
 			return nil
-		case <-s.ctx.Done():
-			return context.Canceled
+		case <-s.done:
+			return net.ErrClosed
 		}
 	case BackpressureDrop:
 		select {
 		case s.sendQ <- sendItem{op: op, msg: cp}:
 			return nil
+		case <-s.done:
+			return net.ErrClosed
 		default:
 			return nil
 		}
@@ -110,9 +103,11 @@ func (s *Conn) write(op ws.OpCode, msg []byte) error {
 		select {
 		case s.sendQ <- sendItem{op: op, msg: cp}:
 			return nil
+		case <-s.done:
+			return net.ErrClosed
 		default:
 			s.Close()
-			return context.DeadlineExceeded
+			return ErrBackpressure
 		}
 	}
 }
@@ -124,7 +119,7 @@ func (s *Conn) writeLoop() {
 
 	for {
 		select {
-		case <-s.ctx.Done():
+		case <-s.done:
 			return
 		case item := <-s.sendQ:
 			if s.opts.writeTimeout > 0 {
