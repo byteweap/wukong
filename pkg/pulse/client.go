@@ -183,8 +183,8 @@ func (c *Client) nextBackoff(current time.Duration) time.Duration {
 		factor = 2
 	}
 	next := time.Duration(float64(current) * factor)
-	if max := c.opts.reconnectMaxInterval; max > 0 && next > max {
-		next = max
+	if maxInterval := c.opts.reconnectMaxInterval; maxInterval > 0 && next > maxInterval {
+		next = maxInterval
 	}
 	if next < c.opts.reconnectInterval {
 		next = c.opts.reconnectInterval

@@ -34,11 +34,16 @@ type options struct {
 	// Upgrade 校验：可选
 	checkOrigin func(origin string) bool
 
-	onConnect       OnConnectHandler
-	onDisconnect    OnDisconnectHandler
-	onTextMessage   OnMessageHandler
+	// 连接建立回调
+	onConnect OnConnectHandler
+	// 连接断开回调
+	onDisconnect OnDisconnectHandler
+	// 文本消息回调
+	onTextMessage OnMessageHandler
+	// 二进制消息回调
 	onBinaryMessage OnMessageHandler
-	onError         OnErrorHandler
+	// 错误回调
+	onError OnErrorHandler
 }
 
 type Option func(*options)
