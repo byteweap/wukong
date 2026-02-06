@@ -49,7 +49,9 @@ func TestClientServerMessageFlow(t *testing.T) {
 	if err := client.Dial(ctx, wsURL, nil); err != nil {
 		t.Fatalf("dial failed: %v", err)
 	}
-	defer client.Close()
+	defer func() {
+		_ = client.Close()
+	}()
 
 	select {
 	case got := <-recvServer:

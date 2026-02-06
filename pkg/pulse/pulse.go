@@ -7,6 +7,8 @@ import (
 	"github.com/gobwas/ws"
 )
 
+// Pulse websocket 服务端
+// 基于 gobwas/ws 实现
 type Pulse struct {
 	opts *options
 	hub  *hub

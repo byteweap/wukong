@@ -10,6 +10,8 @@ import (
 	"github.com/gobwas/ws"
 )
 
+// Client pulse 客户端
+// 基于 gobwas/ws 实现
 type Client struct {
 	opts *clientOptions
 
