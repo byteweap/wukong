@@ -74,7 +74,7 @@ func (h *hub) allocate(opts *options, conn net.Conn) error {
 		id:    id,
 		opts:  opts,
 		raw:   conn,
-		sendQ: make(chan serverSendItem, opts.sendQueueSize),
+		sendQ: make(chan sendItem, opts.sendQueueSize),
 		done:  make(chan struct{}),
 	}
 	s.touch()
@@ -89,17 +89,14 @@ func (h *hub) allocate(opts *options, conn net.Conn) error {
 	go s.writeLoop()
 
 	// 读循环（当前协程）
-	readErr := s.readLoop()
+	s.readLoop()
 
 	// 清理
 	h.unregister(s)
 	s.Close()
 
-	if readErr != nil && opts.onError != nil {
-		opts.onError(s, readErr)
-	}
 	if opts.onDisconnect != nil {
-		opts.onDisconnect(s, readErr)
+		opts.onDisconnect(s)
 	}
 
 	return nil

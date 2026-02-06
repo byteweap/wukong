@@ -5,10 +5,10 @@ import (
 )
 
 type (
-	ConnectHandler    func(*Conn)
-	DisconnectHandler func(*Conn, error)
-	MessageHandler    func(*Conn, []byte)
-	ErrorHandler      func(*Conn, error)
+	HandleConnectFunc    func(*Conn)
+	HandleDisconnectFunc func(*Conn)
+	HandleMessageFunc    func(*Conn, []byte)
+	HandleErrorFunc      func(*Conn, error)
 )
 
 type BackpressureMode int
@@ -30,20 +30,22 @@ type options struct {
 	writeTimeout time.Duration
 	// 背压模式
 	backpressure BackpressureMode
+	// PING 发送间隔
+	pingInterval time.Duration
 
 	// Upgrade 校验：可选
 	checkOrigin func(origin string) bool
 
 	// 连接建立回调
-	onConnect ConnectHandler
+	onConnect HandleConnectFunc
 	// 连接断开回调
-	onDisconnect DisconnectHandler
+	onDisconnect HandleDisconnectFunc
 	// 文本消息回调
-	onTextMessage MessageHandler
+	onTextMessage HandleMessageFunc
 	// 二进制消息回调
-	onBinaryMessage MessageHandler
+	onBinaryMessage HandleMessageFunc
 	// 错误回调
-	onError ErrorHandler
+	errorHandler HandleErrorFunc
 }
 
 type Option func(*options)
@@ -55,6 +57,7 @@ func defaultOptions() *options {
 		readTimeout:    time.Second * 5,
 		writeTimeout:   time.Second * 5,
 		backpressure:   BackpressureKick,
+		pingInterval:   time.Second * 10,
 	}
 }
 
@@ -102,33 +105,42 @@ func CheckOrigin(check func(origin string) bool) Option {
 	}
 }
 
+// PingInterval 设置 PING 发送间隔, 默认:10秒
+func PingInterval(interval time.Duration) Option {
+	return func(o *options) {
+		if interval > 0 {
+			o.pingInterval = interval
+		}
+	}
+}
+
 // OnConnect 设置连接建立时的回调函数
-func OnConnect(fn ConnectHandler) Option {
+func OnConnect(fn HandleConnectFunc) Option {
 	return func(o *options) {
 		o.onConnect = fn
 	}
 }
 
-func OnDisconnect(fn DisconnectHandler) Option {
+func OnDisconnect(fn HandleDisconnectFunc) Option {
 	return func(o *options) {
 		o.onDisconnect = fn
 	}
 }
 
-func OnTextMessage(fn MessageHandler) Option {
+func OnTextMessage(fn HandleMessageFunc) Option {
 	return func(o *options) {
 		o.onTextMessage = fn
 	}
 }
 
-func OnBinaryMessage(fn MessageHandler) Option {
+func OnBinaryMessage(fn HandleMessageFunc) Option {
 	return func(o *options) {
 		o.onBinaryMessage = fn
 	}
 }
 
-func OnError(fn ErrorHandler) Option {
+func ErrorHandler(fn HandleErrorFunc) Option {
 	return func(o *options) {
-		o.onError = fn
+		o.errorHandler = fn
 	}
 }

@@ -10,17 +10,18 @@ import (
 
 func main() {
 	srv := pulse.New(
-		pulse.SendQueueSize(256),
-		pulse.CheckOrigin(func(origin string) bool { return true }),
 		pulse.MaxMessageSize(16*1024*1024),
+		pulse.SendQueueSize(256),
+		pulse.PingInterval(time.Second*10),
 		pulse.ReadTimeout(time.Second*5),
 		pulse.WriteTimeout(time.Second*5),
 		pulse.Backpressure(pulse.BackpressureKick),
+		pulse.CheckOrigin(func(origin string) bool { return true }),
 		pulse.OnConnect(func(c *pulse.Conn) {
 			log.Printf("new connection: %s", c.RemoteAddr())
 		}),
-		pulse.OnDisconnect(func(c *pulse.Conn, err error) {
-			log.Printf("connection closed: %s, error: %v", c.RemoteAddr(), err)
+		pulse.OnDisconnect(func(c *pulse.Conn) {
+			log.Printf("connection closed: %s", c.RemoteAddr())
 		}),
 		pulse.OnTextMessage(func(c *pulse.Conn, msg []byte) {
 			_ = c.WriteText(msg)
@@ -28,7 +29,7 @@ func main() {
 		pulse.OnBinaryMessage(func(c *pulse.Conn, msg []byte) {
 			_ = c.WriteBinary(msg)
 		}),
-		pulse.OnError(func(c *pulse.Conn, err error) {
+		pulse.ErrorHandler(func(c *pulse.Conn, err error) {
 			log.Printf("connection error: %s, error: %v", c.RemoteAddr(), err)
 		}),
 	)

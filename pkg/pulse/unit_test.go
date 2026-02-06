@@ -24,7 +24,7 @@ func TestServerBackpressureKick(t *testing.T) {
 	conn := &Conn{
 		raw:   c1,
 		opts:  opts,
-		sendQ: make(chan serverSendItem, opts.sendQueueSize),
+		sendQ: make(chan sendItem, opts.sendQueueSize),
 		done:  make(chan struct{}),
 	}
 
@@ -102,11 +102,11 @@ func TestServerCloseSendsCloseFrameWhenQueueFull(t *testing.T) {
 	conn := &Conn{
 		raw:   c1,
 		opts:  opts,
-		sendQ: make(chan serverSendItem, opts.sendQueueSize),
+		sendQ: make(chan sendItem, opts.sendQueueSize),
 		done:  make(chan struct{}),
 	}
 
-	conn.sendQ <- serverSendItem{op: ws.OpText, msg: []byte("full")}
+	conn.sendQ <- sendItem{op: ws.OpText, msg: []byte("full")}
 
 	conn.Close()
 
