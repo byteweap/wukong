@@ -221,7 +221,8 @@ func (c *Conn) readLoop() {
 			}
 		}
 
-		hdr, err := rd.NextFrame()
+		var hdr ws.Header
+		hdr, err = rd.NextFrame()
 		if err != nil {
 			return
 		}
@@ -246,7 +247,8 @@ func (c *Conn) readLoop() {
 		var tmp [serverReadChunkSize]byte
 
 		for {
-			n, err := rd.Read(tmp[:])
+			var n int
+			n, err = rd.Read(tmp[:])
 			if n > 0 {
 				buf = append(buf, tmp[:n]...)
 			}
