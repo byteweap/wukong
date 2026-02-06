@@ -11,8 +11,10 @@ import (
 
 func TestServerBackpressureKick(t *testing.T) {
 	c1, c2 := net.Pipe()
-	defer c1.Close()
-	defer c2.Close()
+	defer func() {
+		_ = c1.Close()
+		_ = c2.Close()
+	}()
 
 	opts := &options{
 		sendQueueSize: 1,
@@ -39,8 +41,10 @@ func TestServerBackpressureKick(t *testing.T) {
 
 func TestClientBackpressureKick(t *testing.T) {
 	c1, c2 := net.Pipe()
-	defer c1.Close()
-	defer c2.Close()
+	defer func() {
+		_ = c1.Close()
+		_ = c2.Close()
+	}()
 
 	opts := &clientOptions{
 		sendQueueSize: 1,
@@ -85,7 +89,10 @@ func TestClientNextBackoff(t *testing.T) {
 
 func TestServerCloseSendsCloseFrameWhenQueueFull(t *testing.T) {
 	c1, c2 := net.Pipe()
-	defer c2.Close()
+	defer func() {
+		_ = c1.Close()
+		_ = c2.Close()
+	}()
 
 	opts := &options{
 		sendQueueSize: 1,
@@ -115,7 +122,9 @@ func TestServerCloseSendsCloseFrameWhenQueueFull(t *testing.T) {
 
 func TestClientCloseSendsCloseFrameWhenQueueFull(t *testing.T) {
 	c1, c2 := net.Pipe()
-	defer c2.Close()
+	defer func() {
+		_ = c2.Close()
+	}()
 
 	opts := &clientOptions{
 		sendQueueSize: 1,

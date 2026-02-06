@@ -17,7 +17,7 @@ func TestClientServerMessageFlow(t *testing.T) {
 	recvClient := make(chan string, 1)
 
 	srv := New(
-		OnTextMessage(func(c *Conn, _ ws.OpCode, msg []byte) {
+		OnTextMessage(func(c *Conn, msg []byte) {
 			recvServer <- string(msg)
 			_ = c.WriteText([]byte("world"))
 		}),
