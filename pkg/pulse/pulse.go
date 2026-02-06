@@ -59,6 +59,7 @@ func (s *Pulse) NumConnections() int {
 	return len(s.hub.cs)
 }
 
+// Close 关闭所有连接
 func (s *Pulse) Close() error {
 	s.hub.close()
 	return nil
