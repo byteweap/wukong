@@ -9,9 +9,9 @@ import (
 )
 
 func main() {
-	srv := pulse.NewServer(
-		pulse.ServerMaxMessageSize(16*1024*1024),
-		pulse.OnServerMessage(func(c *pulse.ServerConn, op ws.OpCode, msg []byte) {
+	srv := pulse.New(
+		pulse.MaxMessageSize(16*1024*1024),
+		pulse.OnTextMessage(func(c *pulse.Conn, op ws.OpCode, msg []byte) {
 			switch op {
 			case ws.OpText:
 				_ = c.WriteText(msg)

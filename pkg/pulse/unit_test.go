@@ -14,12 +14,12 @@ func TestServerBackpressureKick(t *testing.T) {
 	defer c1.Close()
 	defer c2.Close()
 
-	opts := &serverOptions{
+	opts := &options{
 		sendQueueSize: 1,
 		backpressure:  BackpressureKick,
 	}
 
-	conn := &ServerConn{
+	conn := &Conn{
 		raw:   c1,
 		opts:  opts,
 		sendQ: make(chan serverSendItem, opts.sendQueueSize),
@@ -87,12 +87,12 @@ func TestServerCloseSendsCloseFrameWhenQueueFull(t *testing.T) {
 	c1, c2 := net.Pipe()
 	defer c2.Close()
 
-	opts := &serverOptions{
+	opts := &options{
 		sendQueueSize: 1,
 		backpressure:  BackpressureBlock,
 	}
 
-	conn := &ServerConn{
+	conn := &Conn{
 		raw:   c1,
 		opts:  opts,
 		sendQ: make(chan serverSendItem, opts.sendQueueSize),

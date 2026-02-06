@@ -25,10 +25,10 @@ var bufPool = sync.Pool{
 	},
 }
 
-type ServerConn struct {
+type Conn struct {
 	id   int64
 	raw  net.Conn
-	opts *serverOptions
+	opts *options
 
 	sendQ chan serverSendItem
 
@@ -46,19 +46,19 @@ type serverSendItem struct {
 	msg []byte
 }
 
-func (s *ServerConn) ID() int64 { return s.id }
+func (s *Conn) ID() int64 { return s.id }
 
-func (s *ServerConn) RemoteAddr() net.Addr { return s.raw.RemoteAddr() }
+func (s *Conn) RemoteAddr() net.Addr { return s.raw.RemoteAddr() }
 
-func (s *ServerConn) Set(key string, val any) { s.kv.Store(key, val) }
+func (s *Conn) Set(key string, val any) { s.kv.Store(key, val) }
 
-func (s *ServerConn) Get(key string) (any, bool) { return s.kv.Load(key) }
+func (s *Conn) Get(key string) (any, bool) { return s.kv.Load(key) }
 
-func (s *ServerConn) touch() { s.lastSeen.Store(time.Now().UnixNano()) }
+func (s *Conn) touch() { s.lastSeen.Store(time.Now().UnixNano()) }
 
-func (s *ServerConn) LastSeen() time.Time { return time.Unix(0, s.lastSeen.Load()) }
+func (s *Conn) LastSeen() time.Time { return time.Unix(0, s.lastSeen.Load()) }
 
-func (s *ServerConn) Close() {
+func (s *Conn) Close() {
 	if s.closed.CompareAndSwap(false, true) {
 		s.trySendCloseFrame()
 		close(s.done)
@@ -66,7 +66,7 @@ func (s *ServerConn) Close() {
 	}
 }
 
-func (s *ServerConn) trySendCloseFrame() {
+func (s *Conn) trySendCloseFrame() {
 	payload := ws.NewCloseFrameBody(ws.StatusNormalClosure, "")
 	if s.sendQ != nil {
 		select {
@@ -78,7 +78,7 @@ func (s *ServerConn) trySendCloseFrame() {
 	s.writeCloseFrameDirect(payload)
 }
 
-func (s *ServerConn) writeCloseFrameDirect(payload []byte) {
+func (s *Conn) writeCloseFrameDirect(payload []byte) {
 	if s.raw == nil {
 		return
 	}
@@ -89,15 +89,15 @@ func (s *ServerConn) writeCloseFrameDirect(payload []byte) {
 	_ = ws.WriteFrame(s.raw, frame)
 }
 
-func (s *ServerConn) WriteBinary(msg []byte) error {
+func (s *Conn) WriteBinary(msg []byte) error {
 	return s.write(ws.OpBinary, msg)
 }
 
-func (s *ServerConn) WriteText(msg []byte) error {
+func (s *Conn) WriteText(msg []byte) error {
 	return s.write(ws.OpText, msg)
 }
 
-func (s *ServerConn) write(op ws.OpCode, msg []byte) error {
+func (s *Conn) write(op ws.OpCode, msg []byte) error {
 	if s.closed.Load() {
 		return net.ErrClosed
 	}
@@ -136,7 +136,7 @@ func (s *ServerConn) write(op ws.OpCode, msg []byte) error {
 	}
 }
 
-func (s *ServerConn) writeLoop() {
+func (s *Conn) writeLoop() {
 	defer s.Close()
 
 	w := wsutil.NewWriter(s.raw, ws.StateServerSide, ws.OpBinary) // w.ResetOp 会重置 op，所以这里先设置好
@@ -169,7 +169,7 @@ func (s *ServerConn) writeLoop() {
 	}
 }
 
-func (s *ServerConn) readLoop() error {
+func (s *Conn) readLoop() error {
 	defer s.Close()
 
 	controlHandler := wsutil.ControlFrameHandler(s.raw, ws.StateServerSide)
@@ -227,8 +227,10 @@ func (s *ServerConn) readLoop() error {
 
 		s.touch()
 
-		if s.opts.onMessage != nil {
-			s.opts.onMessage(s, hdr.OpCode, buf)
+		if hdr.OpCode == ws.OpText && s.opts.onTextMessage != nil {
+			s.opts.onTextMessage(s, buf)
+		} else if hdr.OpCode == ws.OpBinary && s.opts.onBinaryMessage != nil {
+			s.opts.onBinaryMessage(s, buf)
 		}
 
 		if cap(buf) > serverReadPoolMax {

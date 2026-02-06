@@ -16,8 +16,8 @@ func TestClientServerMessageFlow(t *testing.T) {
 	recvServer := make(chan string, 1)
 	recvClient := make(chan string, 1)
 
-	srv := NewServer(
-		OnServerMessage(func(c *ServerConn, _ ws.OpCode, msg []byte) {
+	srv := New(
+		OnTextMessage(func(c *Conn, _ ws.OpCode, msg []byte) {
 			recvServer <- string(msg)
 			_ = c.WriteText([]byte("world"))
 		}),
@@ -74,8 +74,8 @@ func TestClientAutoReconnect(t *testing.T) {
 	var serverConnCount atomic.Int64
 	var clientOpenCount atomic.Int64
 
-	srv := NewServer(
-		OnServerConnect(func(c *ServerConn) {
+	srv := New(
+		OnConnect(func(c *Conn) {
 			if serverConnCount.Add(1) == 1 {
 				go func() {
 					time.Sleep(50 * time.Millisecond)

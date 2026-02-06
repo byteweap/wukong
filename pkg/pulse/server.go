@@ -7,23 +7,23 @@ import (
 	"github.com/gobwas/ws"
 )
 
-type Server struct {
-	opts *serverOptions
-	hub  *serverHub
+type Pulse struct {
+	opts *options
+	hub  *hub
 }
 
-func NewServer(opts ...ServerOption) *Server {
-	o := defaultServerOptions()
+func New(opts ...Option) *Pulse {
+	o := defaultOptions()
 	for _, opt := range opts {
 		opt(o)
 	}
-	return &Server{
+	return &Pulse{
 		opts: o,
-		hub:  newServerHub(),
+		hub:  newHub(),
 	}
 }
 
-func (s *Server) HandleRequest(w http.ResponseWriter, r *http.Request) error {
+func (s *Pulse) HandleRequest(w http.ResponseWriter, r *http.Request) error {
 
 	// Origin 校验
 	if s.opts.checkOrigin != nil {
@@ -44,17 +44,17 @@ func (s *Server) HandleRequest(w http.ResponseWriter, r *http.Request) error {
 
 // BroadcastBinary 广播二进制消息
 // filters: 条件过滤器, 返回true则发送消息,否则不发
-func (s *Server) BroadcastBinary(msg []byte, filters ...func(conn *ServerConn) bool) {
+func (s *Pulse) BroadcastBinary(msg []byte, filters ...func(conn *Conn) bool) {
 	s.hub.broadcastBinary(msg, filters...)
 }
 
 // BroadcastText 广播文本消息
 // filters: 条件过滤器, 返回true则发送消息,否则不发
-func (s *Server) BroadcastText(msg []byte, filters ...func(conn *ServerConn) bool) {
+func (s *Pulse) BroadcastText(msg []byte, filters ...func(conn *Conn) bool) {
 	s.hub.broadcastText(msg, filters...)
 }
 
-func (s *Server) Close() error {
+func (s *Pulse) Close() error {
 	s.hub.close()
 	return nil
 }

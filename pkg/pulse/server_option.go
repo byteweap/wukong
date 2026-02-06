@@ -2,15 +2,13 @@ package pulse
 
 import (
 	"time"
-
-	"github.com/gobwas/ws"
 )
 
 type (
-	OnServerConnectHandler    func(*ServerConn)
-	OnServerDisconnectHandler func(*ServerConn, error)
-	OnServerMessageHandler    func(*ServerConn, ws.OpCode, []byte)
-	OnServerErrorHandler      func(*ServerConn, error)
+	OnConnectHandler    func(*Conn)
+	OnDisconnectHandler func(*Conn, error)
+	OnMessageHandler    func(*Conn, []byte)
+	OnErrorHandler      func(*Conn, error)
 )
 
 type BackpressureMode int
@@ -21,7 +19,7 @@ const (
 	BackpressureBlock                         // 队列满阻塞写入（不推荐网关）
 )
 
-type serverOptions struct {
+type options struct {
 	sendQueueSize  int
 	maxMessageSize int64
 	readTimeout    time.Duration // 0 表示不设置
@@ -31,16 +29,17 @@ type serverOptions struct {
 	// Upgrade 校验：可选
 	checkOrigin func(origin string) bool
 
-	onConnect    OnServerConnectHandler
-	onDisconnect OnServerDisconnectHandler
-	onMessage    OnServerMessageHandler
-	onError      OnServerErrorHandler
+	onConnect       OnConnectHandler
+	onDisconnect    OnDisconnectHandler
+	onTextMessage   OnMessageHandler
+	onBinaryMessage OnMessageHandler
+	onError         OnErrorHandler
 }
 
-type ServerOption func(*serverOptions)
+type Option func(*options)
 
-func defaultServerOptions() *serverOptions {
-	return &serverOptions{
+func defaultOptions() *options {
+	return &options{
 		sendQueueSize:  256,
 		maxMessageSize: 64 * 1024,
 		readTimeout:    0,
@@ -49,61 +48,67 @@ func defaultServerOptions() *serverOptions {
 	}
 }
 
-func ServerSendQueueSize(size int) ServerOption {
-	return func(o *serverOptions) {
+func SendQueueSize(size int) Option {
+	return func(o *options) {
 		o.sendQueueSize = size
 	}
 }
 
-func ServerMaxMessageSize(size int64) ServerOption {
-	return func(o *serverOptions) {
+func MaxMessageSize(size int64) Option {
+	return func(o *options) {
 		o.maxMessageSize = size
 	}
 }
-func ServerReadTimeout(timeout time.Duration) ServerOption {
-	return func(o *serverOptions) {
+func ReadTimeout(timeout time.Duration) Option {
+	return func(o *options) {
 		o.readTimeout = timeout
 	}
 }
 
-func ServerWriteTimeout(timeout time.Duration) ServerOption {
-	return func(o *serverOptions) {
+func WriteTimeout(timeout time.Duration) Option {
+	return func(o *options) {
 		o.writeTimeout = timeout
 	}
 }
 
-func ServerBackpressure(mode BackpressureMode) ServerOption {
-	return func(o *serverOptions) {
+func Backpressure(mode BackpressureMode) Option {
+	return func(o *options) {
 		o.backpressure = mode
 	}
 }
 
-func ServerCheckOrigin(check func(origin string) bool) ServerOption {
-	return func(o *serverOptions) {
+func CheckOrigin(check func(origin string) bool) Option {
+	return func(o *options) {
 		o.checkOrigin = check
 	}
 }
 
-func OnServerConnect(fn OnServerConnectHandler) ServerOption {
-	return func(o *serverOptions) {
+func OnConnect(fn OnConnectHandler) Option {
+	return func(o *options) {
 		o.onConnect = fn
 	}
 }
 
-func OnServerDisconnect(fn OnServerDisconnectHandler) ServerOption {
-	return func(o *serverOptions) {
+func OnDisconnect(fn OnDisconnectHandler) Option {
+	return func(o *options) {
 		o.onDisconnect = fn
 	}
 }
 
-func OnServerMessage(fn OnServerMessageHandler) ServerOption {
-	return func(o *serverOptions) {
-		o.onMessage = fn
+func OnTextMessage(fn OnMessageHandler) Option {
+	return func(o *options) {
+		o.onTextMessage = fn
 	}
 }
 
-func OnServerError(fn OnServerErrorHandler) ServerOption {
-	return func(o *serverOptions) {
+func OnBinaryMessage(fn OnMessageHandler) Option {
+	return func(o *options) {
+		o.onBinaryMessage = fn
+	}
+}
+
+func OnError(fn OnErrorHandler) Option {
+	return func(o *options) {
 		o.onError = fn
 	}
 }

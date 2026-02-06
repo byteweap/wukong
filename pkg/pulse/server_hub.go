@@ -6,16 +6,16 @@ import (
 	"sync/atomic"
 )
 
-type serverHub struct {
+type hub struct {
 	mu     sync.RWMutex
-	cs     map[*ServerConn]struct{}
+	cs     map[*Conn]struct{}
 	nextID atomic.Int64
 	open   atomic.Bool
 }
 
-func newServerHub() *serverHub {
-	h := &serverHub{
-		cs:     make(map[*ServerConn]struct{}),
+func newHub() *hub {
+	h := &hub{
+		cs:     make(map[*Conn]struct{}),
 		nextID: atomic.Int64{},
 	}
 	h.nextID.Store(0)
@@ -23,28 +23,32 @@ func newServerHub() *serverHub {
 	return h
 }
 
-func (h *serverHub) closed() bool {
+func (h *hub) closed() bool {
 	return !h.open.Load()
 }
 
-func (h *serverHub) register(s *ServerConn) {
+func (h *hub) register(s *Conn) {
 	h.mu.Lock()
 	h.cs[s] = struct{}{}
 	h.mu.Unlock()
 }
 
-func (h *serverHub) unregister(s *ServerConn) {
+func (h *hub) unregister(s *Conn) {
 	h.mu.Lock()
 	delete(h.cs, s)
 	h.mu.Unlock()
 }
 
-func (h *serverHub) broadcastBinary(msg []byte, filters ...func(conn *ServerConn) bool) {
+func (h *hub) broadcastBinary(msg []byte, filters ...func(conn *Conn) bool) {
 
 	h.mu.RLock()
-	defer h.mu.RUnlock()
-
+	cs := make([]*Conn, 0, len(h.cs))
 	for c := range h.cs {
+		cs = append(cs, c)
+	}
+	h.mu.RUnlock()
+
+	for _, c := range cs {
 		for _, filter := range filters {
 			if !filter(c) {
 				break
@@ -54,11 +58,16 @@ func (h *serverHub) broadcastBinary(msg []byte, filters ...func(conn *ServerConn
 	}
 }
 
-func (h *serverHub) broadcastText(msg []byte, filters ...func(conn *ServerConn) bool) {
-	h.mu.RLock()
-	defer h.mu.RUnlock()
+func (h *hub) broadcastText(msg []byte, filters ...func(conn *Conn) bool) {
 
+	h.mu.RLock()
+	cs := make([]*Conn, 0, len(h.cs))
 	for c := range h.cs {
+		cs = append(cs, c)
+	}
+	h.mu.RUnlock()
+
+	for _, c := range cs {
 		for _, filter := range filters {
 			if !filter(c) {
 				break
@@ -68,14 +77,14 @@ func (h *serverHub) broadcastText(msg []byte, filters ...func(conn *ServerConn) 
 	}
 }
 
-func (h *serverHub) allocate(opts *serverOptions, conn net.Conn) error {
+func (h *hub) allocate(opts *options, conn net.Conn) error {
 
 	if h.closed() {
 		return ErrClosed
 	}
 
 	id := h.nextID.Add(1)
-	s := &ServerConn{
+	s := &Conn{
 		id:    id,
 		opts:  opts,
 		raw:   conn,
@@ -110,20 +119,20 @@ func (h *serverHub) allocate(opts *serverOptions, conn net.Conn) error {
 	return nil
 }
 
-func (h *serverHub) closeAll() {
+func (h *hub) closeAll() {
 	h.mu.RLock()
-	conns := make([]*ServerConn, 0, len(h.cs))
+	cs := make([]*Conn, 0, len(h.cs))
 	for c := range h.cs {
-		conns = append(conns, c)
+		cs = append(cs, c)
 	}
 	h.mu.RUnlock()
 
-	for _, c := range conns {
+	for _, c := range cs {
 		c.Close()
 	}
 }
 
-func (h *serverHub) close() {
+func (h *hub) close() {
 	if !h.open.CompareAndSwap(true, false) {
 		return
 	}
