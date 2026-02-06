@@ -3,21 +3,28 @@ package main
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/byteweap/wukong/pkg/pulse"
-	"github.com/gobwas/ws"
 )
 
 func main() {
 	srv := pulse.New(
 		pulse.MaxMessageSize(16*1024*1024),
-		pulse.OnTextMessage(func(c *pulse.Conn, op ws.OpCode, msg []byte) {
-			switch op {
-			case ws.OpText:
-				_ = c.WriteText(msg)
-			case ws.OpBinary:
-				_ = c.WriteBinary(msg)
-			}
+		pulse.ReadTimeout(time.Second*5),
+		pulse.WriteTimeout(time.Second*5),
+		pulse.Backpressure(pulse.BackpressureKick),
+		pulse.OnConnect(func(c *pulse.Conn) {
+			log.Printf("new connection: %s", c.RemoteAddr())
+		}),
+		pulse.OnDisconnect(func(c *pulse.Conn, err error) {
+			log.Printf("connection closed: %s, error: %v", c.RemoteAddr(), err)
+		}),
+		pulse.OnTextMessage(func(c *pulse.Conn, msg []byte) {
+			_ = c.WriteText(msg)
+		}),
+		pulse.OnBinaryMessage(func(c *pulse.Conn, msg []byte) {
+			_ = c.WriteBinary(msg)
 		}),
 	)
 

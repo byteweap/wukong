@@ -20,11 +20,16 @@ const (
 )
 
 type options struct {
-	sendQueueSize  int
+	// 发送队列大小
+	sendQueueSize int
+	// 最大消息大小
 	maxMessageSize int64
-	readTimeout    time.Duration // 0 表示不设置
-	writeTimeout   time.Duration // 0 表示不设置
-	backpressure   BackpressureMode
+	// 读超时时间, 0 表示不设置
+	readTimeout time.Duration
+	// 写超时时间, 0 表示不设置
+	writeTimeout time.Duration
+	// 背压模式
+	backpressure BackpressureMode
 
 	// Upgrade 校验：可选
 	checkOrigin func(origin string) bool
@@ -42,47 +47,57 @@ func defaultOptions() *options {
 	return &options{
 		sendQueueSize:  256,
 		maxMessageSize: 64 * 1024,
-		readTimeout:    0,
-		writeTimeout:   0,
+		readTimeout:    time.Second * 5,
+		writeTimeout:   time.Second * 5,
 		backpressure:   BackpressureKick,
 	}
 }
 
+// SendQueueSize 设置发送队列大小, 默认:256
 func SendQueueSize(size int) Option {
 	return func(o *options) {
-		o.sendQueueSize = size
+		if size > 0 {
+			o.sendQueueSize = size
+		}
 	}
 }
 
+// MaxMessageSize 设置最大消息大小, 默认:64K
 func MaxMessageSize(size int64) Option {
 	return func(o *options) {
 		o.maxMessageSize = size
 	}
 }
+
+// ReadTimeout 设置读超时, 默认:5秒
 func ReadTimeout(timeout time.Duration) Option {
 	return func(o *options) {
 		o.readTimeout = timeout
 	}
 }
 
+// WriteTimeout 设置写超时, 默认:5秒
 func WriteTimeout(timeout time.Duration) Option {
 	return func(o *options) {
 		o.writeTimeout = timeout
 	}
 }
 
+// Backpressure 设置背压模式, 默认:BackpressureKick (即队列满直接断开)
 func Backpressure(mode BackpressureMode) Option {
 	return func(o *options) {
 		o.backpressure = mode
 	}
 }
 
+// CheckOrigin 设置跨域校验函数
 func CheckOrigin(check func(origin string) bool) Option {
 	return func(o *options) {
 		o.checkOrigin = check
 	}
 }
 
+// OnConnect 设置连接建立时的回调函数
 func OnConnect(fn OnConnectHandler) Option {
 	return func(o *options) {
 		o.onConnect = fn
