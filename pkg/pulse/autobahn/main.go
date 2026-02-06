@@ -10,6 +10,8 @@ import (
 
 func main() {
 	srv := pulse.New(
+		pulse.SendQueueSize(256),
+		pulse.CheckOrigin(func(origin string) bool { return true }),
 		pulse.MaxMessageSize(16*1024*1024),
 		pulse.ReadTimeout(time.Second*5),
 		pulse.WriteTimeout(time.Second*5),
@@ -25,6 +27,9 @@ func main() {
 		}),
 		pulse.OnBinaryMessage(func(c *pulse.Conn, msg []byte) {
 			_ = c.WriteBinary(msg)
+		}),
+		pulse.OnError(func(c *pulse.Conn, err error) {
+			log.Printf("connection error: %s, error: %v", c.RemoteAddr(), err)
 		}),
 	)
 

@@ -41,14 +41,7 @@ func (h *hub) unregister(s *Conn) {
 
 func (h *hub) broadcastBinary(msg []byte, filters ...func(conn *Conn) bool) {
 
-	h.mu.RLock()
-	cs := make([]*Conn, 0, len(h.cs))
-	for c := range h.cs {
-		cs = append(cs, c)
-	}
-	h.mu.RUnlock()
-
-	for _, c := range cs {
+	for _, c := range h.all() {
 		for _, filter := range filters {
 			if !filter(c) {
 				break
@@ -60,14 +53,7 @@ func (h *hub) broadcastBinary(msg []byte, filters ...func(conn *Conn) bool) {
 
 func (h *hub) broadcastText(msg []byte, filters ...func(conn *Conn) bool) {
 
-	h.mu.RLock()
-	cs := make([]*Conn, 0, len(h.cs))
-	for c := range h.cs {
-		cs = append(cs, c)
-	}
-	h.mu.RUnlock()
-
-	for _, c := range cs {
+	for _, c := range h.all() {
 		for _, filter := range filters {
 			if !filter(c) {
 				break
@@ -119,22 +105,21 @@ func (h *hub) allocate(opts *options, conn net.Conn) error {
 	return nil
 }
 
-func (h *hub) closeAll() {
+func (h *hub) all() []*Conn {
 	h.mu.RLock()
 	cs := make([]*Conn, 0, len(h.cs))
 	for c := range h.cs {
 		cs = append(cs, c)
 	}
 	h.mu.RUnlock()
-
-	for _, c := range cs {
-		c.Close()
-	}
+	return cs
 }
 
 func (h *hub) close() {
 	if !h.open.CompareAndSwap(true, false) {
 		return
 	}
-	h.closeAll()
+	for _, c := range h.all() {
+		c.Close()
+	}
 }

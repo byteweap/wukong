@@ -54,6 +54,11 @@ func (s *Pulse) BroadcastText(msg []byte, filters ...func(conn *Conn) bool) {
 	s.hub.broadcastText(msg, filters...)
 }
 
+// NumConnections 返回当前连接数
+func (s *Pulse) NumConnections() int {
+	return len(s.hub.cs)
+}
+
 func (s *Pulse) Close() error {
 	s.hub.close()
 	return nil

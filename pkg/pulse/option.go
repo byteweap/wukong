@@ -5,10 +5,10 @@ import (
 )
 
 type (
-	OnConnectHandler    func(*Conn)
-	OnDisconnectHandler func(*Conn, error)
-	OnMessageHandler    func(*Conn, []byte)
-	OnErrorHandler      func(*Conn, error)
+	ConnectHandler    func(*Conn)
+	DisconnectHandler func(*Conn, error)
+	MessageHandler    func(*Conn, []byte)
+	ErrorHandler      func(*Conn, error)
 )
 
 type BackpressureMode int
@@ -35,15 +35,15 @@ type options struct {
 	checkOrigin func(origin string) bool
 
 	// 连接建立回调
-	onConnect OnConnectHandler
+	onConnect ConnectHandler
 	// 连接断开回调
-	onDisconnect OnDisconnectHandler
+	onDisconnect DisconnectHandler
 	// 文本消息回调
-	onTextMessage OnMessageHandler
+	onTextMessage MessageHandler
 	// 二进制消息回调
-	onBinaryMessage OnMessageHandler
+	onBinaryMessage MessageHandler
 	// 错误回调
-	onError OnErrorHandler
+	onError ErrorHandler
 }
 
 type Option func(*options)
@@ -103,31 +103,31 @@ func CheckOrigin(check func(origin string) bool) Option {
 }
 
 // OnConnect 设置连接建立时的回调函数
-func OnConnect(fn OnConnectHandler) Option {
+func OnConnect(fn ConnectHandler) Option {
 	return func(o *options) {
 		o.onConnect = fn
 	}
 }
 
-func OnDisconnect(fn OnDisconnectHandler) Option {
+func OnDisconnect(fn DisconnectHandler) Option {
 	return func(o *options) {
 		o.onDisconnect = fn
 	}
 }
 
-func OnTextMessage(fn OnMessageHandler) Option {
+func OnTextMessage(fn MessageHandler) Option {
 	return func(o *options) {
 		o.onTextMessage = fn
 	}
 }
 
-func OnBinaryMessage(fn OnMessageHandler) Option {
+func OnBinaryMessage(fn MessageHandler) Option {
 	return func(o *options) {
 		o.onBinaryMessage = fn
 	}
 }
 
-func OnError(fn OnErrorHandler) Option {
+func OnError(fn ErrorHandler) Option {
 	return func(o *options) {
 		o.onError = fn
 	}
