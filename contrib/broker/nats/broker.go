@@ -193,7 +193,7 @@ func buildNatsOptions(o *options) []nats.Option {
 		nats.ReconnectWait(o.reconnectWait),
 		nats.MaxReconnects(o.maxReconnects),
 		nats.PingInterval(o.pingInterval),
-		nats.MaxPingsOutstanding(o.maxPingsOutstanding),
+		nats.MaxPingsOutstanding(o.maxPingOut),
 	}
 
 	if o.token != "" {

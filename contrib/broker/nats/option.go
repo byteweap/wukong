@@ -10,13 +10,13 @@ import (
 
 const (
 	// default values (偏稳定与低延迟的折中)
-	defaultURLs                = nats.DefaultURL
-	defaultName                = "wk-nats-broker"
-	defaultConnectTimeout      = 3 * time.Second
-	defaultReconnectWait       = 250 * time.Millisecond
-	defaultMaxReconnects       = -1 // 无限重连
-	defaultPingInterval        = 20 * time.Second
-	defaultMaxPingsOutstanding = 3
+	defaultURLs           = nats.DefaultURL //
+	defaultName           = "wk-nats-broker"
+	defaultConnectTimeout = 2 * time.Second
+	defaultReconnectWait  = nats.DefaultReconnectWait
+	defaultMaxReconnects  = nats.DefaultMaxReconnect
+	defaultPingInterval   = nats.DefaultPingInterval
+	defaultMaxPingOut     = nats.DefaultMaxPingOut
 )
 
 type options struct {
@@ -30,11 +30,11 @@ type options struct {
 	tlsCfg   *tls.Config
 
 	// connect/reconnect
-	connectTimeout      time.Duration
-	reconnectWait       time.Duration
-	maxReconnects       int
-	pingInterval        time.Duration
-	maxPingsOutstanding int
+	connectTimeout time.Duration
+	reconnectWait  time.Duration
+	maxReconnects  int
+	pingInterval   time.Duration
+	maxPingOut     int
 
 	// advanced
 	natsOptions []nats.Option
@@ -44,13 +44,13 @@ type Option func(*options)
 
 func defaultOptions() *options {
 	return &options{
-		urls:                defaultURLs,
-		name:                defaultName,
-		connectTimeout:      defaultConnectTimeout,
-		reconnectWait:       defaultReconnectWait,
-		maxReconnects:       defaultMaxReconnects,
-		pingInterval:        defaultPingInterval,
-		maxPingsOutstanding: defaultMaxPingsOutstanding,
+		urls:           defaultURLs,
+		name:           defaultName,
+		connectTimeout: defaultConnectTimeout,
+		reconnectWait:  defaultReconnectWait,
+		maxReconnects:  defaultMaxReconnects,
+		pingInterval:   defaultPingInterval,
+		maxPingOut:     defaultMaxPingOut,
 	}
 }
 
@@ -87,7 +87,7 @@ func UserPass(user, pass string) Option {
 	}
 }
 
-// ConnectTimeout 设置连接超时. 默认 3 秒
+// ConnectTimeout 设置连接超时. 默认 2 秒
 func ConnectTimeout(d time.Duration) Option {
 	return func(o *options) {
 		if d > 0 {
@@ -96,7 +96,7 @@ func ConnectTimeout(d time.Duration) Option {
 	}
 }
 
-// Reconnect 设置重连策略. 默认 250 毫秒, 无限重连
+// Reconnect 设置重连策略. 默认 2s, 重连60次
 func Reconnect(wait time.Duration, max int) Option {
 	return func(o *options) {
 		if wait > 0 {
@@ -106,14 +106,14 @@ func Reconnect(wait time.Duration, max int) Option {
 	}
 }
 
-// Ping 设置心跳参数. 默认 20 秒, 3 个心跳未响应则认为连接异常
-func Ping(interval time.Duration, maxOutstanding int) Option {
+// Ping 设置心跳参数. 默认 2min, 2 个心跳未响应则认为连接异常
+func Ping(interval time.Duration, maxOut int) Option {
 	return func(o *options) {
 		if interval > 0 {
 			o.pingInterval = interval
 		}
-		if maxOutstanding > 0 {
-			o.maxPingsOutstanding = maxOutstanding
+		if maxOut > 0 {
+			o.maxPingOut = maxOut
 		}
 	}
 }
