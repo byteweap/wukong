@@ -3,13 +3,11 @@ package gate
 import (
 	"github.com/byteweap/wukong/component/broker"
 	"github.com/byteweap/wukong/component/locator"
-	"github.com/byteweap/wukong/component/network"
 	"github.com/byteweap/wukong/component/registry"
 )
 
 // options 选项
 type options struct {
-	netServer network.Server    // 网络服务器
 	locator   locator.Locator   // 玩家位置定位器
 	broker    broker.Broker     // 消息传输代理
 	discovery registry.Registry // 服务发现
@@ -19,15 +17,6 @@ type Option func(*options)
 
 func defaultOptions() *options {
 	return &options{}
-}
-
-// NetServer 设置网络服务器
-func (g *Gate) NetServer(netServer network.Server) Option {
-	return func(o *options) {
-		if netServer != nil {
-			o.netServer = netServer
-		}
-	}
 }
 
 // Locator 设置玩家位置定位器

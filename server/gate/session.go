@@ -2,22 +2,11 @@ package gate
 
 import (
 	"sync"
-
-	"github.com/byteweap/wukong/component/network"
 )
 
 // Session 会话
 type Session struct {
-	raw network.Conn
 	uid int64
-}
-
-func newSession(raw network.Conn, uid int64) *Session {
-	return &Session{raw: raw, uid: uid}
-}
-
-func (s *Session) Raw() network.Conn {
-	return s.raw
 }
 
 func (s *Session) UID() int64 {

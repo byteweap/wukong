@@ -6,14 +6,11 @@ import (
 	"net/url"
 
 	"github.com/byteweap/wukong"
-	"github.com/byteweap/wukong/component/log"
-	"github.com/byteweap/wukong/component/network"
 	"github.com/byteweap/wukong/server"
 )
 
 var (
 	ErrAppNotFound       = errors.New("app not found")
-	ErrNetServerRequired = errors.New("net server required")
 	ErrLocatorRequired   = errors.New("locator required")
 	ErrBrokerRequired    = errors.New("broker required")
 	ErrDiscoveryRequired = errors.New("discovery required")
@@ -42,9 +39,6 @@ func (g *Gate) validate() error {
 	if g.opts == nil {
 		return errors.New("options required")
 	}
-	if g.opts.netServer == nil {
-		return ErrNetServerRequired
-	}
 	if g.opts.locator == nil {
 		return ErrLocatorRequired
 	}
@@ -61,30 +55,6 @@ func (g *Gate) setup(appID string) {
 
 	g.appID = appID
 
-	ns := g.opts.netServer
-
-	ns.OnStart(func(addr, pattern string) {
-		log.Infof("gate start success, addr: %s, pattern: %s", addr, pattern)
-	})
-	ns.OnStop(func() {
-		log.Infof("gate stop success")
-	})
-	ns.OnConnect(func(conn network.Conn) {
-		// todo
-		log.Infof("gate connection established, remote addr: %s", conn.RemoteAddr())
-	})
-	ns.OnDisconnect(func(conn network.Conn) {
-		log.Infof("gate connection closed, remote addr: %s", conn.RemoteAddr())
-	})
-	ns.OnError(func(err error) {
-		log.Errorf("gate error: %v", err)
-	})
-	ns.OnTextMessage(func(conn network.Conn, msg []byte) {
-		log.Infof("gate received text message, remote addr: %s, message: %s", conn.RemoteAddr(), string(msg))
-	})
-	ns.OnBinaryMessage(func(conn network.Conn, msg []byte) {
-		log.Infof("gate received binary message, remote addr: %s, message: %s", conn.RemoteAddr(), msg)
-	})
 }
 
 func (g *Gate) Start(ctx context.Context) error {
@@ -99,8 +69,6 @@ func (g *Gate) Start(ctx context.Context) error {
 	}
 
 	g.setup(app.ID())
-
-	g.opts.netServer.Start()
 
 	return nil
 }
