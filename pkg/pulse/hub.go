@@ -93,12 +93,12 @@ func (h *hub) allocate(opts *options, conn net.Conn) error {
 
 	// 清理
 	h.unregister(s)
-	s.Close()
 
 	if opts.onDisconnect != nil {
 		opts.onDisconnect(s)
 	}
 
+	s.Close()
 	return nil
 }
 
