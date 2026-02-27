@@ -2,33 +2,30 @@ package gate
 
 import (
 	"sync"
+
+	"github.com/olahol/melody"
 )
-
-// Session 会话
-type Session struct {
-	uid int64
-}
-
-func (s *Session) UID() int64 {
-	return s.uid
-}
 
 // Sessions 管理所有会话
 type Sessions struct {
-	ss sync.Map
+	data sync.Map
 }
 
 func newSessions() *Sessions {
-	return &Sessions{ss: sync.Map{}}
+	return &Sessions{data: sync.Map{}}
 }
 
-func (s *Sessions) Add(session *Session) {
-	s.ss.Store(session.uid, session)
+func (ss *Sessions) register(uid int64, s *melody.Session) {
+	ss.data.Store(uid, s)
 }
 
-func (s *Sessions) Get(uid int64) (*Session, bool) {
-	if session, ok := s.ss.Load(uid); ok {
-		return session.(*Session), true
+func (ss *Sessions) unregister(uid int64) {
+	ss.data.Delete(uid)
+}
+
+func (ss *Sessions) get(uid int64) (*melody.Session, bool) {
+	if session, ok := ss.data.Load(uid); ok {
+		return session.(*melody.Session), true
 	}
 	return nil, false
 }

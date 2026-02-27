@@ -15,7 +15,7 @@ require (
 	github.com/go-chassis/foundation v0.4.0 // indirect
 	github.com/go-chassis/openlog v1.1.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/gorilla/websocket v1.4.3-0.20210424162022-e8629af678b7 // indirect
+	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/karlseguin/ccache/v2 v2.0.8 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 )

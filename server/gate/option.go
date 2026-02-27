@@ -1,18 +1,35 @@
 package gate
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/byteweap/wukong/component/broker"
 	"github.com/byteweap/wukong/component/locator"
 	"github.com/byteweap/wukong/component/registry"
+	"github.com/byteweap/wukong/pkg/conv"
 )
+
+// IdExtractor 用户id提取器
+// gate 会在建立连接时调用此函数获取用户id
+type IdExtractor func(r *http.Request) int64
 
 // options 选项
 type options struct {
 
 	// websocket
-	path string // ws 路径
-	addr string // ws 地址
+	path              string        // ws 路径
+	addr              string        // ws 地址
+	writeTimeout      time.Duration // write 超时时间
+	pongTimeout       time.Duration // Pong 超时时间
+	pingInterval      time.Duration // Ping 间隔时间
+	maxMessageSize    int64         // 最大消息大小
+	messageBufferSize int           // 消息缓冲区大小
 
+	// business
+	userIdExtractor IdExtractor // 用户 id 提取器
+
+	// component
 	locator   locator.Locator   // 玩家位置定位器
 	broker    broker.Broker     // 消息传输代理
 	discovery registry.Registry // 服务发现
@@ -21,17 +38,89 @@ type options struct {
 type Option func(*options)
 
 func defaultOptions() *options {
-	return &options{}
+	return &options{
+		path:              "/",
+		addr:              ":9000",
+		writeTimeout:      5 * time.Second,
+		pongTimeout:       60 * time.Second,
+		pingInterval:      10 * time.Second,
+		maxMessageSize:    1024 * 2, // 2k
+		messageBufferSize: 256,
+		userIdExtractor: func(r *http.Request) int64 {
+			return conv.Int64(r.FormValue("uid"))
+		},
+	}
 }
 
-// Websocket 设置 websocket 选项
-func Websocket(addr, path string) Option {
+// Addr 设置 websocket 地址
+func Addr(addr string) Option {
 	return func(o *options) {
-		if addr != "" {
+		if o.addr != "" {
 			o.addr = addr
 		}
-		if path != "" {
+	}
+}
+
+// Path 设置 websocket 路径
+func Path(path string) Option {
+	return func(o *options) {
+		if o.path != "" {
 			o.path = path
+		}
+	}
+}
+
+// WriteTimeout 设置 websocket write 超时时间
+func WriteTimeout(timeout time.Duration) Option {
+	return func(o *options) {
+		if o.writeTimeout != 0 {
+			o.writeTimeout = timeout
+		}
+	}
+}
+
+// PongTimeout 设置 websocket Pong 超时时间
+func PongTimeout(timeout time.Duration) Option {
+	return func(o *options) {
+		if o.pongTimeout != 0 {
+			o.pongTimeout = timeout
+		}
+	}
+}
+
+// PingInterval 设置 websocket Ping 间隔时间
+func PingInterval(interval time.Duration) Option {
+	return func(o *options) {
+		if o.pingInterval != 0 {
+			o.pingInterval = interval
+		}
+	}
+}
+
+// MaxMessageSize 设置 websocket 最大消息大小, 单位:字节, 默认: 512
+func MaxMessageSize(size int64) Option {
+	return func(o *options) {
+		if o.maxMessageSize != 0 {
+			o.maxMessageSize = size
+		}
+	}
+}
+
+// MessageBufferSize 设置 websocket 消息缓冲区大小,默认: 256
+func MessageBufferSize(size int) Option {
+	return func(o *options) {
+		if o.messageBufferSize != 0 {
+			o.messageBufferSize = size
+		}
+	}
+}
+
+// UserIdExtractor 设置用户 id 提取器
+// gate 会在建立连接时调用此函数获取用户id, 默认: func(r *http.Request) int64 { return conv.Int64(r.FormValue("uid")) }
+func UserIdExtractor(extractor IdExtractor) Option {
+	return func(o *options) {
+		if extractor != nil {
+			o.userIdExtractor = extractor
 		}
 	}
 }
