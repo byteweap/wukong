@@ -114,6 +114,11 @@ func StopTimeout(t time.Duration) Option {
 	return func(o *options) { o.stopTimeout = t }
 }
 
+// Server 设置服务列表
+func Server(servers ...server.Server) Option {
+	return func(o *options) { o.servers = servers }
+}
+
 // PreStart 添加启动前回调
 func PreStart(hook Hook) Option {
 	return func(o *options) {

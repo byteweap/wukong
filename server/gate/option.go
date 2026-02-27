@@ -8,6 +8,11 @@ import (
 
 // options 选项
 type options struct {
+
+	// websocket
+	path string // ws 路径
+	addr string // ws 地址
+
 	locator   locator.Locator   // 玩家位置定位器
 	broker    broker.Broker     // 消息传输代理
 	discovery registry.Registry // 服务发现
@@ -19,8 +24,20 @@ func defaultOptions() *options {
 	return &options{}
 }
 
+// Websocket 设置 websocket 选项
+func Websocket(addr, path string) Option {
+	return func(o *options) {
+		if addr != "" {
+			o.addr = addr
+		}
+		if path != "" {
+			o.path = path
+		}
+	}
+}
+
 // Locator 设置玩家位置定位器
-func (g *Gate) Locator(locator locator.Locator) Option {
+func Locator(locator locator.Locator) Option {
 	return func(o *options) {
 		if locator != nil {
 			o.locator = locator
@@ -29,7 +46,7 @@ func (g *Gate) Locator(locator locator.Locator) Option {
 }
 
 // Broker 设置消息传输代理
-func (g *Gate) Broker(broker broker.Broker) Option {
+func Broker(broker broker.Broker) Option {
 	return func(o *options) {
 		if broker != nil {
 			o.broker = broker
@@ -38,7 +55,7 @@ func (g *Gate) Broker(broker broker.Broker) Option {
 }
 
 // Discovery 设置服务发现
-func (g *Gate) Discovery(discovery registry.Registry) Option {
+func Discovery(discovery registry.Registry) Option {
 	return func(o *options) {
 		if discovery != nil {
 			o.discovery = discovery

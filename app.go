@@ -166,6 +166,7 @@ func (a *App) buildInstance() error {
 			endpoints = append(endpoints, e.String())
 		}
 	}
+	log.Infof("endpoints: %v", endpoints)
 	instance := &registry.ServiceInstance{
 		ID:        a.opts.id,
 		Name:      a.opts.name,

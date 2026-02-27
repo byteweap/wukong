@@ -16,7 +16,9 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
+	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
+	github.com/olahol/melody v1.4.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/stretchr/testify v1.11.1 // indirect
