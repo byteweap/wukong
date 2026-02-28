@@ -3,6 +3,7 @@ package gate
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
 	"net/url"
@@ -77,12 +78,19 @@ func (g *Gate) validate() error {
 	return nil
 }
 
-func (g *Gate) setup(name, appID string, ctx context.Context) {
+func (g *Gate) setup(name, appID string, ctx context.Context) error {
 
+	// base
 	g.appID = appID
 	g.appName = name
 	g.ctx = ctx
 
+	// 监听端口并设置 endpoint
+	if err := g.listenAndEndpoint(); err != nil {
+		return err
+	}
+
+	// websocket
 	m, o := melody.New(), g.opts
 	m.Config.WriteWait = o.writeTimeout
 	m.Config.PongWait = o.pongTimeout
@@ -101,39 +109,46 @@ func (g *Gate) setup(name, appID string, ctx context.Context) {
 		log.Infof("[websocket] connection closed, code: %v, reason: %v", code, reason)
 		return nil
 	})
+	g.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != g.opts.path {
+			http.NotFound(w, r)
+			return
+		}
+		_ = m.HandleRequest(w, r)
+	})
 	g.ws = m
+
+	return nil
 }
 
+// Start 启动网关
 func (g *Gate) Start(ctx context.Context) error {
 
 	app, ok := wukong.FromContext(ctx)
 	if !ok {
 		return ErrAppNotFound
 	}
+	// 验证参数
 	if err := g.validate(); err != nil {
 		return err
 	}
-	g.setup(app.Name(), app.ID(), ctx)
-
-	if err := g.listenAndEndpoint(); err != nil {
-		return err
+	// 启动前设置
+	if err := g.setup(app.Name(), app.ID(), ctx); err != nil {
+		return fmt.Errorf("setup failed: %w", err)
 	}
-
-	g.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != g.opts.path {
-			http.NotFound(w, r)
-			return
-		}
-		_ = g.ws.HandleRequest(w, r)
-	})
-
+	// 循环(常驻协程)
+	if err := g.loop(); err != nil {
+		return fmt.Errorf("loop failed: %w", err)
+	}
+	// 启动服务
+	log.Infof("[gate] server started")
 	log.Infof("[websocket] server listening on: %s", g.ln.Addr().String())
 	return g.Serve(g.ln)
+
 }
 
+// Stop 停止网关
 func (g *Gate) Stop(ctx context.Context) error {
-
-	log.Info("[websocket] server stopping")
 
 	// 1. Shutdown http server
 	e1 := g.Shutdown(ctx)
@@ -145,7 +160,11 @@ func (g *Gate) Stop(ctx context.Context) error {
 	// 2. Close melody
 	e2 := g.ws.Close()
 
-	return errors.Join(e1, e2)
+	if err := errors.Join(e1, e2); err != nil {
+		return err
+	}
+	log.Info("[gate] server stopped")
+	return nil
 }
 
 // 监听端口并设置 endpoint
@@ -291,7 +310,7 @@ func (g *Gate) dispatch(e *envelope.EnvelopeGate2Game) {
 }
 
 // 循环处理来自其它服务的消息
-func (g *Gate) loop() {
+func (g *Gate) loop() error {
 
 	var (
 		o       = g.opts
@@ -305,8 +324,7 @@ func (g *Gate) loop() {
 		msgChan <- msg
 	})
 	if err != nil {
-		log.Errorf("[websocket] loop subscribe error: %v", err)
-		return
+		return err
 	}
 
 	// 处理消息
@@ -326,4 +344,6 @@ func (g *Gate) loop() {
 			}
 		}
 	}()
+
+	return nil
 }
