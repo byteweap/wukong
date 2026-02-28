@@ -28,7 +28,7 @@ type options struct {
 	pongTimeout       time.Duration // Pong 超时时间
 	pingInterval      time.Duration // Ping 间隔时间
 	maxMessageSize    int64         // 最大消息大小
-	messageBufferSize int           // 消息缓冲区大小
+	messageBufferSize int           // 消息缓冲区大小, websocket 和 broker 都用
 
 	// component
 	locator   locator.Locator   // 玩家位置定位器

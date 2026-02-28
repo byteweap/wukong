@@ -29,7 +29,7 @@ type Broker interface {
 }
 
 // Handler 是订阅回调。Broker 不负责并发与背压控制；handler 内部应自行处理队列/worker
-type Handler func(ctx context.Context, msg *Message)
+type Handler func(msg *Message)
 
 // Subscription 表示一次订阅
 type Subscription interface {

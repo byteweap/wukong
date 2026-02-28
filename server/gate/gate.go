@@ -8,6 +8,7 @@ import (
 	"net/url"
 
 	"github.com/byteweap/wukong"
+	"github.com/byteweap/wukong/component/broker"
 	"github.com/byteweap/wukong/component/log"
 	"github.com/byteweap/wukong/encoding/proto"
 	"github.com/byteweap/wukong/internal/cluster"
@@ -133,6 +134,7 @@ func (g *Gate) Start(ctx context.Context) error {
 func (g *Gate) Stop(ctx context.Context) error {
 
 	log.Info("[websocket] server stopping")
+
 	// 1. Shutdown http server
 	e1 := g.Shutdown(ctx)
 	if e1 != nil && ctx.Err() != nil {
@@ -286,4 +288,42 @@ func (g *Gate) dispatch(e *envelope.EnvelopeGate2Game) {
 		return
 	}
 	log.Infof("[websocket] dispatch success, uid: %v, subject: %v", uid, subject)
+}
+
+// 循环处理来自其它服务的消息
+func (g *Gate) loop() {
+
+	var (
+		o       = g.opts
+		bro     = g.opts.broker
+		msgChan = make(chan *broker.Message, o.messageBufferSize)
+		subject = cluster.Subject(o.subjectPrefix, "*", g.appName, g.appID)
+	)
+
+	// 订阅消息
+	sub, err := bro.Sub(g.ctx, subject, func(msg *broker.Message) {
+		msgChan <- msg
+	})
+	if err != nil {
+		log.Errorf("[websocket] loop subscribe error: %v", err)
+		return
+	}
+
+	// 处理消息
+	go func() {
+		for {
+			select {
+			case <-g.ctx.Done():
+				_ = sub.Close()
+				return
+			case msg := <-msgChan:
+				log.Info("[websocket] loop receive message", msg)
+				if msg.Reply != "" {
+					// todo request-reply
+				} else {
+					// todo pub-sub
+				}
+			}
+		}
+	}()
 }

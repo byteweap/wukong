@@ -48,7 +48,7 @@ func TestPublishSubscribe_HeaderRoundTrip(t *testing.T) {
 	)
 
 	got := make(chan *broker.Message, 1)
-	_, err = b.Sub(context.Background(), subject, func(_ context.Context, msg *broker.Message) {
+	_, err = b.Sub(context.Background(), subject, func(msg *broker.Message) {
 		got <- msg
 	})
 	require.NoError(t, err)
@@ -90,12 +90,12 @@ func TestQueueSubscribe_ExactlyOnce(t *testing.T) {
 	var c1, c2 int32
 	ctx := context.Background()
 
-	_, err = b.Sub(ctx, subject, func(_ context.Context, _ *broker.Message) {
+	_, err = b.Sub(ctx, subject, func(_ *broker.Message) {
 		atomic.AddInt32(&c1, 1)
 	}, broker.SubQueue(queue))
 	require.NoError(t, err)
 
-	_, err = b.Sub(ctx, subject, func(_ context.Context, _ *broker.Message) {
+	_, err = b.Sub(ctx, subject, func(_ *broker.Message) {
 		atomic.AddInt32(&c2, 1)
 	}, broker.SubQueue(queue))
 	require.NoError(t, err)
@@ -124,8 +124,8 @@ func TestRequestReply(t *testing.T) {
 		ping    = []byte("ping")
 		pong    = []byte("pong")
 	)
-
-	_, err = b.Sub(context.Background(), subject, func(ctx context.Context, msg *broker.Message) {
+	ctx := context.Background()
+	_, err = b.Sub(ctx, subject, func(msg *broker.Message) {
 		// 使用 Reply 方法回复请求（更语义化）
 		_ = b.Reply(ctx, msg, pong, broker.ReplyHeader(broker.Header{
 			"X-From": {"server"},
@@ -162,7 +162,7 @@ func TestSubscribe_ContextCancelAutoUnsubscribe(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	called := make(chan struct{}, 1)
 
-	sub, err := b.Sub(ctx, subject, func(_ context.Context, _ *broker.Message) {
+	sub, err := b.Sub(ctx, subject, func(_ *broker.Message) {
 		called <- struct{}{}
 	})
 	require.NoError(t, err)
@@ -211,7 +211,8 @@ func TestReply(t *testing.T) {
 
 	// 测试：正常 reply
 	var gotReply bool
-	_, err = b.Sub(context.Background(), "t.reply.v1", func(ctx context.Context, msg *broker.Message) {
+	ctx := context.Background()
+	_, err = b.Sub(context.Background(), "t.reply.v1", func(msg *broker.Message) {
 		err := b.Reply(ctx, msg, []byte("ok"), broker.ReplyHeader(broker.Header{
 			"X-Status": {"success"},
 		}))

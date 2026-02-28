@@ -79,7 +79,7 @@ func (b *Broker) Sub(ctx context.Context, subject string, handler broker.Handler
 		if len(m.Header) > 0 {
 			msg.Header = fromNatsHeader(m.Header)
 		}
-		handler(ctx, msg)
+		handler(msg)
 	}
 
 	var (
