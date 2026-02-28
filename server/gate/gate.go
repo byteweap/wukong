@@ -140,11 +140,12 @@ func (g *Gate) Start(ctx context.Context) error {
 	if err := g.loop(); err != nil {
 		return fmt.Errorf("loop failed: %w", err)
 	}
-	// 启动服务
+
 	log.Infof("[gate] server started")
 	log.Infof("[websocket] server listening on: %s", g.ln.Addr().String())
-	return g.Serve(g.ln)
 
+	// 启动服务
+	return g.Serve(g.ln)
 }
 
 // Stop 停止网关
@@ -186,6 +187,7 @@ func (g *Gate) listenAndEndpoint() error {
 	return nil
 }
 
+// Endpoint 获取网关地址
 func (g *Gate) Endpoint() (*url.URL, error) {
 	if err := g.listenAndEndpoint(); err != nil {
 		return nil, err
