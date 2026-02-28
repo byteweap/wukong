@@ -2,7 +2,6 @@ package eureka
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -88,9 +87,9 @@ func (r *Registry) Endpoints(service *registry.ServiceInstance) []Endpoint {
 		sport := ep[end+1:]
 		port, _ := strconv.Atoi(sport)
 		securePort := 443
-		homePageURL := fmt.Sprintf("%s/", ep)
-		statusPageURL := fmt.Sprintf("%s/info", ep)
-		healthCheckURL := fmt.Sprintf("%s/health", ep)
+		homePageURL := ep + "/"
+		statusPageURL := ep + "/info"
+		healthCheckURL := ep + "/health"
 		instanceID := strings.Join([]string{ip, appID, sport}, ":")
 		metadata := make(map[string]string)
 		if len(service.Metadata) > 0 {

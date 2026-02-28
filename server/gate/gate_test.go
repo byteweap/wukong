@@ -13,10 +13,11 @@ import (
 func TestGate(t *testing.T) {
 
 	g := gate.New(
+		gate.SubjectPrefix("leo"),
 		gate.Addr(":8080"),
 		gate.Path("/"),
 		gate.WriteTimeout(time.Second*5),
-		gate.PongTimeout(time.Second*5),
+		gate.PongTimeout(time.Second*60),
 		gate.PingInterval(time.Second*5),
 		gate.MaxMessageSize(1024*2),
 		gate.MessageBufferSize(256),

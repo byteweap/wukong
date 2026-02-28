@@ -77,7 +77,7 @@ func (r *Registry) Register(ctx context.Context, service *registry.ServiceInstan
 }
 
 func (r *Registry) registerKey(service *registry.ServiceInstance) string {
-	return fmt.Sprintf("%s/%s/%s", r.opts.namespace, service.Name, service.ID)
+	return r.opts.namespace + "/" + service.Name + "/" + service.ID
 }
 
 // Deregister 注销服务

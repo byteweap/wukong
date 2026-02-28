@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/url"
 
+	"github.com/byteweap/wukong/internal/cluster"
 	"github.com/byteweap/wukong/server"
 )
 
@@ -21,8 +22,8 @@ func New(opts ...Option) *Game {
 	return &Game{opts: o}
 }
 
-func (g *Game) Kind() server.Kind {
-	return server.KindGame
+func (g *Game) Kind() cluster.Kind {
+	return cluster.KindGame
 }
 
 func (g *Game) Start(ctx context.Context) error {

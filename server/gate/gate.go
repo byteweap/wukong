@@ -9,6 +9,9 @@ import (
 
 	"github.com/byteweap/wukong"
 	"github.com/byteweap/wukong/component/log"
+	"github.com/byteweap/wukong/encoding/proto"
+	"github.com/byteweap/wukong/internal/cluster"
+	"github.com/byteweap/wukong/internal/envelope"
 	"github.com/byteweap/wukong/pkg/endpoint"
 	"github.com/byteweap/wukong/pkg/host"
 	"github.com/byteweap/wukong/server"
@@ -26,10 +29,12 @@ type Gate struct {
 	*http.Server
 	ln net.Listener
 
-	opts     *options // server options
-	appID    string   // application ID
-	endpoint *url.URL // server endpoint
+	ctx     context.Context
+	appID   string // application ID
+	appName string // application name
 
+	opts     *options       // server options
+	endpoint *url.URL       // server endpoint
 	ws       *melody.Melody // WebSocket server
 	sessions *Sessions      // player sessions
 }
@@ -44,52 +49,55 @@ func New(opts ...Option) *Gate {
 	}
 
 	return &Gate{
+		ctx:      context.Background(),
 		opts:     o,
 		Server:   &http.Server{},
 		sessions: newSessions(),
 	}
 }
 
-func (g *Gate) Kind() server.Kind {
-	return server.KindGate
+func (g *Gate) Kind() cluster.Kind {
+	return cluster.KindGate
 }
 
 func (g *Gate) validate() error {
 	if g.opts == nil {
 		return errors.New("options required")
 	}
-	//if g.opts.locator == nil {
-	//	return ErrLocatorRequired
-	//}
-	//if g.opts.broker == nil {
-	//	return ErrBrokerRequired
-	//}
-	//if g.opts.discovery == nil {
-	//	return ErrDiscoveryRequired
-	//}
+	if g.opts.locator == nil {
+		return ErrLocatorRequired
+	}
+	if g.opts.broker == nil {
+		return ErrBrokerRequired
+	}
+	if g.opts.discovery == nil {
+		return ErrDiscoveryRequired
+	}
 	return nil
 }
 
-func (g *Gate) setup(appID string) {
+func (g *Gate) setup(name, appID string, ctx context.Context) {
+
 	g.appID = appID
+	g.appName = name
+	g.ctx = ctx
 
 	m, o := melody.New(), g.opts
 	m.Config.WriteWait = o.writeTimeout
 	m.Config.PongWait = o.pongTimeout
-	//m.Config.PingPeriod = o.pingInterval
-	//m.Config.MaxMessageSize = o.maxMessageSize
-	//m.Config.MessageBufferSize = o.messageBufferSize
-	//m.Config.ConcurrentMessageHandling = false
+	m.Config.PingPeriod = o.pingInterval
+	m.Config.MaxMessageSize = o.maxMessageSize
+	m.Config.MessageBufferSize = o.messageBufferSize
+	m.Config.ConcurrentMessageHandling = false
 	m.HandleConnect(g.onConnect)
 	m.HandleDisconnect(g.onDisconnect)
 	m.HandleMessage(g.onTextMessage)
 	m.HandleMessageBinary(g.onBinaryMessage)
 	m.HandleError(func(s *melody.Session, err error) {
-		// todo
 		log.Errorf("[websocket] error occurred, err: %v", err)
 	})
 	m.HandleClose(func(s *melody.Session, code int, reason string) error {
-		// todo
+		log.Infof("[websocket] connection closed, code: %v, reason: %v", code, reason)
 		return nil
 	})
 	g.ws = m
@@ -104,7 +112,7 @@ func (g *Gate) Start(ctx context.Context) error {
 	if err := g.validate(); err != nil {
 		return err
 	}
-	g.setup(app.ID())
+	g.setup(app.Name(), app.ID(), ctx)
 
 	if err := g.listenAndEndpoint(); err != nil {
 		return err
@@ -138,6 +146,7 @@ func (g *Gate) Stop(ctx context.Context) error {
 	return errors.Join(e1, e2)
 }
 
+// 监听端口并设置 endpoint
 func (g *Gate) listenAndEndpoint() error {
 	if g.ln == nil {
 		ln, err := net.Listen("tcp", g.opts.addr)
@@ -187,11 +196,8 @@ func (g *Gate) onConnect(s *melody.Session) {
 	log.Infof("[websocket] new connection success, uid: %v, %s", uid, addr.String())
 
 	// 绑定网关
-	loc := g.opts.locator
-	if loc != nil {
-		if err := loc.BindGate(context.Background(), uid, g.appID); err != nil {
-			log.Errorf("[websocket] new connection success, bind gate error, uid: %v, err: %v", uid, err)
-		}
+	if err := g.opts.locator.BindGate(g.ctx, uid, g.appID); err != nil {
+		log.Errorf("[websocket] new connection success, bind gate error, uid: %v, err: %v", uid, err)
 	}
 }
 
@@ -220,25 +226,64 @@ func (g *Gate) onDisconnect(s *melody.Session) {
 	log.Infof("[websocket] connection disconnect success, uid: %v", uid)
 
 	// 解绑网关
-	loc := g.opts.locator
-	if loc != nil {
-		if err := loc.UnBindGate(context.Background(), uid, g.appID); err != nil {
-			log.Errorf("[websocket] connection disconnect success, unbind gate error, uid: %v, err: %v", uid, err)
-		}
+	if err := g.opts.locator.UnBindGate(g.ctx, uid, g.appID); err != nil {
+		log.Errorf("[websocket] connection disconnect success, unbind gate error, uid: %v, err: %v", uid, err)
 	}
 }
 
 // 接收到文本消息时调用
 func (g *Gate) onTextMessage(s *melody.Session, msg []byte) {
-	//todo
+	// todo
 }
 
 // 接收到二进制消息时调用
 func (g *Gate) onBinaryMessage(s *melody.Session, msg []byte) {
-	//todo
+
+	e := &envelope.Envelope{}
+	if err := proto.Unmarshal(msg, e); err != nil {
+		log.Errorf("[websocket] unmarshal envelope error: %v", err)
+		return
+	}
+	uids, ok := s.Get("uid")
+	if !ok {
+		log.Error("[websocket] onBinaryMessage get uid error, session not contains uid key")
+		return
+	}
+	uid := uids.(int64)
+
+	g.dispatch(&envelope.EnvelopeGate2Game{
+		E:   e,
+		Uid: uid,
+	})
 }
 
 // 消息分发至 Game
-func (g *Gate) dispatch() {
-	// todo
+func (g *Gate) dispatch(e *envelope.EnvelopeGate2Game) {
+
+	var (
+		uid, toApp = e.Uid, e.E.App
+		loc, bro   = g.opts.locator, g.opts.broker
+	)
+
+	curGameNode, err := loc.Game(g.ctx, uid)
+	if err != nil {
+		log.Errorf("[websocket] dispatch get game node error, uid: %v, err: %v", uid, err)
+		return
+	}
+	data, err := proto.Marshal(e)
+	if err != nil {
+		log.Errorf("[websocket] marshal to game data error: %v", err)
+		return
+	}
+	node := curGameNode
+	if curGameNode == "" {
+		// todo 确定一个game节点(负载均衡算法)
+	}
+	// 发布消息到 Game
+	subject := cluster.Subject(g.opts.subjectPrefix, g.appName, toApp, node)
+	if err = bro.Pub(g.ctx, subject, data); err != nil {
+		log.Errorf("[websocket] dispatch error, uid: %v, subject: %v, err: %v", uid, subject, err)
+		return
+	}
+	log.Infof("[websocket] dispatch success, uid: %v, subject: %v", uid, subject)
 }

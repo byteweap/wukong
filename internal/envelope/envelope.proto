@@ -1,0 +1,17 @@
+syntax = "proto3";
+package envelope;
+option go_package = "./envelope";
+
+// 统一消息 envelope
+message Envelope {
+  uint64 seq = 1;    // 唯一标识
+  string app = 2;    // 目标应用名
+  uint32 cmd = 3;    // 指令(路由)
+  bytes payload = 4; // 业务消息体
+}
+
+// 统一消息 gate -> game
+message EnvelopeGate2Game {
+  Envelope e = 1;
+  int64 uid = 2;
+}

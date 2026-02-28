@@ -1,7 +1,6 @@
 package registry
 
 import (
-	"fmt"
 	"sort"
 )
 
@@ -24,7 +23,7 @@ type ServiceInstance struct {
 
 // String 返回服务实例的字符串表示
 func (i *ServiceInstance) String() string {
-	return fmt.Sprintf("%s-%s", i.Name, i.ID)
+	return i.Name + "-" + i.ID
 }
 
 // Equal 判断两个服务实例是否相等

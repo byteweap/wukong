@@ -17,6 +17,10 @@ type IdExtractor func(r *http.Request) int64
 // options 选项
 type options struct {
 
+	// app
+	subjectPrefix   string      // 消息主题前缀
+	userIdExtractor IdExtractor // 用户 id 提取器
+
 	// websocket
 	path              string        // ws 路径
 	addr              string        // ws 地址
@@ -25,9 +29,6 @@ type options struct {
 	pingInterval      time.Duration // Ping 间隔时间
 	maxMessageSize    int64         // 最大消息大小
 	messageBufferSize int           // 消息缓冲区大小
-
-	// business
-	userIdExtractor IdExtractor // 用户 id 提取器
 
 	// component
 	locator   locator.Locator   // 玩家位置定位器
@@ -39,6 +40,7 @@ type Option func(*options)
 
 func defaultOptions() *options {
 	return &options{
+		subjectPrefix:     "wukong",
 		path:              "/",
 		addr:              ":9000",
 		writeTimeout:      5 * time.Second,
@@ -49,6 +51,15 @@ func defaultOptions() *options {
 		userIdExtractor: func(r *http.Request) int64 {
 			return conv.Int64(r.FormValue("uid"))
 		},
+	}
+}
+
+// SubjectPrefix 设置消息主题前缀
+func SubjectPrefix(prefix string) Option {
+	return func(o *options) {
+		if o.subjectPrefix != "" {
+			o.subjectPrefix = prefix
+		}
 	}
 }
 
