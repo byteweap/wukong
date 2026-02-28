@@ -1,0 +1,9 @@
+syntax = "proto3";
+package envelope;
+option go_package = "./envelope";
+
+message ProtoEnvelope {
+  uint64 seq = 1;
+  uint32 cmd = 2;
+  bytes payload = 3;
+}
