@@ -7,6 +7,7 @@ import (
 
 // options 选项
 type options struct {
+	prefix  string          // subject \ redis key 前缀
 	locator locator.Locator // 玩家位置定位器
 	broker  broker.Broker   // 消息传输代理
 }
@@ -14,7 +15,17 @@ type options struct {
 type Option func(*options)
 
 func defaultOptions() *options {
-	return &options{}
+	return &options{
+		prefix: "wukong",
+	}
+}
+
+func Prefix(prefix string) Option {
+	return func(o *options) {
+		if prefix != "" {
+			o.prefix = prefix
+		}
+	}
 }
 
 // Locator 设置玩家位置定位器

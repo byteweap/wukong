@@ -3,12 +3,14 @@ package mesh
 import (
 	"context"
 	"net/url"
+	"sync"
 
 	"github.com/byteweap/wukong/server"
 )
 
 type Mesh struct {
-	opts *options
+	opts   *options
+	routes sync.Map // key: route+version, value: MessageHandler
 }
 
 var _ server.Server = (*Mesh)(nil)
@@ -21,21 +23,21 @@ func New(opts ...Option) *Mesh {
 	return &Mesh{opts: o}
 }
 
-func (g *Mesh) Kind() server.Kind {
+func (*Mesh) Kind() server.Kind {
 	return server.KindMesh
 }
 
-func (g *Mesh) Start(ctx context.Context) error {
+func (m *Mesh) Start(ctx context.Context) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (g *Mesh) Stop(ctx context.Context) error {
+func (m *Mesh) Stop(ctx context.Context) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (g *Mesh) Endpoint() (*url.URL, error) {
+func (m *Mesh) Endpoint() (*url.URL, error) {
 	//TODO implement me
 	panic("implement me")
 }

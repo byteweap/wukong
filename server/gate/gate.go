@@ -15,6 +15,7 @@ import (
 	es "github.com/byteweap/wukong/errors"
 	"github.com/byteweap/wukong/internal/cluster"
 	"github.com/byteweap/wukong/internal/envelope"
+	"github.com/byteweap/wukong/pkg/conv"
 	"github.com/byteweap/wukong/pkg/endpoint"
 	"github.com/byteweap/wukong/pkg/host"
 	"github.com/byteweap/wukong/server"
@@ -165,6 +166,14 @@ func (g *Gate) Stop(ctx context.Context) error {
 	return nil
 }
 
+// Endpoint 获取网关地址
+func (g *Gate) Endpoint() (*url.URL, error) {
+	if err := g.listenAndEndpoint(); err != nil {
+		return nil, err
+	}
+	return g.endpoint, nil
+}
+
 // 监听端口并设置 endpoint
 func (g *Gate) listenAndEndpoint() error {
 	if g.ln == nil {
@@ -182,14 +191,6 @@ func (g *Gate) listenAndEndpoint() error {
 		g.endpoint = endpoint.NewEndpoint(endpoint.Scheme("ws", false), addr)
 	}
 	return nil
-}
-
-// Endpoint 获取网关地址
-func (g *Gate) Endpoint() (*url.URL, error) {
-	if err := g.listenAndEndpoint(); err != nil {
-		return nil, err
-	}
-	return g.endpoint, nil
 }
 
 // 连接建立时调用
@@ -328,7 +329,7 @@ func (g *Gate) dispatch(e *envelope.Gate2MeshEnvelope) {
 		log.Errorf("[websocket] dispatch error, uid: %v, subject: %v, err: %v", uid, subject, err)
 		return
 	}
-	log.Infof("[websocket] dispatch success, uid: %v, subject: %v", uid, subject)
+	log.Debugf("[websocket] dispatch success, uid: %v, subject: %v", uid, subject)
 }
 
 // 广播系统事件
@@ -359,7 +360,7 @@ func (g *Gate) broadcastEvent(uid int64, event envelope.Event) {
 			log.Errorf("[websocket] broadcast event error, uid: %v, subject: %v, err: %v", uid, subject, err)
 			return
 		}
-		log.Infof("[websocket] broadcast event success, uid: %v, subject: %v, event: %v", uid, subject, event.String())
+		log.Debugf("[websocket] broadcast event success, uid: %v, subject: %v, event: %v", uid, subject, event.String())
 	}
 }
 
@@ -389,15 +390,39 @@ func (g *Gate) loop() error {
 				_ = sub.Close()
 				return
 			case msg := <-msgChan:
-				log.Info("[websocket] loop receive message", msg)
-				if msg.Reply != "" {
-					// todo request-reply
-				} else {
-					// todo pub-sub
-				}
+				g.handleMeshMessage(msg)
 			}
 		}
 	}()
 
 	return nil
+}
+
+// 处理来自其它服务的消息
+func (g *Gate) handleMeshMessage(msg *broker.Message) {
+
+	log.Debugf("[websocket] handleMeshMessage, %v", msg)
+
+	// 1. request过来的消息,需要reply,后期按需支持
+	if msg.Reply != "" {
+		log.Warnf("[websocket] loop receive message, reply subject not supported")
+		return
+	}
+
+	// 2. 直接回复给玩家的消息
+	uid := conv.Int64(msg.Header.Get("uid"))
+	if uid <= 0 {
+		log.Errorf("[websocket] reply2player get uid error, uid: %v", uid)
+		return
+	}
+	session, ok := g.sessions.get(uid)
+	if !ok {
+		log.Errorf("[websocket] reply2player get session error, uid: %v", uid)
+		return
+	}
+	if err := session.WriteBinary(msg.Data); err != nil {
+		log.Errorf("[websocket] reply2player write binary error, uid: %v, err: %v", uid, err)
+		return
+	}
+	log.Debugf("[websocket] reply2player success, uid: %v", uid)
 }

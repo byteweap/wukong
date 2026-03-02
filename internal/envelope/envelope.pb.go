@@ -79,7 +79,7 @@ type Envelope struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Seq           uint64                 `protobuf:"varint,1,opt,name=seq,proto3" json:"seq,omitempty"`        // 唯一标识
 	App           string                 `protobuf:"bytes,2,opt,name=app,proto3" json:"app,omitempty"`         // 目标应用名
-	Cmd           uint32                 `protobuf:"varint,3,opt,name=cmd,proto3" json:"cmd,omitempty"`        // 指令(路由)
+	Cmd           int32                  `protobuf:"varint,3,opt,name=cmd,proto3" json:"cmd,omitempty"`        // 指令(路由)
 	Payload       []byte                 `protobuf:"bytes,4,opt,name=payload,proto3" json:"payload,omitempty"` // 业务消息体
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -129,7 +129,7 @@ func (x *Envelope) GetApp() string {
 	return ""
 }
 
-func (x *Envelope) GetCmd() uint32 {
+func (x *Envelope) GetCmd() int32 {
 	if x != nil {
 		return x.Cmd
 	}
@@ -212,7 +212,7 @@ const file_envelope_proto_rawDesc = "" +
 	"\bEnvelope\x12\x10\n" +
 	"\x03seq\x18\x01 \x01(\x04R\x03seq\x12\x10\n" +
 	"\x03app\x18\x02 \x01(\tR\x03app\x12\x10\n" +
-	"\x03cmd\x18\x03 \x01(\rR\x03cmd\x12\x18\n" +
+	"\x03cmd\x18\x03 \x01(\x05R\x03cmd\x12\x18\n" +
 	"\apayload\x18\x04 \x01(\fR\apayload\"n\n" +
 	"\x11Gate2MeshEnvelope\x12 \n" +
 	"\x01e\x18\x01 \x01(\v2\x12.envelope.EnvelopeR\x01e\x12%\n" +
