@@ -52,8 +52,8 @@ func New(opts ...Option) *Gate {
 	}
 }
 
-func (g *Gate) Kind() cluster.Kind {
-	return cluster.KindGate
+func (g *Gate) Kind() server.Kind {
+	return server.KindGate
 }
 
 func (g *Gate) validate() error {
@@ -203,7 +203,6 @@ func (g *Gate) onConnect(s *melody.Session) {
 		_ = s.Close()
 		return
 	}
-
 	// 注册会话
 	session, ok := g.sessions.get(uid)
 	if ok {
@@ -215,10 +214,20 @@ func (g *Gate) onConnect(s *melody.Session) {
 
 	log.Infof("[websocket] new connection success, uid: %v, %s", uid, addr.String())
 
+	loc := g.opts.locator
+
 	// 绑定网关
-	if err := g.opts.locator.Bind(g.ctx, uid, g.appName, g.appID); err != nil {
+	if err := loc.Bind(g.ctx, uid, g.appName, g.appID); err != nil {
 		log.Errorf("[websocket] new connection success, bind gate error, uid: %v, err: %v", uid, err)
+		return
 	}
+
+	// 广播 上线、重连 事件到上游服务
+	event := envelope.Event_ONLINE
+	if ok {
+		event = envelope.Event_RECONNECT
+	}
+	g.broadcastEvent(uid, event)
 }
 
 // 连接断开时调用
@@ -249,6 +258,9 @@ func (g *Gate) onDisconnect(s *melody.Session) {
 	if err := g.opts.locator.UnBind(g.ctx, uid, g.appName, g.appID); err != nil {
 		log.Errorf("[websocket] connection disconnect success, unbind gate error, uid: %v, err: %v", uid, err)
 	}
+
+	// 广播掉线事件到上游服务
+	g.broadcastEvent(uid, envelope.Event_OFFLINE)
 }
 
 // 接收到文本消息时调用
@@ -271,15 +283,21 @@ func (g *Gate) onBinaryMessage(s *melody.Session, msg []byte) {
 	}
 	uid := uids.(int64)
 
+	// 业务消息分发
 	g.dispatch(&envelope.Gate2MeshEnvelope{
-		E:   e,
-		Uid: uid,
+		E:     e,
+		Event: envelope.Event_Business,
+		Uid:   uid,
 	})
 }
 
-// 消息分发至 mesh
+// 业务消息分发至 mesh
 func (g *Gate) dispatch(e *envelope.Gate2MeshEnvelope) {
 
+	if e == nil || e.E == nil {
+		log.Errorf("[websocket] dispatch error, envelope is nil")
+		return
+	}
 	var (
 		uid, toApp  = e.Uid, e.E.App
 		loc, bro, _ = g.opts.locator, g.opts.broker, g.opts.discovery
@@ -311,6 +329,38 @@ func (g *Gate) dispatch(e *envelope.Gate2MeshEnvelope) {
 		return
 	}
 	log.Infof("[websocket] dispatch success, uid: %v, subject: %v", uid, subject)
+}
+
+// 广播系统事件
+func (g *Gate) broadcastEvent(uid int64, event envelope.Event) {
+
+	// 获取玩家当前所在所有节点
+	snMap, err := g.opts.locator.AllNodes(g.ctx, uid)
+	if err != nil {
+		log.Errorf("[websocket] broadcast event, get all nodes error, uid: %v, event: %v, err: %v", uid, event.String(), err)
+		return
+	}
+	evo := &envelope.Gate2MeshEnvelope{
+		Event: event,
+		Uid:   uid,
+	}
+	data, err := proto.Marshal(evo)
+	if err != nil {
+		log.Errorf("[websocket] broadcast event, marshal envelope error, uid: %v, err: %v", uid, err)
+		return
+	}
+	for service, node := range snMap {
+		if service == g.appName { // 不包括 gate
+			continue
+		}
+		// 发布消息到 Mesh
+		subject := cluster.Subject(g.opts.prefix, g.appName, service, node)
+		if err = g.opts.broker.Pub(g.ctx, subject, data); err != nil {
+			log.Errorf("[websocket] broadcast event error, uid: %v, subject: %v, err: %v", uid, subject, err)
+			return
+		}
+		log.Infof("[websocket] broadcast event success, uid: %v, subject: %v, event: %v", uid, subject, event.String())
+	}
 }
 
 // 循环处理来自其它服务的消息

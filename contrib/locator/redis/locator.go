@@ -48,6 +48,12 @@ func (l *Locator) ID() string {
 	return ID
 }
 
+// AllNodes 返回用户所在所有服务节点
+// excludes: 排除的服务
+func (l *Locator) AllNodes(ctx context.Context, uid int64) (map[string]string, error) {
+	return l.rc.HGetAll(ctx, l.key(uid)).Result()
+}
+
 // Node 返回用户ID当前所在的某服务某节点
 func (l *Locator) Node(ctx context.Context, uid int64, service string) (string, error) {
 	return l.rc.HGet(ctx, l.key(uid), service).Result()

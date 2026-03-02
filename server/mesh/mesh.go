@@ -4,7 +4,6 @@ import (
 	"context"
 	"net/url"
 
-	"github.com/byteweap/wukong/internal/cluster"
 	"github.com/byteweap/wukong/server"
 )
 
@@ -22,8 +21,8 @@ func New(opts ...Option) *Mesh {
 	return &Mesh{opts: o}
 }
 
-func (g *Mesh) Kind() cluster.Kind {
-	return cluster.KindMesh
+func (g *Mesh) Kind() server.Kind {
+	return server.KindMesh
 }
 
 func (g *Mesh) Start(ctx context.Context) error {

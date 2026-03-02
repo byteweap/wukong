@@ -8,6 +8,9 @@ type Locator interface {
 	// ID 返回定位器实现标识符
 	ID() string
 
+	// AllNodes 返回用户所在所有服务节点
+	AllNodes(ctx context.Context, uid int64) (map[string]string, error)
+
 	// Node 返回用户所在某服务节点
 	Node(ctx context.Context, uid int64, service string) (string, error)
 

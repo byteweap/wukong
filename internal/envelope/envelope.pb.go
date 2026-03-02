@@ -21,6 +21,59 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+// 系统内部事件
+type Event int32
+
+const (
+	Event_ONLINE    Event = 0 // 上线 [System]
+	Event_OFFLINE   Event = 1 // 掉线 [System]
+	Event_RECONNECT Event = 2 // 重连 [System]
+	Event_Business  Event = 3 // 业务 [Business]
+)
+
+// Enum value maps for Event.
+var (
+	Event_name = map[int32]string{
+		0: "ONLINE",
+		1: "OFFLINE",
+		2: "RECONNECT",
+		3: "Business",
+	}
+	Event_value = map[string]int32{
+		"ONLINE":    0,
+		"OFFLINE":   1,
+		"RECONNECT": 2,
+		"Business":  3,
+	}
+)
+
+func (x Event) Enum() *Event {
+	p := new(Event)
+	*p = x
+	return p
+}
+
+func (x Event) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Event) Descriptor() protoreflect.EnumDescriptor {
+	return file_envelope_proto_enumTypes[0].Descriptor()
+}
+
+func (Event) Type() protoreflect.EnumType {
+	return &file_envelope_proto_enumTypes[0]
+}
+
+func (x Event) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Event.Descriptor instead.
+func (Event) EnumDescriptor() ([]byte, []int) {
+	return file_envelope_proto_rawDescGZIP(), []int{0}
+}
+
 // 统一消息 envelope
 type Envelope struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -94,7 +147,8 @@ func (x *Envelope) GetPayload() []byte {
 type Gate2MeshEnvelope struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	E             *Envelope              `protobuf:"bytes,1,opt,name=e,proto3" json:"e,omitempty"`
-	Uid           int64                  `protobuf:"varint,2,opt,name=uid,proto3" json:"uid,omitempty"`
+	Event         Event                  `protobuf:"varint,2,opt,name=event,proto3,enum=envelope.Event" json:"event,omitempty"`
+	Uid           int64                  `protobuf:"varint,3,opt,name=uid,proto3" json:"uid,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -136,6 +190,13 @@ func (x *Gate2MeshEnvelope) GetE() *Envelope {
 	return nil
 }
 
+func (x *Gate2MeshEnvelope) GetEvent() Event {
+	if x != nil {
+		return x.Event
+	}
+	return Event_ONLINE
+}
+
 func (x *Gate2MeshEnvelope) GetUid() int64 {
 	if x != nil {
 		return x.Uid
@@ -152,10 +213,17 @@ const file_envelope_proto_rawDesc = "" +
 	"\x03seq\x18\x01 \x01(\x04R\x03seq\x12\x10\n" +
 	"\x03app\x18\x02 \x01(\tR\x03app\x12\x10\n" +
 	"\x03cmd\x18\x03 \x01(\rR\x03cmd\x12\x18\n" +
-	"\apayload\x18\x04 \x01(\fR\apayload\"G\n" +
+	"\apayload\x18\x04 \x01(\fR\apayload\"n\n" +
 	"\x11Gate2MeshEnvelope\x12 \n" +
-	"\x01e\x18\x01 \x01(\v2\x12.envelope.EnvelopeR\x01e\x12\x10\n" +
-	"\x03uid\x18\x02 \x01(\x03R\x03uidB\fZ\n" +
+	"\x01e\x18\x01 \x01(\v2\x12.envelope.EnvelopeR\x01e\x12%\n" +
+	"\x05event\x18\x02 \x01(\x0e2\x0f.envelope.EventR\x05event\x12\x10\n" +
+	"\x03uid\x18\x03 \x01(\x03R\x03uid*=\n" +
+	"\x05Event\x12\n" +
+	"\n" +
+	"\x06ONLINE\x10\x00\x12\v\n" +
+	"\aOFFLINE\x10\x01\x12\r\n" +
+	"\tRECONNECT\x10\x02\x12\f\n" +
+	"\bBusiness\x10\x03B\fZ\n" +
 	"./envelopeb\x06proto3"
 
 var (
@@ -170,18 +238,21 @@ func file_envelope_proto_rawDescGZIP() []byte {
 	return file_envelope_proto_rawDescData
 }
 
+var file_envelope_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_envelope_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_envelope_proto_goTypes = []any{
-	(*Envelope)(nil),          // 0: envelope.Envelope
-	(*Gate2MeshEnvelope)(nil), // 1: envelope.Gate2MeshEnvelope
+	(Event)(0),                // 0: envelope.Event
+	(*Envelope)(nil),          // 1: envelope.Envelope
+	(*Gate2MeshEnvelope)(nil), // 2: envelope.Gate2MeshEnvelope
 }
 var file_envelope_proto_depIdxs = []int32{
-	0, // 0: envelope.Gate2MeshEnvelope.e:type_name -> envelope.Envelope
-	1, // [1:1] is the sub-list for method output_type
-	1, // [1:1] is the sub-list for method input_type
-	1, // [1:1] is the sub-list for extension type_name
-	1, // [1:1] is the sub-list for extension extendee
-	0, // [0:1] is the sub-list for field type_name
+	1, // 0: envelope.Gate2MeshEnvelope.e:type_name -> envelope.Envelope
+	0, // 1: envelope.Gate2MeshEnvelope.event:type_name -> envelope.Event
+	2, // [2:2] is the sub-list for method output_type
+	2, // [2:2] is the sub-list for method input_type
+	2, // [2:2] is the sub-list for extension type_name
+	2, // [2:2] is the sub-list for extension extendee
+	0, // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_envelope_proto_init() }
@@ -194,13 +265,14 @@ func file_envelope_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_envelope_proto_rawDesc), len(file_envelope_proto_rawDesc)),
-			NumEnums:      0,
+			NumEnums:      1,
 			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_envelope_proto_goTypes,
 		DependencyIndexes: file_envelope_proto_depIdxs,
+		EnumInfos:         file_envelope_proto_enumTypes,
 		MessageInfos:      file_envelope_proto_msgTypes,
 	}.Build()
 	File_envelope_proto = out.File
