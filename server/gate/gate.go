@@ -290,23 +290,22 @@ func (g *Gate) dispatch(e *envelope.Gate2MeshEnvelope) {
 
 	curNode, err := loc.Node(g.ctx, uid, toApp)
 	if err != nil {
-		log.Errorf("[websocket] dispatch get game node error, uid: %v, err: %v", uid, err)
+		log.Errorf("[websocket] dispatch get mesh node error, uid: %v, toApp: %v, err: %v", uid, toApp, err)
 		return
 	}
 	data, err := proto.Marshal(e)
 	if err != nil {
-		log.Errorf("[websocket] dispatch marshal to game data error: %v", err)
+		log.Errorf("[websocket] dispatch marshal to mesh data error: %v", err)
 		return
 	}
 	node := curNode
 	if curNode == "" {
-		// todo 确定一个game节点(负载均衡算法)
+		// todo 确定一个mesh节点(负载均衡算法)
 		//services, err := disc.GetService(g.ctx, toApp)
 		//if err != nil {
 		//	log.Errorf("[websocket] dispatch get all services error, uid: %v, app: %v, err: %v", uid, toApp, err)
 		//	return
 		//}
-
 	}
 	// 发布消息到 Mesh
 	subject := cluster.Subject(g.opts.prefix, g.appName, toApp, node)
