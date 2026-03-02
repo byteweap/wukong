@@ -284,8 +284,8 @@ func (g *Gate) onBinaryMessage(s *melody.Session, msg []byte) {
 func (g *Gate) dispatch(e *envelope.EnvelopeGate2Game) {
 
 	var (
-		uid, toApp = e.Uid, e.E.App
-		loc, bro   = g.opts.locator, g.opts.broker
+		uid, toApp  = e.Uid, e.E.App
+		loc, bro, _ = g.opts.locator, g.opts.broker, g.opts.discovery
 	)
 
 	curGameNode, err := loc.Game(g.ctx, uid)
@@ -295,15 +295,21 @@ func (g *Gate) dispatch(e *envelope.EnvelopeGate2Game) {
 	}
 	data, err := proto.Marshal(e)
 	if err != nil {
-		log.Errorf("[websocket] marshal to game data error: %v", err)
+		log.Errorf("[websocket] dispatch marshal to game data error: %v", err)
 		return
 	}
 	node := curGameNode
 	if curGameNode == "" {
 		// todo 确定一个game节点(负载均衡算法)
+		//services, err := disc.GetService(g.ctx, toApp)
+		//if err != nil {
+		//	log.Errorf("[websocket] dispatch get all services error, uid: %v, app: %v, err: %v", uid, toApp, err)
+		//	return
+		//}
+
 	}
 	// 发布消息到 Game
-	subject := cluster.Subject(g.opts.subjectPrefix, g.appName, toApp, node)
+	subject := cluster.Subject(g.opts.prefix, g.appName, toApp, node)
 	if err = bro.Pub(g.ctx, subject, data); err != nil {
 		log.Errorf("[websocket] dispatch error, uid: %v, subject: %v, err: %v", uid, subject, err)
 		return
@@ -318,7 +324,7 @@ func (g *Gate) loop() error {
 		o       = g.opts
 		bro     = g.opts.broker
 		msgChan = make(chan *broker.Message, o.messageBufferSize)
-		subject = cluster.Subject(o.subjectPrefix, "*", g.appName, g.appID)
+		subject = cluster.Subject(o.prefix, "*", g.appName, g.appID)
 	)
 
 	// 订阅消息

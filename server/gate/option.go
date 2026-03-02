@@ -18,7 +18,7 @@ type IdExtractor func(r *http.Request) int64
 type options struct {
 
 	// app
-	subjectPrefix   string      // 消息主题前缀
+	prefix          string      // subject / redis key 前缀
 	userIdExtractor IdExtractor // 用户 id 提取器
 
 	// websocket
@@ -40,7 +40,7 @@ type Option func(*options)
 
 func defaultOptions() *options {
 	return &options{
-		subjectPrefix:     "wukong",
+		prefix:            "wukong",
 		path:              "/",
 		addr:              ":9000",
 		writeTimeout:      5 * time.Second,
@@ -54,11 +54,11 @@ func defaultOptions() *options {
 	}
 }
 
-// SubjectPrefix 设置消息主题前缀
-func SubjectPrefix(prefix string) Option {
+// Prefix 设置前缀(subject、redis key), 默认: wukong
+func Prefix(prefix string) Option {
 	return func(o *options) {
-		if o.subjectPrefix != "" {
-			o.subjectPrefix = prefix
+		if o.prefix != "" {
+			o.prefix = prefix
 		}
 	}
 }

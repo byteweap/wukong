@@ -13,7 +13,7 @@ import (
 func TestGate(t *testing.T) {
 
 	g := gate.New(
-		gate.SubjectPrefix("leo"),
+		gate.Prefix("leo"),
 		gate.Addr(":8080"),
 		gate.Path("/"),
 		gate.WriteTimeout(time.Second*5),
