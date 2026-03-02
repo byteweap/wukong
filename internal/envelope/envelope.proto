@@ -10,8 +10,8 @@ message Envelope {
   bytes payload = 4; // 业务消息体
 }
 
-// 统一消息 gate -> game
-message EnvelopeGate2Game {
+// 统一消息 gate -> mesh
+message Gate2MeshEnvelope {
   Envelope e = 1;
   int64 uid = 2;
 }

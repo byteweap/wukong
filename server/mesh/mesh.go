@@ -1,4 +1,4 @@
-package game
+package mesh
 
 import (
 	"context"
@@ -8,35 +8,35 @@ import (
 	"github.com/byteweap/wukong/server"
 )
 
-type Game struct {
+type Mesh struct {
 	opts *options
 }
 
-var _ server.Server = (*Game)(nil)
+var _ server.Server = (*Mesh)(nil)
 
-func New(opts ...Option) *Game {
+func New(opts ...Option) *Mesh {
 	o := defaultOptions()
 	for _, opt := range opts {
 		opt(o)
 	}
-	return &Game{opts: o}
+	return &Mesh{opts: o}
 }
 
-func (g *Game) Kind() cluster.Kind {
-	return cluster.KindGame
+func (g *Mesh) Kind() cluster.Kind {
+	return cluster.KindMesh
 }
 
-func (g *Game) Start(ctx context.Context) error {
+func (g *Mesh) Start(ctx context.Context) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (g *Game) Stop(ctx context.Context) error {
+func (g *Mesh) Stop(ctx context.Context) error {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (g *Game) Endpoint() (*url.URL, error) {
+func (g *Mesh) Endpoint() (*url.URL, error) {
 	//TODO implement me
 	panic("implement me")
 }

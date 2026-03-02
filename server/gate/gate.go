@@ -219,7 +219,7 @@ func (g *Gate) onConnect(s *melody.Session) {
 	log.Infof("[websocket] new connection success, uid: %v, %s", uid, addr.String())
 
 	// 绑定网关
-	if err := g.opts.locator.BindGate(g.ctx, uid, g.appID); err != nil {
+	if err := g.opts.locator.Bind(g.ctx, uid, g.appName, g.appID); err != nil {
 		log.Errorf("[websocket] new connection success, bind gate error, uid: %v, err: %v", uid, err)
 	}
 }
@@ -249,7 +249,7 @@ func (g *Gate) onDisconnect(s *melody.Session) {
 	log.Infof("[websocket] connection disconnect success, uid: %v", uid)
 
 	// 解绑网关
-	if err := g.opts.locator.UnBindGate(g.ctx, uid, g.appID); err != nil {
+	if err := g.opts.locator.UnBind(g.ctx, uid, g.appName, g.appID); err != nil {
 		log.Errorf("[websocket] connection disconnect success, unbind gate error, uid: %v, err: %v", uid, err)
 	}
 }
@@ -274,21 +274,21 @@ func (g *Gate) onBinaryMessage(s *melody.Session, msg []byte) {
 	}
 	uid := uids.(int64)
 
-	g.dispatch(&envelope.EnvelopeGate2Game{
+	g.dispatch(&envelope.Gate2MeshEnvelope{
 		E:   e,
 		Uid: uid,
 	})
 }
 
-// 消息分发至 Game
-func (g *Gate) dispatch(e *envelope.EnvelopeGate2Game) {
+// 消息分发至 mesh
+func (g *Gate) dispatch(e *envelope.Gate2MeshEnvelope) {
 
 	var (
 		uid, toApp  = e.Uid, e.E.App
 		loc, bro, _ = g.opts.locator, g.opts.broker, g.opts.discovery
 	)
 
-	curGameNode, err := loc.Game(g.ctx, uid)
+	curNode, err := loc.Node(g.ctx, uid, toApp)
 	if err != nil {
 		log.Errorf("[websocket] dispatch get game node error, uid: %v, err: %v", uid, err)
 		return
@@ -298,8 +298,8 @@ func (g *Gate) dispatch(e *envelope.EnvelopeGate2Game) {
 		log.Errorf("[websocket] dispatch marshal to game data error: %v", err)
 		return
 	}
-	node := curGameNode
-	if curGameNode == "" {
+	node := curNode
+	if curNode == "" {
 		// todo 确定一个game节点(负载均衡算法)
 		//services, err := disc.GetService(g.ctx, toApp)
 		//if err != nil {
@@ -308,7 +308,7 @@ func (g *Gate) dispatch(e *envelope.EnvelopeGate2Game) {
 		//}
 
 	}
-	// 发布消息到 Game
+	// 发布消息到 Mesh
 	subject := cluster.Subject(g.opts.prefix, g.appName, toApp, node)
 	if err = bro.Pub(g.ctx, subject, data); err != nil {
 		log.Errorf("[websocket] dispatch error, uid: %v, subject: %v, err: %v", uid, subject, err)

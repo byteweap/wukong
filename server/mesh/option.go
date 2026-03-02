@@ -1,4 +1,4 @@
-package game
+package mesh
 
 import (
 	"github.com/byteweap/wukong/component/broker"

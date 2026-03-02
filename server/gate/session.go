@@ -6,6 +6,14 @@ import (
 	"github.com/olahol/melody"
 )
 
+type Event int8
+
+const (
+	EventConnect    Event = iota // 建立链接
+	EventDisconnect              // 断开链接
+	EventReconnect               // 重连
+)
+
 // Sessions 管理所有会话
 type Sessions struct {
 	data sync.Map

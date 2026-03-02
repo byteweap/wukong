@@ -8,23 +8,14 @@ type Locator interface {
 	// ID 返回定位器实现标识符
 	ID() string
 
-	// Gate 返回用户ID对应的网关节点
-	Gate(ctx context.Context, uid int64) (string, error)
+	// Node 返回用户所在某服务节点
+	Node(ctx context.Context, uid int64, service string) (string, error)
 
-	// BindGate 绑定用户ID到网关节点
-	BindGate(ctx context.Context, uid int64, node string) error
+	// Bind 绑定用户到某服务某节点
+	Bind(ctx context.Context, uid int64, service, node string) error
 
-	// UnBindGate 解绑用户ID的网关节点
-	UnBindGate(ctx context.Context, uid int64, node string) error
-
-	// Game 返回用户ID对应的游戏节点
-	Game(ctx context.Context, uid int64) (string, error)
-
-	// BindGame 绑定用户ID到游戏节点
-	BindGame(ctx context.Context, uid int64, node string) error
-
-	// UnBindGame 解绑用户ID的游戏节点
-	UnBindGame(ctx context.Context, uid int64, node string) error
+	// UnBind 解绑用户的某服务某节点
+	UnBind(ctx context.Context, uid int64, service, node string) error
 
 	// Close 关闭定位器
 	Close() error

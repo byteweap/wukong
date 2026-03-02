@@ -90,8 +90,8 @@ func (x *Envelope) GetPayload() []byte {
 	return nil
 }
 
-// 统一消息 gate -> game
-type EnvelopeGate2Game struct {
+// 统一消息 gate -> mesh
+type Gate2MeshEnvelope struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	E             *Envelope              `protobuf:"bytes,1,opt,name=e,proto3" json:"e,omitempty"`
 	Uid           int64                  `protobuf:"varint,2,opt,name=uid,proto3" json:"uid,omitempty"`
@@ -99,20 +99,20 @@ type EnvelopeGate2Game struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *EnvelopeGate2Game) Reset() {
-	*x = EnvelopeGate2Game{}
+func (x *Gate2MeshEnvelope) Reset() {
+	*x = Gate2MeshEnvelope{}
 	mi := &file_envelope_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *EnvelopeGate2Game) String() string {
+func (x *Gate2MeshEnvelope) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*EnvelopeGate2Game) ProtoMessage() {}
+func (*Gate2MeshEnvelope) ProtoMessage() {}
 
-func (x *EnvelopeGate2Game) ProtoReflect() protoreflect.Message {
+func (x *Gate2MeshEnvelope) ProtoReflect() protoreflect.Message {
 	mi := &file_envelope_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -124,19 +124,19 @@ func (x *EnvelopeGate2Game) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use EnvelopeGate2Game.ProtoReflect.Descriptor instead.
-func (*EnvelopeGate2Game) Descriptor() ([]byte, []int) {
+// Deprecated: Use Gate2MeshEnvelope.ProtoReflect.Descriptor instead.
+func (*Gate2MeshEnvelope) Descriptor() ([]byte, []int) {
 	return file_envelope_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *EnvelopeGate2Game) GetE() *Envelope {
+func (x *Gate2MeshEnvelope) GetE() *Envelope {
 	if x != nil {
 		return x.E
 	}
 	return nil
 }
 
-func (x *EnvelopeGate2Game) GetUid() int64 {
+func (x *Gate2MeshEnvelope) GetUid() int64 {
 	if x != nil {
 		return x.Uid
 	}
@@ -153,7 +153,7 @@ const file_envelope_proto_rawDesc = "" +
 	"\x03app\x18\x02 \x01(\tR\x03app\x12\x10\n" +
 	"\x03cmd\x18\x03 \x01(\rR\x03cmd\x12\x18\n" +
 	"\apayload\x18\x04 \x01(\fR\apayload\"G\n" +
-	"\x11EnvelopeGate2Game\x12 \n" +
+	"\x11Gate2MeshEnvelope\x12 \n" +
 	"\x01e\x18\x01 \x01(\v2\x12.envelope.EnvelopeR\x01e\x12\x10\n" +
 	"\x03uid\x18\x02 \x01(\x03R\x03uidB\fZ\n" +
 	"./envelopeb\x06proto3"
@@ -173,10 +173,10 @@ func file_envelope_proto_rawDescGZIP() []byte {
 var file_envelope_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_envelope_proto_goTypes = []any{
 	(*Envelope)(nil),          // 0: envelope.Envelope
-	(*EnvelopeGate2Game)(nil), // 1: envelope.EnvelopeGate2Game
+	(*Gate2MeshEnvelope)(nil), // 1: envelope.Gate2MeshEnvelope
 }
 var file_envelope_proto_depIdxs = []int32{
-	0, // 0: envelope.EnvelopeGate2Game.e:type_name -> envelope.Envelope
+	0, // 0: envelope.Gate2MeshEnvelope.e:type_name -> envelope.Envelope
 	1, // [1:1] is the sub-list for method output_type
 	1, // [1:1] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name

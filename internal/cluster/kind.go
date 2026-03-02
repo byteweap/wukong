@@ -4,5 +4,5 @@ type Kind string
 
 const (
 	KindGate Kind = "gate"
-	KindGame Kind = "game"
+	KindMesh Kind = "mesh"
 )
