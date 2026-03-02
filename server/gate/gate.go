@@ -12,19 +12,13 @@ import (
 	"github.com/byteweap/wukong/component/broker"
 	"github.com/byteweap/wukong/component/log"
 	"github.com/byteweap/wukong/encoding/proto"
+	es "github.com/byteweap/wukong/errors"
 	"github.com/byteweap/wukong/internal/cluster"
 	"github.com/byteweap/wukong/internal/envelope"
 	"github.com/byteweap/wukong/pkg/endpoint"
 	"github.com/byteweap/wukong/pkg/host"
 	"github.com/byteweap/wukong/server"
 	"github.com/olahol/melody"
-)
-
-var (
-	ErrAppNotFound       = errors.New("app not found")
-	ErrLocatorRequired   = errors.New("locator required")
-	ErrBrokerRequired    = errors.New("broker required")
-	ErrDiscoveryRequired = errors.New("discovery required")
 )
 
 type Gate struct {
@@ -64,16 +58,16 @@ func (g *Gate) Kind() cluster.Kind {
 
 func (g *Gate) validate() error {
 	if g.opts == nil {
-		return errors.New("options required")
+		return es.ErrOptionsRequired
 	}
 	if g.opts.locator == nil {
-		return ErrLocatorRequired
+		return es.ErrLocatorRequired
 	}
 	if g.opts.broker == nil {
-		return ErrBrokerRequired
+		return es.ErrBrokerRequired
 	}
 	if g.opts.discovery == nil {
-		return ErrDiscoveryRequired
+		return es.ErrDiscoveryRequired
 	}
 	return nil
 }
@@ -126,7 +120,7 @@ func (g *Gate) Start(ctx context.Context) error {
 
 	app, ok := wukong.FromContext(ctx)
 	if !ok {
-		return ErrAppNotFound
+		return es.ErrAppNotFound
 	}
 	// 验证参数
 	if err := g.validate(); err != nil {
@@ -159,7 +153,10 @@ func (g *Gate) Stop(ctx context.Context) error {
 	}
 
 	// 2. Close melody
-	e2 := g.ws.Close()
+	var e2 error
+	if g.ws != nil {
+		e2 = g.ws.Close()
+	}
 
 	if err := errors.Join(e1, e2); err != nil {
 		return err
