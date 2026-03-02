@@ -335,7 +335,7 @@ func (g *Gate) loop() error {
 		return err
 	}
 
-	// 处理消息
+	// 处理收到的消息
 	go func() {
 		for {
 			select {
