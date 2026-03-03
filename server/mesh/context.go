@@ -5,47 +5,60 @@ import (
 	"github.com/byteweap/wukong/internal/envelope"
 )
 
+// Context 网关消息上下文
 type Context struct {
 
-	// message
-	req *broker.Message
-	e   *envelope.Gate2MeshEnvelope
+	// broker message
+	subject, reply string
+	header         broker.Header
+
+	// universal message
+	seq uint64
+	app string
+	cmd int32
+	uid int64
 
 	// mesh
-	m *Mesh
+	mesh *Mesh
 }
 
-func newContext(m *Mesh, msg *broker.Message, e *envelope.Gate2MeshEnvelope) *Context {
+func newContext(mesh *Mesh, msg *broker.Message, e *envelope.Gate2MeshEnvelope) *Context {
 	return &Context{
-		req: msg,
-		e:   e,
-		m:   m,
+		subject: msg.Subject,
+		reply:   msg.Reply,
+		header:  msg.Header,
+		seq:     e.GetMeta().GetSeq(),
+		app:     e.GetMeta().GetApp(),
+		cmd:     e.GetMeta().GetCmd(),
+		uid:     e.GetUid(),
+		mesh:    mesh,
 	}
 }
+
 func (c *Context) Uid() int64 {
-	if c.e == nil {
-		return 0
-	}
-	return c.e.Uid
+	return c.uid
 }
 
 func (c *Context) Seq() uint64 {
-	if c.e == nil {
-		return 0
-	}
-	return c.e.GetMeta().GetSeq()
+	return c.seq
 }
 
 func (c *Context) App() string {
-	if c.e == nil {
-		return ""
-	}
-	return c.e.GetMeta().GetApp()
+	return c.app
 }
 
 func (c *Context) Cmd() int32 {
-	if c.e == nil {
-		return 0
-	}
-	return c.e.GetMeta().GetCmd()
+	return c.cmd
+}
+
+func (c *Context) Subject() string {
+	return c.subject
+}
+
+func (c *Context) ReplySubject() string {
+	return c.reply
+}
+
+func (c *Context) Header() broker.Header {
+	return c.header
 }
