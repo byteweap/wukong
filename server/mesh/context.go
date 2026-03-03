@@ -11,8 +11,8 @@ import (
 type Context struct {
 
 	// broker message
-	subject, reply string
-	header         broker.Header
+	subject string
+	header  broker.Header
 
 	// universal message
 	seq     uint64
@@ -44,7 +44,6 @@ func (c *Context) release() {
 		return
 	}
 	c.subject = ""
-	c.reply = ""
 	c.header = nil
 	c.seq = 0
 	c.app = ""
@@ -58,7 +57,6 @@ func (c *Context) release() {
 // reset 按当前消息重置上下文字段
 func (c *Context) reset(mesh *Mesh, msg *broker.Message, e *envelope.Gate2MeshEnvelope) {
 	c.subject = msg.Subject
-	c.reply = msg.Reply
 	c.header = msg.Header
 	c.mesh = mesh
 	if e == nil {
@@ -114,11 +112,6 @@ func (c *Context) Subject() string {
 	return c.subject
 }
 
-// ReplySubject 返回 broker 回复主题
-func (c *Context) ReplySubject() string {
-	return c.reply
-}
-
 // Header 返回 broker 消息头
 func (c *Context) Header() broker.Header {
 	return c.header
@@ -132,7 +125,6 @@ func (c *Context) Copy() *Context {
 	}
 	return &Context{
 		subject: c.subject,
-		reply:   c.reply,
 		header:  copyHeader(c.header),
 		seq:     c.seq,
 		app:     c.app,
