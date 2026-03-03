@@ -185,12 +185,12 @@ func (m *Mesh) handlerRequestReplyMessage(msg *broker.Message) {
 func (m *Mesh) handlerPubSubMessage(msg *broker.Message) {
 	envy := &envelope.Gate2MeshEnvelope{}
 	if err := proto.Unmarshal(msg.Data, envy); err != nil {
-		log.Errorf("mesh unmarshal envelope error: %v", err)
+		log.Errorf("mesh unmarshal Gate2MeshEnvelope error: %v", err)
 		return
 	}
 	meta := envy.GetMeta()
 	if meta == nil {
-		log.Errorf("mesh missing meta in envelope")
+		log.Errorf("mesh missing meta in Gate2MeshEnvelope")
 		return
 	}
 	if handler, ok := m.routes.Load(routeKey(meta.GetCmd(), meta.GetVersion())); ok {
