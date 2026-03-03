@@ -148,7 +148,16 @@ func (m *Mesh) loop() error {
 	}
 
 	go func() {
-		defer sub.Close()
+		defer func() {
+			// 异常捕获,防止崩溃
+			async.Recover(func(r any) {
+				log.Errorf("mesh handler panic error: %v", r)
+			})
+			if err = sub.Close(); err != nil {
+				log.Errorf("mesh close subscription error: %v", err)
+			}
+		}()
+
 		for {
 			select {
 			case <-m.ctx.Done():
@@ -167,9 +176,5 @@ func (m *Mesh) loop() error {
 
 // 处理 gate 消息
 func (m *Mesh) handlerMessage(msg *broker.Message) {
-	// 异常捕获,防止崩溃
-	async.Recover(func(r any) {
-		log.Errorf("mesh handler panic error: %v", r)
-	})
 	// todo
 }

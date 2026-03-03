@@ -388,7 +388,13 @@ func (g *Gate) loop() error {
 
 	// 处理收到的消息
 	go func(ctx context.Context, sub broker.Subscription, ch <-chan *broker.Message) {
-		defer sub.Close()
+		// 异常捕获,防止崩溃
+		async.Recover(func(r any) {
+			log.Errorf("gate handler panic error: %v", r)
+		})
+		if err = sub.Close(); err != nil {
+			log.Errorf("gate close subscription error: %v", err)
+		}
 		for {
 			select {
 			case <-ctx.Done():
@@ -407,11 +413,6 @@ func (g *Gate) loop() error {
 
 // 处理来自其它服务的消息
 func (g *Gate) handleMessage(msg *broker.Message) {
-
-	// 异常捕获,防止崩溃
-	async.Recover(func(r any) {
-		log.Errorf("mesh handler panic error: %v", r)
-	})
 
 	log.Debugf("[websocket] handleMessage, %v", msg)
 
