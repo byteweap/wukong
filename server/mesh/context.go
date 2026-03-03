@@ -1,47 +1,51 @@
 package mesh
 
-import "github.com/byteweap/wukong/component/broker"
+import (
+	"github.com/byteweap/wukong/component/broker"
+	"github.com/byteweap/wukong/internal/envelope"
+)
 
 type Context struct {
 
 	// message
 	req *broker.Message
+	e   *envelope.Gate2MeshEnvelope
 
 	// mesh
 	m *Mesh
 }
 
-func newContext(m *Mesh, msg *broker.Message) *Context {
+func newContext(m *Mesh, msg *broker.Message, e *envelope.Gate2MeshEnvelope) *Context {
 	return &Context{
 		req: msg,
+		e:   e,
 		m:   m,
 	}
 }
+func (c *Context) Uid() int64 {
+	if c.e == nil {
+		return 0
+	}
+	return c.e.Uid
+}
 
-func (c *Context) Subject() string {
-	if c.req == nil {
+func (c *Context) Seq() uint64 {
+	if c.e == nil {
+		return 0
+	}
+	return c.e.GetMeta().GetSeq()
+}
+
+func (c *Context) App() string {
+	if c.e == nil {
 		return ""
 	}
-	return c.req.Subject
+	return c.e.GetMeta().GetApp()
 }
 
-func (c *Context) ReplySubject() string {
-	if c.req == nil {
-		return ""
+func (c *Context) Cmd() int32 {
+	if c.e == nil {
+		return 0
 	}
-	return c.req.Reply
-}
-
-func (c *Context) Header() broker.Header {
-	if c.req == nil {
-		return nil
-	}
-	return c.req.Header
-}
-
-func (c *Context) Data() []byte {
-	if c.req == nil {
-		return nil
-	}
-	return c.req.Data
+	return c.e.GetMeta().GetCmd()
 }

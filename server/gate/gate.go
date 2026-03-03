@@ -272,8 +272,8 @@ func (g *Gate) onTextMessage(s *melody.Session, msg []byte) {
 // 接收到二进制消息时调用
 func (g *Gate) onBinaryMessage(s *melody.Session, msg []byte) {
 
-	e := &envelope.Envelope{}
-	if err := proto.Unmarshal(msg, e); err != nil {
+	meta := &envelope.Envelope{}
+	if err := proto.Unmarshal(msg, meta); err != nil {
 		log.Errorf("[websocket] unmarshal envelope error: %v", err)
 		return
 	}
@@ -286,7 +286,7 @@ func (g *Gate) onBinaryMessage(s *melody.Session, msg []byte) {
 
 	// 业务消息分发
 	g.dispatch(&envelope.Gate2MeshEnvelope{
-		E:     e,
+		Meta:  meta,
 		Event: envelope.Event_Business,
 		Uid:   uid,
 	})
@@ -295,12 +295,12 @@ func (g *Gate) onBinaryMessage(s *melody.Session, msg []byte) {
 // 业务消息分发至 mesh
 func (g *Gate) dispatch(e *envelope.Gate2MeshEnvelope) {
 
-	if e == nil || e.E == nil {
+	if e == nil || e.GetMeta() == nil {
 		log.Errorf("[websocket] dispatch error, envelope is nil")
 		return
 	}
 	var (
-		uid, toApp  = e.Uid, e.E.App
+		uid, toApp  = e.Uid, e.GetMeta().GetApp()
 		loc, bro, _ = g.opts.locator, g.opts.broker, g.opts.discovery
 	)
 
@@ -410,7 +410,7 @@ func (g *Gate) handleMeshMessage(msg *broker.Message) {
 	}
 
 	// 2. 直接回复给玩家的消息
-	uid := conv.Int64(msg.Header.Get("uid"))
+	uid := conv.Int64(msg.Header.Get("uid")) // todo
 	if uid <= 0 {
 		log.Errorf("[websocket] reply2player get uid error, uid: %v", uid)
 		return

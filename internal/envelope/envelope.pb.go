@@ -146,7 +146,7 @@ func (x *Envelope) GetPayload() []byte {
 // 统一消息 gate -> mesh
 type Gate2MeshEnvelope struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	E             *Envelope              `protobuf:"bytes,1,opt,name=e,proto3" json:"e,omitempty"`
+	Meta          *Envelope              `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
 	Event         Event                  `protobuf:"varint,2,opt,name=event,proto3,enum=envelope.Event" json:"event,omitempty"`
 	Uid           int64                  `protobuf:"varint,3,opt,name=uid,proto3" json:"uid,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -183,9 +183,9 @@ func (*Gate2MeshEnvelope) Descriptor() ([]byte, []int) {
 	return file_envelope_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Gate2MeshEnvelope) GetE() *Envelope {
+func (x *Gate2MeshEnvelope) GetMeta() *Envelope {
 	if x != nil {
-		return x.E
+		return x.Meta
 	}
 	return nil
 }
@@ -213,9 +213,9 @@ const file_envelope_proto_rawDesc = "" +
 	"\x03seq\x18\x01 \x01(\x04R\x03seq\x12\x10\n" +
 	"\x03app\x18\x02 \x01(\tR\x03app\x12\x10\n" +
 	"\x03cmd\x18\x03 \x01(\x05R\x03cmd\x12\x18\n" +
-	"\apayload\x18\x04 \x01(\fR\apayload\"n\n" +
-	"\x11Gate2MeshEnvelope\x12 \n" +
-	"\x01e\x18\x01 \x01(\v2\x12.envelope.EnvelopeR\x01e\x12%\n" +
+	"\apayload\x18\x04 \x01(\fR\apayload\"t\n" +
+	"\x11Gate2MeshEnvelope\x12&\n" +
+	"\x04meta\x18\x01 \x01(\v2\x12.envelope.EnvelopeR\x04meta\x12%\n" +
 	"\x05event\x18\x02 \x01(\x0e2\x0f.envelope.EventR\x05event\x12\x10\n" +
 	"\x03uid\x18\x03 \x01(\x03R\x03uid*=\n" +
 	"\x05Event\x12\n" +
@@ -246,7 +246,7 @@ var file_envelope_proto_goTypes = []any{
 	(*Gate2MeshEnvelope)(nil), // 2: envelope.Gate2MeshEnvelope
 }
 var file_envelope_proto_depIdxs = []int32{
-	1, // 0: envelope.Gate2MeshEnvelope.e:type_name -> envelope.Envelope
+	1, // 0: envelope.Gate2MeshEnvelope.meta:type_name -> envelope.Envelope
 	0, // 1: envelope.Gate2MeshEnvelope.event:type_name -> envelope.Event
 	2, // [2:2] is the sub-list for method output_type
 	2, // [2:2] is the sub-list for method input_type

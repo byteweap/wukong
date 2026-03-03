@@ -20,7 +20,7 @@ enum Event {
 
 // 统一消息 gate -> mesh
 message Gate2MeshEnvelope {
-  Envelope e = 1;
+  Envelope meta = 1;
   Event event = 2;
   int64 uid = 3;
 }
