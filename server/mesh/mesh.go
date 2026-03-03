@@ -8,8 +8,10 @@ import (
 	"github.com/byteweap/wukong"
 	"github.com/byteweap/wukong/component/broker"
 	"github.com/byteweap/wukong/component/log"
+	"github.com/byteweap/wukong/encoding/proto"
 	es "github.com/byteweap/wukong/errors"
 	"github.com/byteweap/wukong/internal/cluster"
+	"github.com/byteweap/wukong/internal/envelope"
 	"github.com/byteweap/wukong/pkg/async"
 	"github.com/byteweap/wukong/server"
 )
@@ -174,7 +176,33 @@ func (m *Mesh) loop() error {
 	return nil
 }
 
-// 处理 gate 消息
-func (m *Mesh) handlerMessage(msg *broker.Message) {
+// handlerRequestReplyMessage 来自其它服务的(request-reply)消息
+func (m *Mesh) handlerRequestReplyMessage(msg *broker.Message) {
 	// todo
+}
+
+// handlerPubSubMessage 来自Gate的(pub-sub)消息
+func (m *Mesh) handlerPubSubMessage(msg *broker.Message) {
+	envy := &envelope.Gate2MeshEnvelope{}
+	if err := proto.Unmarshal(msg.Data, envy); err != nil {
+		log.Errorf("mesh unmarshal envelope error: %v", err)
+		return
+	}
+	meta := envy.GetMeta()
+	if meta == nil {
+		log.Errorf("mesh missing meta in envelope")
+		return
+	}
+	if handler, ok := m.routes.Load(routeKey(meta.GetCmd(), meta.GetVersion())); ok {
+		handler.(MessageHandler)(m, msg, envy)
+	}
+}
+
+// 处理消息
+func (m *Mesh) handlerMessage(msg *broker.Message) {
+	if msg.Reply != "" {
+		m.handlerRequestReplyMessage(msg)
+	} else {
+		m.handlerPubSubMessage(msg)
+	}
 }

@@ -411,17 +411,13 @@ func (g *Gate) loop() error {
 	return nil
 }
 
-// 处理来自其它服务的消息
-func (g *Gate) handleMessage(msg *broker.Message) {
+// handlerRequestReplyMessage 来自其它服务的(request-reply)消息
+func (g *Gate) handleRequestReplyMessage(msg *broker.Message) {
+	// todo
+}
 
-	log.Debugf("[websocket] handleMessage, %v", msg)
-
-	// 1. request过来的消息,需要reply,后期按需支持
-	if msg.Reply != "" {
-		log.Warnf("[websocket] loop receive message, reply subject not supported")
-		return
-	}
-
+// handlerPubSubMessage 来自Mesh服务的(pub-sub)消息
+func (g *Gate) handlePubSubMessage(msg *broker.Message) {
 	// 2. 直接回复给玩家的消息
 	uid := conv.Int64(msg.Header.Get("uid")) // todo
 	if uid <= 0 {
@@ -438,4 +434,13 @@ func (g *Gate) handleMessage(msg *broker.Message) {
 		return
 	}
 	log.Debugf("[websocket] reply2player success, uid: %v", uid)
+}
+
+// 处理来自其它服务的消息
+func (g *Gate) handleMessage(msg *broker.Message) {
+	if msg.Reply != "" {
+		g.handleRequestReplyMessage(msg)
+	} else {
+		g.handlePubSubMessage(msg)
+	}
 }

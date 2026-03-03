@@ -15,10 +15,11 @@ type Context struct {
 	header         broker.Header
 
 	// universal message
-	seq uint64
-	app string
-	cmd int32
-	uid int64
+	seq     uint64
+	app     string
+	cmd     uint32
+	version uint32
+	uid     int64
 
 	// mesh
 	mesh *Mesh
@@ -48,6 +49,7 @@ func (c *Context) release() {
 	c.seq = 0
 	c.app = ""
 	c.cmd = 0
+	c.version = 0
 	c.uid = 0
 	c.mesh = nil
 	ctxPool.Put(c)
@@ -63,6 +65,7 @@ func (c *Context) reset(mesh *Mesh, msg *broker.Message, e *envelope.Gate2MeshEn
 		c.seq = 0
 		c.app = ""
 		c.cmd = 0
+		c.version = 0
 		c.uid = 0
 		return
 	}
@@ -72,11 +75,13 @@ func (c *Context) reset(mesh *Mesh, msg *broker.Message, e *envelope.Gate2MeshEn
 		c.seq = 0
 		c.app = ""
 		c.cmd = 0
+		c.version = 0
 		return
 	}
 	c.seq = meta.GetSeq()
 	c.app = meta.GetApp()
 	c.cmd = meta.GetCmd()
+	c.version = meta.GetVersion()
 }
 
 // Uid 返回用户 ID
@@ -95,8 +100,13 @@ func (c *Context) App() string {
 }
 
 // Cmd 返回路由命令字
-func (c *Context) Cmd() int32 {
+func (c *Context) Cmd() uint32 {
 	return c.cmd
+}
+
+// Version 返回消息版本号
+func (c *Context) Version() uint32 {
+	return c.version
 }
 
 // Subject 返回 broker 主题

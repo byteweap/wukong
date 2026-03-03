@@ -5,24 +5,21 @@ import (
 	"reflect"
 
 	"github.com/byteweap/wukong/component/broker"
+	"github.com/byteweap/wukong/component/log"
 	"github.com/byteweap/wukong/encoding/proto"
 	"github.com/byteweap/wukong/internal/envelope"
 )
 
-type MessageHandler func(*Mesh, *broker.Message) error
+type MessageHandler func(*Mesh, *broker.Message, *envelope.Gate2MeshEnvelope)
 
 // errorType 用于反射校验 handler 返回值类型
 var errorType = reflect.TypeOf((*error)(nil)).Elem()
 
 // Wrap 路由处理函数包装器
 // 统一处理网关消息,处理系统事件,自动解析业务参数 payload
-func Wrap[T any](handler func(*Context, *T) error) MessageHandler {
-	return func(m *Mesh, msg *broker.Message) error {
+func Wrap[T any](handler func(*Context, *T)) MessageHandler {
+	return func(m *Mesh, msg *broker.Message, envy *envelope.Gate2MeshEnvelope) {
 
-		envy := &envelope.Gate2MeshEnvelope{}
-		if err := proto.Unmarshal(msg.Data, envy); err != nil {
-			return err
-		}
 		switch envy.Event {
 		case envelope.Event_ONLINE:
 			if m.onlineHandler != nil {
@@ -41,15 +38,16 @@ func Wrap[T any](handler func(*Context, *T) error) MessageHandler {
 			defer ctx.release()
 			meta := envy.GetMeta()
 			if meta == nil || len(meta.GetPayload()) == 0 {
-				return handler(ctx, nil)
+				handler(ctx, nil)
+				return
 			}
 			var payload T
 			if err := proto.Unmarshal(meta.GetPayload(), &payload); err != nil {
-				return err
+				log.Errorf("mesh unmarshal payload error: %v", err)
+				return
 			}
-			return handler(ctx, &payload)
+			handler(ctx, &payload)
 		}
-		return nil
 	}
 }
 
@@ -88,28 +86,23 @@ func adaptMessageHandler(handler any) (MessageHandler, error) {
 		return nil, fmt.Errorf("mesh: handler return type must be error, got %s", rt.Out(0).String())
 	}
 
-	return func(m *Mesh, msg *broker.Message) error {
-		envy := &envelope.Gate2MeshEnvelope{}
-		if err := proto.Unmarshal(msg.Data, envy); err != nil {
-			return err
-		}
-
+	return func(m *Mesh, msg *broker.Message, envy *envelope.Gate2MeshEnvelope) {
 		switch envy.Event {
 		case envelope.Event_ONLINE:
 			if m.onlineHandler != nil {
 				m.onlineHandler(envy.Uid)
 			}
-			return nil
+			return
 		case envelope.Event_OFFLINE:
 			if m.offlineHandler != nil {
 				m.offlineHandler(envy.Uid)
 			}
-			return nil
+			return
 		case envelope.Event_RECONNECT:
 			if m.reconnectHandler != nil {
 				m.reconnectHandler(envy.Uid)
 			}
-			return nil
+			return
 		case envelope.Event_Business:
 			ctx := newContext(m, msg, envy)
 			defer ctx.release()
@@ -119,17 +112,16 @@ func adaptMessageHandler(handler any) (MessageHandler, error) {
 			if meta != nil && len(meta.GetPayload()) > 0 {
 				callArg = reflect.New(argType.Elem())
 				if err := proto.Unmarshal(meta.GetPayload(), callArg.Interface()); err != nil {
-					return err
+					log.Errorf("mesh unmarshal payload error: %v", err)
+					return
 				}
 			}
 
 			out := rv.Call([]reflect.Value{reflect.ValueOf(ctx), callArg})
 			if out[0].IsNil() {
-				return nil
+				return
 			}
-			return out[0].Interface().(error)
-		default:
-			return nil
+			out[0].Interface()
 		}
 	}, nil
 }

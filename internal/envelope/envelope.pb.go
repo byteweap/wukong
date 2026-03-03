@@ -77,10 +77,11 @@ func (Event) EnumDescriptor() ([]byte, []int) {
 // 统一消息 envelope
 type Envelope struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Seq           uint64                 `protobuf:"varint,1,opt,name=seq,proto3" json:"seq,omitempty"`        // 唯一标识
-	App           string                 `protobuf:"bytes,2,opt,name=app,proto3" json:"app,omitempty"`         // 目标应用名
-	Cmd           int32                  `protobuf:"varint,3,opt,name=cmd,proto3" json:"cmd,omitempty"`        // 指令(路由)
-	Payload       []byte                 `protobuf:"bytes,4,opt,name=payload,proto3" json:"payload,omitempty"` // 业务消息体
+	Seq           uint64                 `protobuf:"varint,1,opt,name=seq,proto3" json:"seq,omitempty"`         // 唯一标识
+	App           string                 `protobuf:"bytes,2,opt,name=app,proto3" json:"app,omitempty"`          // 目标应用名
+	Cmd           uint32                 `protobuf:"varint,3,opt,name=cmd,proto3" json:"cmd,omitempty"`         // 指令(路由)
+	Version       uint32                 `protobuf:"varint,4,opt,name=version,proto3" json:"version,omitempty"` // 版本
+	Payload       []byte                 `protobuf:"bytes,5,opt,name=payload,proto3" json:"payload,omitempty"`  // 业务消息体
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -129,9 +130,16 @@ func (x *Envelope) GetApp() string {
 	return ""
 }
 
-func (x *Envelope) GetCmd() int32 {
+func (x *Envelope) GetCmd() uint32 {
 	if x != nil {
 		return x.Cmd
+	}
+	return 0
+}
+
+func (x *Envelope) GetVersion() uint32 {
+	if x != nil {
+		return x.Version
 	}
 	return 0
 }
@@ -208,12 +216,13 @@ var File_envelope_proto protoreflect.FileDescriptor
 
 const file_envelope_proto_rawDesc = "" +
 	"\n" +
-	"\x0eenvelope.proto\x12\benvelope\"Z\n" +
+	"\x0eenvelope.proto\x12\benvelope\"t\n" +
 	"\bEnvelope\x12\x10\n" +
 	"\x03seq\x18\x01 \x01(\x04R\x03seq\x12\x10\n" +
 	"\x03app\x18\x02 \x01(\tR\x03app\x12\x10\n" +
-	"\x03cmd\x18\x03 \x01(\x05R\x03cmd\x12\x18\n" +
-	"\apayload\x18\x04 \x01(\fR\apayload\"t\n" +
+	"\x03cmd\x18\x03 \x01(\rR\x03cmd\x12\x18\n" +
+	"\aversion\x18\x04 \x01(\rR\aversion\x12\x18\n" +
+	"\apayload\x18\x05 \x01(\fR\apayload\"t\n" +
 	"\x11Gate2MeshEnvelope\x12&\n" +
 	"\x04meta\x18\x01 \x01(\v2\x12.envelope.EnvelopeR\x04meta\x12%\n" +
 	"\x05event\x18\x02 \x01(\x0e2\x0f.envelope.EventR\x05event\x12\x10\n" +

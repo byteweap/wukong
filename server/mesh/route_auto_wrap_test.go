@@ -30,9 +30,7 @@ func TestRouteAutoWrapBusinessPayload(t *testing.T) {
 	})
 
 	h := mustLoadRouteHandler(t, m, 1001, 1)
-	if err := h(m, &broker.Message{Data: raw}); err != nil {
-		t.Fatalf("handler returned error: %v", err)
-	}
+	invokeRouteHandler(t, h, m, &broker.Message{Data: raw}, raw)
 
 	if !called {
 		t.Fatalf("business handler not called")
@@ -69,9 +67,7 @@ func TestRouteAutoWrapEmptyPayloadPassNil(t *testing.T) {
 	}
 
 	h := mustLoadRouteHandler(t, m, 1002, 1)
-	if err := h(m, &broker.Message{Data: raw}); err != nil {
-		t.Fatalf("handler returned error: %v", err)
-	}
+	invokeRouteHandler(t, h, m, &broker.Message{Data: raw}, raw)
 	if gotReq != nil {
 		t.Fatalf("expected nil request for empty payload")
 	}
@@ -82,15 +78,12 @@ func TestRouteCompatibleWithMessageHandler(t *testing.T) {
 	m := New()
 
 	called := false
-	m.Route(1003, 1, MessageHandler(func(_ *Mesh, _ *broker.Message) error {
+	m.Route(1003, 1, MessageHandler(func(_ *Mesh, _ *broker.Message, _ *envelope.Gate2MeshEnvelope) {
 		called = true
-		return nil
 	}))
 
 	h := mustLoadRouteHandler(t, m, 1003, 1)
-	if err := h(m, &broker.Message{}); err != nil {
-		t.Fatalf("handler returned error: %v", err)
-	}
+	h(m, &broker.Message{}, &envelope.Gate2MeshEnvelope{})
 	if !called {
 		t.Fatalf("message handler not called")
 	}
@@ -115,9 +108,7 @@ func TestRouteOnlineEventWithoutCallback(t *testing.T) {
 	}
 
 	h := mustLoadRouteHandler(t, m, 1004, 1)
-	if err := h(m, &broker.Message{Data: raw}); err != nil {
-		t.Fatalf("handler returned error: %v", err)
-	}
+	invokeRouteHandler(t, h, m, &broker.Message{Data: raw}, raw)
 	if called {
 		t.Fatalf("business handler should not be called for online event")
 	}
@@ -170,4 +161,14 @@ func mustLoadRouteHandler(t *testing.T, m *Mesh, cmd, version uint32) MessageHan
 		t.Fatalf("stored handler has unexpected type %T", v)
 	}
 	return h
+}
+
+func invokeRouteHandler(t *testing.T, h MessageHandler, m *Mesh, msg *broker.Message, raw []byte) {
+	t.Helper()
+
+	envy := &envelope.Gate2MeshEnvelope{}
+	if err := proto.Unmarshal(raw, envy); err != nil {
+		t.Fatalf("unmarshal gate envelope: %v", err)
+	}
+	h(m, msg, envy)
 }
