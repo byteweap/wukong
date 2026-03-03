@@ -7,9 +7,10 @@ import (
 
 // options 选项
 type options struct {
-	prefix  string          // subject \ redis key 前缀
-	locator locator.Locator // 玩家位置定位器
-	broker  broker.Broker   // 消息传输代理
+	prefix            string          // subject \ redis key 前缀
+	messageBufferSize int             // 消息缓冲区大小
+	locator           locator.Locator // 玩家位置定位器
+	broker            broker.Broker   // 消息传输代理
 }
 
 // Option 定义 Mesh 可选配置函数
@@ -18,7 +19,8 @@ type Option func(*options)
 // defaultOptions 返回默认配置
 func defaultOptions() *options {
 	return &options{
-		prefix: "wukong",
+		prefix:            "wukong",
+		messageBufferSize: 256,
 	}
 }
 
@@ -27,6 +29,15 @@ func Prefix(prefix string) Option {
 	return func(o *options) {
 		if prefix != "" {
 			o.prefix = prefix
+		}
+	}
+}
+
+// MessageBufferSize 设置消息缓冲区大小, 默认 256
+func MessageBufferSize(size int) Option {
+	return func(o *options) {
+		if size > 0 {
+			o.messageBufferSize = size
 		}
 	}
 }

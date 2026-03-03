@@ -376,32 +376,38 @@ func (g *Gate) loop() error {
 
 	// 订阅消息
 	sub, err := bro.Sub(g.ctx, subject, func(msg *broker.Message) {
-		msgChan <- msg
+		select {
+		case msgChan <- msg:
+		case <-g.ctx.Done():
+		}
 	})
 	if err != nil {
 		return err
 	}
 
 	// 处理收到的消息
-	go func() {
+	go func(ctx context.Context, sub broker.Subscription, ch <-chan *broker.Message) {
+		defer sub.Close()
 		for {
 			select {
-			case <-g.ctx.Done():
-				_ = sub.Close()
+			case <-ctx.Done():
 				return
-			case msg := <-msgChan:
-				g.handleMeshMessage(msg)
+			case msg := <-ch:
+				if msg == nil {
+					continue
+				}
+				g.handleMessage(msg)
 			}
 		}
-	}()
+	}(g.ctx, sub, msgChan)
 
 	return nil
 }
 
 // 处理来自其它服务的消息
-func (g *Gate) handleMeshMessage(msg *broker.Message) {
+func (g *Gate) handleMessage(msg *broker.Message) {
 
-	log.Debugf("[websocket] handleMeshMessage, %v", msg)
+	log.Debugf("[websocket] handleMessage, %v", msg)
 
 	// 1. request过来的消息,需要reply,后期按需支持
 	if msg.Reply != "" {

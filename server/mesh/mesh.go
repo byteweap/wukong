@@ -5,10 +5,18 @@ import (
 	"net/url"
 	"sync"
 
+	"github.com/byteweap/wukong"
+	"github.com/byteweap/wukong/component/broker"
+	es "github.com/byteweap/wukong/errors"
+	"github.com/byteweap/wukong/internal/cluster"
 	"github.com/byteweap/wukong/server"
 )
 
 type Mesh struct {
+	ctx     context.Context
+	appID   string // application ID
+	appName string // application name
+
 	opts   *options
 	routes sync.Map // key: route+version, value: MessageHandler
 
@@ -35,8 +43,23 @@ func (*Mesh) Kind() server.Kind {
 
 // Start 启动 Mesh 服务
 func (m *Mesh) Start(ctx context.Context) error {
-	//TODO implement me
-	panic("implement me")
+	app, ok := wukong.FromContext(ctx)
+	if !ok {
+		return es.ErrAppNotFound
+	}
+
+	m.ctx = ctx
+	m.appID = app.ID()
+	m.appName = app.Name()
+
+	if m.opts.broker == nil {
+		return es.ErrBrokerRequired
+	}
+	if m.opts.locator == nil {
+		return es.ErrLocatorRequired
+	}
+	// 启动常驻协程
+	return m.loop()
 }
 
 // Stop 停止 Mesh 服务
@@ -100,4 +123,44 @@ func (m *Mesh) Route(cmd, version uint32, handler any) {
 	}
 	key := routeKey(cmd, version)
 	m.routes.Store(key, mh)
+}
+
+// loop 循环
+func (m *Mesh) loop() error {
+	var (
+		o        = m.opts
+		subject  = cluster.Subject(o.prefix, "*", m.appName, m.appID)
+		gateChan = make(chan *broker.Message, o.messageBufferSize)
+	)
+	sub, err := o.broker.Sub(m.ctx, subject, func(msg *broker.Message) {
+		select {
+		case gateChan <- msg:
+		case <-m.ctx.Done():
+		}
+	})
+	if err != nil {
+		return err
+	}
+
+	go func(ctx context.Context, sub broker.Subscription, ch <-chan *broker.Message) {
+		defer sub.Close()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case msg := <-ch:
+				if msg == nil {
+					continue
+				}
+				m.handlerMessage(msg)
+			}
+		}
+	}(m.ctx, sub, gateChan)
+
+	return nil
+}
+
+// 处理 gate 消息
+func (m *Mesh) handlerMessage(msg *broker.Message) {
+	// todo
 }
