@@ -19,6 +19,7 @@ type Mesh struct {
 
 var _ server.Server = (*Mesh)(nil)
 
+// New 创建 Mesh 服务实例
 func New(opts ...Option) *Mesh {
 	o := defaultOptions()
 	for _, opt := range opts {
@@ -27,26 +28,30 @@ func New(opts ...Option) *Mesh {
 	return &Mesh{opts: o}
 }
 
+// Kind 返回服务类型
 func (*Mesh) Kind() server.Kind {
 	return server.KindMesh
 }
 
+// Start 启动 Mesh 服务
 func (m *Mesh) Start(ctx context.Context) error {
 	//TODO implement me
 	panic("implement me")
 }
 
+// Stop 停止 Mesh 服务
 func (m *Mesh) Stop(ctx context.Context) error {
 	//TODO implement me
 	panic("implement me")
 }
 
+// Endpoint 返回服务监听地址
 func (m *Mesh) Endpoint() (*url.URL, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-// High 32 bits: cmd, low 32 bits: version.
+// routeKey 将 cmd/version 打包为 uint64 路由键
 func routeKey(cmd, version uint32) uint64 {
 	return uint64(cmd)<<32 | uint64(version)
 }
@@ -75,15 +80,19 @@ func (m *Mesh) ReconnectHandler(handler func(uid int64)) {
 	m.reconnectHandler = handler
 }
 
-// Route 注册路由
+// Route 注册业务路由处理器
+// cmd/version 共同确定唯一路由
+// handler 支持两种写法，推荐直接传业务函数
 //
-// handler 支持两种类型 (Request为自定义类型):
+// 1) 推荐写法
+// func(ctx *Context, req *Request) error
+// 示例: mesh.Route(cmd, version, EnterGame)
 //
-//   - MessageHandler mesh.Wrap(func(ctx context.Context, req *Request) error)
-//     如: mesh.Route(cmd, version, mesh.Wrap(func(ctx context.Context, req *Request) error))
+// 2) 兼容写法
+// MessageHandler
+// 示例: mesh.Route(cmd, version, mesh.Wrap(EnterGame))
 //
-//   - func(ctx context.Context, req *Request) error
-//     如: mesh.Route(cmd, version, func(ctx context.Context, req *Request) error)
+// 如果 handler 签名不合法，函数会 panic
 func (m *Mesh) Route(cmd, version uint32, handler any) {
 	mh, err := adaptMessageHandler(handler)
 	if err != nil {

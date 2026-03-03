@@ -11,11 +11,12 @@ import (
 
 type MessageHandler func(*Mesh, *broker.Message) error
 
+// errorType 用于反射校验 handler 返回值类型
 var errorType = reflect.TypeOf((*error)(nil)).Elem()
 
 // Wrap 路由处理函数包装器
 // 统一处理网关消息,处理系统事件,自动解析业务参数 payload
-func Wrap[I any](handler func(*Context, *I) error) MessageHandler {
+func Wrap[T any](handler func(*Context, *T) error) MessageHandler {
 	return func(m *Mesh, msg *broker.Message) error {
 
 		envy := &envelope.Gate2MeshEnvelope{}
@@ -37,11 +38,12 @@ func Wrap[I any](handler func(*Context, *I) error) MessageHandler {
 			}
 		case envelope.Event_Business:
 			ctx := newContext(m, msg, envy)
+			defer ctx.release()
 			meta := envy.GetMeta()
 			if meta == nil || len(meta.GetPayload()) == 0 {
 				return handler(ctx, nil)
 			}
-			var payload I
+			var payload T
 			if err := proto.Unmarshal(meta.GetPayload(), &payload); err != nil {
 				return err
 			}
@@ -51,7 +53,11 @@ func Wrap[I any](handler func(*Context, *I) error) MessageHandler {
 	}
 }
 
-// adaptMessageHandler 适配消息处理函数
+// adaptMessageHandler 将不同签名的 handler 统一适配为 MessageHandler
+// 原理:
+// 1) 若本身就是 MessageHandler，直接返回
+// 2) 若是 func(*Context, *T) error，使用反射校验签名后包装
+// 3) 包装函数内统一完成 envelope 解包、事件分发、payload 反序列化，再调用业务 handler
 func adaptMessageHandler(handler any) (MessageHandler, error) {
 	if handler == nil {
 		return nil, fmt.Errorf("mesh: handler is nil")
@@ -106,6 +112,7 @@ func adaptMessageHandler(handler any) (MessageHandler, error) {
 			return nil
 		case envelope.Event_Business:
 			ctx := newContext(m, msg, envy)
+			defer ctx.release()
 			meta := envy.GetMeta()
 
 			callArg := reflect.Zero(argType)

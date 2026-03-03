@@ -8,6 +8,7 @@ import (
 	"github.com/byteweap/wukong/internal/envelope"
 )
 
+// TestRouteAutoWrapBusinessPayload 验证自动 Wrap 能正确反序列化业务参数
 func TestRouteAutoWrapBusinessPayload(t *testing.T) {
 	m := New()
 
@@ -47,6 +48,7 @@ func TestRouteAutoWrapBusinessPayload(t *testing.T) {
 	}
 }
 
+// TestRouteAutoWrapEmptyPayloadPassNil 验证空 payload 会传入 nil 参数
 func TestRouteAutoWrapEmptyPayloadPassNil(t *testing.T) {
 	m := New()
 
@@ -75,6 +77,7 @@ func TestRouteAutoWrapEmptyPayloadPassNil(t *testing.T) {
 	}
 }
 
+// TestRouteCompatibleWithMessageHandler 验证兼容直接注册 MessageHandler
 func TestRouteCompatibleWithMessageHandler(t *testing.T) {
 	m := New()
 
@@ -93,6 +96,7 @@ func TestRouteCompatibleWithMessageHandler(t *testing.T) {
 	}
 }
 
+// TestRouteOnlineEventWithoutCallback 验证系统事件不会误触发业务处理器
 func TestRouteOnlineEventWithoutCallback(t *testing.T) {
 	m := New()
 
@@ -119,6 +123,7 @@ func TestRouteOnlineEventWithoutCallback(t *testing.T) {
 	}
 }
 
+// TestRouteInvalidHandlerPanic 验证非法签名会触发 panic
 func TestRouteInvalidHandlerPanic(t *testing.T) {
 	m := New()
 
@@ -131,6 +136,7 @@ func TestRouteInvalidHandlerPanic(t *testing.T) {
 	m.Route(9999, 1, func() error { return nil })
 }
 
+// mustBusinessMessage 构造业务消息封包
 func mustBusinessMessage(t *testing.T, payload *envelope.Envelope) []byte {
 	t.Helper()
 
@@ -151,6 +157,7 @@ func mustBusinessMessage(t *testing.T, payload *envelope.Envelope) []byte {
 	return raw
 }
 
+// mustLoadRouteHandler 读取已注册路由处理器
 func mustLoadRouteHandler(t *testing.T, m *Mesh, cmd, version uint32) MessageHandler {
 	t.Helper()
 

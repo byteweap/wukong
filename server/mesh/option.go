@@ -12,14 +12,17 @@ type options struct {
 	broker  broker.Broker   // 消息传输代理
 }
 
+// Option 定义 Mesh 可选配置函数
 type Option func(*options)
 
+// defaultOptions 返回默认配置
 func defaultOptions() *options {
 	return &options{
 		prefix: "wukong",
 	}
 }
 
+// Prefix 设置 broker subject 前缀
 func Prefix(prefix string) Option {
 	return func(o *options) {
 		if prefix != "" {
