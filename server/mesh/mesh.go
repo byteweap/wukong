@@ -7,8 +7,10 @@ import (
 
 	"github.com/byteweap/wukong"
 	"github.com/byteweap/wukong/component/broker"
+	"github.com/byteweap/wukong/component/log"
 	es "github.com/byteweap/wukong/errors"
 	"github.com/byteweap/wukong/internal/cluster"
+	"github.com/byteweap/wukong/pkg/async"
 	"github.com/byteweap/wukong/server"
 )
 
@@ -127,14 +129,17 @@ func (m *Mesh) Route(cmd, version uint32, handler any) {
 
 // loop 循环
 func (m *Mesh) loop() error {
+
 	var (
-		o        = m.opts
-		subject  = cluster.Subject(o.prefix, "*", m.appName, m.appID)
-		gateChan = make(chan *broker.Message, o.messageBufferSize)
+		o       = m.opts
+		subject = cluster.Subject(o.prefix, "*", m.appName, m.appID)
+		msgChan = make(chan *broker.Message, o.messageBufferSize)
 	)
+
+	// 订阅
 	sub, err := o.broker.Sub(m.ctx, subject, func(msg *broker.Message) {
 		select {
-		case gateChan <- msg:
+		case msgChan <- msg:
 		case <-m.ctx.Done():
 		}
 	})
@@ -142,25 +147,29 @@ func (m *Mesh) loop() error {
 		return err
 	}
 
-	go func(ctx context.Context, sub broker.Subscription, ch <-chan *broker.Message) {
+	go func() {
 		defer sub.Close()
 		for {
 			select {
-			case <-ctx.Done():
+			case <-m.ctx.Done():
 				return
-			case msg := <-ch:
+			case msg := <-msgChan:
 				if msg == nil {
 					continue
 				}
 				m.handlerMessage(msg)
 			}
 		}
-	}(m.ctx, sub, gateChan)
+	}()
 
 	return nil
 }
 
 // 处理 gate 消息
 func (m *Mesh) handlerMessage(msg *broker.Message) {
+	// 异常捕获,防止崩溃
+	async.Recover(func(r any) {
+		log.Errorf("mesh handler panic error: %v", r)
+	})
 	// todo
 }

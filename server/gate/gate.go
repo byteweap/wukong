@@ -15,6 +15,7 @@ import (
 	es "github.com/byteweap/wukong/errors"
 	"github.com/byteweap/wukong/internal/cluster"
 	"github.com/byteweap/wukong/internal/envelope"
+	"github.com/byteweap/wukong/pkg/async"
 	"github.com/byteweap/wukong/pkg/conv"
 	"github.com/byteweap/wukong/pkg/endpoint"
 	"github.com/byteweap/wukong/pkg/host"
@@ -406,6 +407,11 @@ func (g *Gate) loop() error {
 
 // 处理来自其它服务的消息
 func (g *Gate) handleMessage(msg *broker.Message) {
+
+	// 异常捕获,防止崩溃
+	async.Recover(func(r any) {
+		log.Errorf("mesh handler panic error: %v", r)
+	})
 
 	log.Debugf("[websocket] handleMessage, %v", msg)
 
