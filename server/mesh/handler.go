@@ -8,6 +8,8 @@ import (
 
 type MessageHandler func(*Mesh, *broker.Message) error
 
+// Wrap 路由处理函数包装器
+// 统一处理网关消息,处理系统事件,自动解析业务参数 payload
 func Wrap[I any](handler func(*Context, *I) error) MessageHandler {
 	return func(m *Mesh, msg *broker.Message) error {
 
@@ -15,18 +17,25 @@ func Wrap[I any](handler func(*Context, *I) error) MessageHandler {
 		if err := proto.Unmarshal(msg.Data, envy); err != nil {
 			return err
 		}
-
-		ctx := newContext(m, msg, envy)
-
-		meta := envy.GetMeta()
-		if meta == nil || len(meta.GetPayload()) == 0 {
-			return handler(ctx, nil)
+		switch envy.Event {
+		case envelope.Event_ONLINE:
+			m.onlineHandler(envy.Uid)
+		case envelope.Event_OFFLINE:
+			m.offlineHandler(envy.Uid)
+		case envelope.Event_RECONNECT:
+			m.reconnectHandler(envy.Uid)
+		case envelope.Event_Business:
+			ctx := newContext(m, msg, envy)
+			meta := envy.GetMeta()
+			if meta == nil || len(meta.GetPayload()) == 0 {
+				return handler(ctx, nil)
+			}
+			var payload I
+			if err := proto.Unmarshal(meta.GetPayload(), &payload); err != nil {
+				return err
+			}
+			return handler(ctx, &payload)
 		}
-
-		var payload I
-		if err := proto.Unmarshal(meta.GetPayload(), &payload); err != nil {
-			return err
-		}
-		return handler(ctx, &payload)
+		return nil
 	}
 }
