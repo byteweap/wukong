@@ -385,13 +385,28 @@ func (m *Mesh) handlerPubSubMessage(msg *broker.Message) {
 		log.Errorf("mesh unmarshal Gate2MeshEnvelope error: %v", err)
 		return
 	}
-	meta := envy.GetMeta()
-	if meta == nil {
-		log.Errorf("mesh missing meta in Gate2MeshEnvelope")
-		return
-	}
-	if handler, ok := m.routes.Load(routeKey(meta.GetCmd(), meta.GetVersion())); ok {
-		handler.(MessageHandler)(m, msg, envy)
+	switch envy.Event {
+	case envelope.Event_ONLINE:
+		if m.onlineHandler != nil {
+			m.onlineHandler(envy.Uid)
+		}
+	case envelope.Event_OFFLINE:
+		if m.offlineHandler != nil {
+			m.offlineHandler(envy.Uid)
+		}
+	case envelope.Event_RECONNECT:
+		if m.reconnectHandler != nil {
+			m.reconnectHandler(envy.Uid)
+		}
+	case envelope.Event_Business:
+		meta := envy.GetMeta()
+		if meta == nil {
+			log.Errorf("mesh missing meta in Gate2MeshEnvelope")
+			return
+		}
+		if handler, ok := m.routes.Load(routeKey(meta.GetCmd(), meta.GetVersion())); ok {
+			handler.(MessageHandler)(m, msg, envy)
+		}
 	}
 }
 

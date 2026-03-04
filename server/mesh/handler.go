@@ -80,37 +80,19 @@ func adaptMessageHandler(handler any) (MessageHandler, error) {
 		return nil, fmt.Errorf("mesh: handler second arg must be pointer type, got %s", argType.String())
 	}
 	return func(m *Mesh, msg *broker.Message, envy *envelope.Gate2MeshEnvelope) {
-		switch envy.Event {
-		case envelope.Event_ONLINE:
-			if m.onlineHandler != nil {
-				m.onlineHandler(envy.Uid)
-			}
-			return
-		case envelope.Event_OFFLINE:
-			if m.offlineHandler != nil {
-				m.offlineHandler(envy.Uid)
-			}
-			return
-		case envelope.Event_RECONNECT:
-			if m.reconnectHandler != nil {
-				m.reconnectHandler(envy.Uid)
-			}
-			return
-		case envelope.Event_Business:
-			ctx := newContext(m, msg, envy)
-			defer ctx.release()
-			meta := envy.GetMeta()
+		ctx := newContext(m, msg, envy)
+		defer ctx.release()
 
-			callArg := reflect.Zero(argType)
-			if meta != nil && len(meta.GetPayload()) > 0 {
-				callArg = reflect.New(argType.Elem())
-				if err := proto.Unmarshal(meta.GetPayload(), callArg.Interface()); err != nil {
-					log.Errorf("mesh unmarshal payload error: %v", err)
-					return
-				}
-			}
+		meta := envy.GetMeta()
+		callArg := reflect.Zero(argType)
 
-			rv.Call([]reflect.Value{reflect.ValueOf(ctx), callArg})
+		if meta != nil && len(meta.GetPayload()) > 0 {
+			callArg = reflect.New(argType.Elem())
+			if err := proto.Unmarshal(meta.GetPayload(), callArg.Interface()); err != nil {
+				log.Errorf("mesh unmarshal payload error: %v", err)
+				return
+			}
 		}
+		rv.Call([]reflect.Value{reflect.ValueOf(ctx), callArg})
 	}, nil
 }
