@@ -1,4 +1,4 @@
-package game
+package server
 
 import (
 	"sync"
@@ -7,22 +7,22 @@ import (
 	"github.com/byteweap/wukong/server/mesh"
 )
 
-type Game struct {
+type Server struct {
 	*mesh.Mesh
 
 	mu    sync.RWMutex
 	rooms map[int]*room.Room
 }
 
-func New() *Game {
+func New() *Server {
 	m := mesh.New()
-	return &Game{
+	return &Server{
 		Mesh:  m,
 		rooms: make(map[int]*room.Room),
 	}
 }
 
-func (g *Game) NumRooms() int {
+func (g *Server) NumRooms() int {
 	g.mu.RLock()
 	defer g.mu.RUnlock()
 	return len(g.rooms)

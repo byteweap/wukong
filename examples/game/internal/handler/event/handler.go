@@ -5,9 +5,9 @@ import (
 )
 
 type EventHandler struct {
-	gs handler.GameService
+	gs handler.IService
 }
 
-func New(gs handler.GameService) *EventHandler {
+func New(gs handler.IService) *EventHandler {
 	return &EventHandler{gs: gs}
 }

@@ -1,6 +1,6 @@
 package handler
 
-// GameService game 能力接口
-type GameService interface {
+// IService server 能力接口
+type IService interface {
 	NumRooms() int
 }

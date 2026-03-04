@@ -5,9 +5,9 @@ import (
 )
 
 type RpcHandler struct {
-	gs handler.GameService
+	gs route.GameService
 }
 
-func New(gs handler.GameService) *RpcHandler {
+func New(gs route.GameService) *RpcHandler {
 	return &RpcHandler{gs: gs}
 }
