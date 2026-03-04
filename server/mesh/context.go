@@ -131,6 +131,7 @@ func (c *Context) Copy() *Context {
 		app:     c.app,
 		cmd:     c.cmd,
 		uid:     c.uid,
+		version: c.version,
 		mesh:    c.mesh,
 	}
 }
