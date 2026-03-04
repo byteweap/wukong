@@ -35,7 +35,7 @@ func WrapRequest[T any](handler func(*RequestContext, *T)) RequestMessageHandler
 // adaptRequestMessageHandler 将不同签名的 request handler 统一适配为 RequestMessageHandler
 // 原理:
 // 1) 若本身就是 RequestMessageHandler，直接返回
-// 2) 若是 func(*RequestContext, *T) error，使用反射校验签名后包装
+// 2) 若是 func(*RequestContext, *T)，使用反射校验签名后包装
 // 3) 包装函数内统一完成 payload 反序列化，再调用业务 handler
 func adaptRequestMessageHandler(handler any) (RequestMessageHandler, error) {
 	if handler == nil {
@@ -51,8 +51,8 @@ func adaptRequestMessageHandler(handler any) (RequestMessageHandler, error) {
 	if rt.Kind() != reflect.Func {
 		return nil, fmt.Errorf("mesh: unsupported route handler type %T", handler)
 	}
-	if rt.NumIn() != 2 || rt.NumOut() != 1 {
-		return nil, fmt.Errorf("mesh: handler must be func(*RequestContext,*T) error or RequestMessageHandler, got %s", rt.String())
+	if rt.NumIn() != 2 || rt.NumOut() != 0 {
+		return nil, fmt.Errorf("mesh: handler must be func(*RequestContext,*T) or RequestMessageHandler, got %s", rt.String())
 	}
 
 	ctxType := reflect.TypeOf((*RequestContext)(nil))
@@ -63,10 +63,6 @@ func adaptRequestMessageHandler(handler any) (RequestMessageHandler, error) {
 	if argType.Kind() != reflect.Ptr {
 		return nil, fmt.Errorf("mesh: handler second arg must be pointer type, got %s", argType.String())
 	}
-	if !rt.Out(0).Implements(errorType) {
-		return nil, fmt.Errorf("mesh: handler return type must be error, got %s", rt.Out(0).String())
-	}
-
 	return func(m *Mesh, msg *broker.Message) {
 		ctx := newRequestContext(m, msg)
 		defer ctx.release()
@@ -80,10 +76,6 @@ func adaptRequestMessageHandler(handler any) (RequestMessageHandler, error) {
 			}
 		}
 
-		out := rv.Call([]reflect.Value{reflect.ValueOf(ctx), callArg})
-		if out[0].IsNil() {
-			return
-		}
-		out[0].Interface()
+		rv.Call([]reflect.Value{reflect.ValueOf(ctx), callArg})
 	}, nil
 }

@@ -141,7 +141,7 @@ func (m *Mesh) Route(cmd, version uint32, handler any) {
 // handler 支持两种写法，推荐直接传业务函数
 //
 // 1) 推荐写法
-// func(ctx *RequestContext, req *Request) error
+// func(ctx *RequestContext, req *Request)
 // 示例: mesh.RequestRoute(cmd, version, HandleRequest)
 //
 // 2) 兼容写法

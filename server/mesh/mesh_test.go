@@ -17,8 +17,8 @@ func EnterGame(ctx *mesh.Context, req *Params) {
 
 // FindUser 模拟业务处理函数
 // request-reply
-func FindUser(ctx *mesh.RequestContext, req *Params) error {
-	return nil
+func FindUser(ctx *mesh.RequestContext, req *Params) {
+	return
 }
 
 // TestMesh 验证 Route 注册基本可用

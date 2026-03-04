@@ -17,11 +17,10 @@ func TestAdaptRequestAutoWrapPayload(t *testing.T) {
 	var gotCtx *RequestContext
 	var gotReq *envelope.Envelope
 
-	h := mustAdaptRequestHandler(t, func(ctx *RequestContext, req *envelope.Envelope) error {
+	h := mustAdaptRequestHandler(t, func(ctx *RequestContext, req *envelope.Envelope) {
 		called = true
 		gotCtx = ctx
 		gotReq = req
-		return nil
 	})
 
 	raw, err := proto.Marshal(&envelope.Envelope{
@@ -62,9 +61,8 @@ func TestAdaptRequestAutoWrapEmptyPayloadPassNil(t *testing.T) {
 	m := New()
 
 	var gotReq *envelope.Envelope
-	h := mustAdaptRequestHandler(t, func(_ *RequestContext, req *envelope.Envelope) error {
+	h := mustAdaptRequestHandler(t, func(_ *RequestContext, req *envelope.Envelope) {
 		gotReq = req
-		return nil
 	})
 
 	h(m, &broker.Message{Data: nil})
@@ -97,7 +95,7 @@ func TestAdaptRequestInvalidHandlerError(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error for invalid request handler")
 	}
-	if !strings.Contains(err.Error(), "func(*RequestContext,*T) error") {
+	if !strings.Contains(err.Error(), "func(*RequestContext,*T)") {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
@@ -119,11 +117,10 @@ func TestRequestRouteDispatchByHeader(t *testing.T) {
 	var gotCtx *RequestContext
 	var gotReq *envelope.Envelope
 
-	m.RequestRoute("2001", "1", func(ctx *RequestContext, req *envelope.Envelope) error {
+	m.RequestRoute("2001", "1", func(ctx *RequestContext, req *envelope.Envelope) {
 		called = true
 		gotCtx = ctx
 		gotReq = req
-		return nil
 	})
 
 	raw, err := proto.Marshal(&envelope.Envelope{
@@ -164,9 +161,8 @@ func TestRequestRouteDispatchEmptyPayloadPassNil(t *testing.T) {
 	m := New()
 
 	var gotReq *envelope.Envelope
-	m.RequestRoute("2002", "1", func(_ *RequestContext, req *envelope.Envelope) error {
+	m.RequestRoute("2002", "1", func(_ *RequestContext, req *envelope.Envelope) {
 		gotReq = req
-		return nil
 	})
 
 	m.handlerRequestReplyMessage(&broker.Message{
