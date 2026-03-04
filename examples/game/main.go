@@ -8,11 +8,13 @@ import (
 )
 
 func main() {
-	g := game.New()
-	eventHandler := event.New(g)
-	rpcHandler := rpc.New(g)
 
-	g.Route(1, 1, mesh.Wrap(eventHandler.EnterGame))
-	g.Route(2, 1, mesh.Wrap(eventHandler.GameExit))
-	g.RequestRoute("findRoom", "v1", mesh.WrapRequest(rpcHandler.FindRoom))
+	g := game.New()
+
+	e := event.New(g)
+	g.Route(1, 1, mesh.Wrap(e.EnterGame))
+	g.Route(2, 1, mesh.Wrap(e.GameExit))
+
+	r := rpc.New(g)
+	g.RequestRoute("findRoom", "v1", mesh.WrapRequest(r.FindRoom))
 }

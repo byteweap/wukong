@@ -1,0 +1,10 @@
+syntax = "proto3";
+option go_package = "./pb";
+
+message EnterGameRequest {
+
+}
+
+message ExitGameRequest {
+
+}

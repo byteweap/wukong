@@ -21,3 +21,9 @@ func New() *Game {
 		rooms: make(map[int]*room.Room),
 	}
 }
+
+func (g *Game) NumRooms() int {
+	g.mu.RLock()
+	defer g.mu.RUnlock()
+	return len(g.rooms)
+}

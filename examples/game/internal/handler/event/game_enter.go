@@ -1,11 +1,11 @@
 package event
 
-import "github.com/byteweap/wukong/server/mesh"
+import (
+	"github.com/byteweap/wukong/examples/game/internal/pb"
+	"github.com/byteweap/wukong/server/mesh"
+)
 
-type EnterGameParams struct {
-}
-
-func (h *EventHandler) EnterGame(ctx *mesh.Context, req *EnterGameParams) {
+func (h *EventHandler) EnterGame(ctx *mesh.Context, req *pb.EnterGameRequest) {
 
 	// todo
 }

@@ -1,12 +1,10 @@
 package event
 
 import (
+	"github.com/byteweap/wukong/examples/game/internal/pb"
 	"github.com/byteweap/wukong/server/mesh"
 )
 
-type GameExitParams struct {
-}
-
-func (h *EventHandler) GameExit(ctx *mesh.Context, req *GameExitParams) {
+func (h *EventHandler) GameExit(ctx *mesh.Context, req *pb.ExitGameRequest) {
 	// todo
 }
