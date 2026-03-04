@@ -36,4 +36,5 @@ func TestMesh(t *testing.T) {
 	app.RequestRouteX("findUser", "v1", FindUser)
 	// 	2.2. 推荐写法, 避免反射调用, 推荐用于高频路由
 	app.RequestRoute("findUser1", "v1", mesh.WrapRequest(FindUser))
+
 }
