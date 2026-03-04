@@ -1,20 +1,23 @@
 package main
 
 import (
-	"github.com/byteweap/wukong/examples/game/internal/handler/event"
-	"github.com/byteweap/wukong/examples/game/internal/handler/rpc"
-	"github.com/byteweap/wukong/examples/game/internal/server"
-	"github.com/byteweap/wukong/server/mesh"
+	"github.com/byteweap/wukong"
+	"github.com/byteweap/wukong/component/log"
+	"github.com/byteweap/wukong/examples/game/internal"
 )
 
 func main() {
 
-	g := server.New()
+	s := internal.New()
 
-	e := event.New(g)
-	g.Route(1, 1, mesh.Wrap(e.EnterGame))
-	g.Route(2, 1, mesh.Wrap(e.GameExit))
-
-	r := rpc.New(g)
-	g.RequestRoute("findRoom", "v1", mesh.WrapRequest(r.FindRoom))
+	err := wukong.New(
+		wukong.ID("game-1"),
+		wukong.Name("game"),
+		wukong.Version("v1.0.0"),
+		wukong.Metadata(map[string]string{"author": "Leo"}),
+		wukong.Server(s),
+	).Run()
+	if err != nil {
+		log.Info(err)
+	}
 }
