@@ -168,7 +168,7 @@ func (g *Gate) Stop(ctx context.Context) error {
 }
 
 // Endpoint 获取网关地址
-func (g *Gate) Endpoint() (*url.URL, error) {
+func (g *Gate) Endpoint(_ context.Context) (*url.URL, error) {
 	if err := g.listenAndEndpoint(); err != nil {
 		return nil, err
 	}

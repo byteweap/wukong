@@ -158,8 +158,9 @@ func (a *App) buildInstance() error {
 		endpoints = append(endpoints, e.String())
 	}
 	if len(endpoints) == 0 {
+		epCtx := NewContext(a.opts.ctx, a)
 		for _, srv := range a.opts.servers {
-			e, err := srv.Endpoint()
+			e, err := srv.Endpoint(epCtx)
 			if err != nil {
 				return err
 			}

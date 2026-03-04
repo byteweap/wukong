@@ -24,6 +24,7 @@ type Mesh struct {
 	ctx     context.Context
 	appID   string // application ID
 	appName string // application name
+	running bool
 
 	opts          *options
 	routes        sync.Map // key: cmd<<32|version (uint64), value: MessageHandler
@@ -32,6 +33,10 @@ type Mesh struct {
 	onlineHandler    func(uid int64) // 玩家上线
 	offlineHandler   func(uid int64) // 玩家掉线
 	reconnectHandler func(uid int64) // 玩家重连
+
+	cancel context.CancelFunc
+	done   chan struct{}
+	mu     sync.Mutex
 }
 
 var _ server.Server = (*Mesh)(nil)
@@ -57,30 +62,77 @@ func (m *Mesh) Start(ctx context.Context) error {
 		return es.ErrAppNotFound
 	}
 
-	m.ctx = ctx
-	m.appID = app.ID()
-	m.appName = app.Name()
-
 	if m.opts.broker == nil {
 		return es.ErrBrokerRequired
 	}
 	if m.opts.locator == nil {
 		return es.ErrLocatorRequired
 	}
+	m.mu.Lock()
+	if m.running {
+		m.mu.Unlock()
+		return fmt.Errorf("mesh already running")
+	}
+	runCtx, cancel := context.WithCancel(ctx)
+	m.ctx = runCtx
+	m.cancel = cancel
+	m.appID = app.ID()
+	m.appName = app.Name()
+	m.done = make(chan struct{})
+	m.running = true
+	m.mu.Unlock()
+
+	defer func() {
+		m.mu.Lock()
+		if m.done != nil {
+			close(m.done)
+			m.done = nil
+		}
+		m.running = false
+		m.cancel = nil
+		m.mu.Unlock()
+	}()
+
 	// 启动常驻协程
 	return m.loop()
 }
 
 // Stop 停止 Mesh 服务
 func (m *Mesh) Stop(ctx context.Context) error {
-	//TODO implement me
-	panic("implement me")
+	m.mu.Lock()
+	if !m.running {
+		m.mu.Unlock()
+		return nil
+	}
+	cancel := m.cancel
+	done := m.done
+	m.mu.Unlock()
+
+	if cancel != nil {
+		cancel()
+	}
+	if done == nil {
+		return nil
+	}
+	select {
+	case <-done:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 }
 
 // Endpoint 返回服务监听地址
-func (m *Mesh) Endpoint() (*url.URL, error) {
-	//TODO implement me
-	panic("implement me")
+func (m *Mesh) Endpoint(ctx context.Context) (*url.URL, error) {
+	app, ok := wukong.FromContext(ctx)
+	if !ok {
+		return nil, es.ErrAppNotFound
+	}
+	host := app.Name() + "." + app.ID()
+	return &url.URL{
+		Scheme: "mesh",
+		Host:   host,
+	}, nil
 }
 
 // routeKey 将 cmd/version 打包为 uint64 路由键
@@ -203,32 +255,27 @@ func (m *Mesh) loop() error {
 	if err != nil {
 		return err
 	}
-
-	go func() {
-		defer func() {
-			// 异常捕获,防止崩溃
-			async.Recover(func(r any) {
-				log.Errorf("mesh handler panic error: %v", r)
-			})
-			if err = sub.Close(); err != nil {
-				log.Errorf("mesh close subscription error: %v", err)
-			}
-		}()
-
-		for {
-			select {
-			case <-m.ctx.Done():
-				return
-			case msg := <-msgChan:
-				if msg == nil {
-					continue
-				}
-				m.handlerMessage(msg)
-			}
+	defer func() {
+		// 异常捕获,防止崩溃
+		async.Recover(func(r any) {
+			log.Errorf("mesh handler panic error: %v", r)
+		})
+		if err := sub.Close(); err != nil {
+			log.Errorf("mesh close subscription error: %v", err)
 		}
 	}()
 
-	return nil
+	for {
+		select {
+		case <-m.ctx.Done():
+			return nil
+		case msg := <-msgChan:
+			if msg == nil {
+				continue
+			}
+			m.handlerMessage(msg)
+		}
+	}
 }
 
 // Request 发送请求并等待回复
