@@ -1,6 +1,7 @@
 package mesh
 
 import (
+	"maps"
 	"sync"
 
 	"github.com/byteweap/wukong/component/broker"
@@ -139,16 +140,7 @@ func copyHeader(h broker.Header) broker.Header {
 	if h == nil {
 		return nil
 	}
-
 	cp := make(broker.Header, len(h))
-	for k, vv := range h {
-		if vv == nil {
-			cp[k] = nil
-			continue
-		}
-		nv := make([]string, len(vv))
-		copy(nv, vv)
-		cp[k] = nv
-	}
+	maps.Copy(cp, h)
 	return cp
 }

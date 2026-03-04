@@ -16,11 +16,10 @@ func TestRouteAutoWrapBusinessPayload(t *testing.T) {
 	var gotCtx *Context
 	var gotReq *envelope.Envelope
 
-	m.Route(1001, 1, func(ctx *Context, req *envelope.Envelope) error {
+	m.Route(1001, 1, func(ctx *Context, req *envelope.Envelope) {
 		called = true
 		gotCtx = ctx
 		gotReq = req
-		return nil
 	})
 
 	raw := mustBusinessMessage(t, &envelope.Envelope{
@@ -51,9 +50,8 @@ func TestRouteAutoWrapEmptyPayloadPassNil(t *testing.T) {
 	m := New()
 
 	var gotReq *envelope.Envelope
-	m.Route(1002, 1, func(_ *Context, req *envelope.Envelope) error {
+	m.Route(1002, 1, func(_ *Context, req *envelope.Envelope) {
 		gotReq = req
-		return nil
 	})
 
 	raw, err := proto.Marshal(&envelope.Gate2MeshEnvelope{
@@ -94,9 +92,8 @@ func TestRouteOnlineEventWithoutCallback(t *testing.T) {
 	m := New()
 
 	called := false
-	m.Route(1004, 1, func(_ *Context, _ *envelope.Envelope) error {
+	m.Route(1004, 1, func(_ *Context, _ *envelope.Envelope) {
 		called = true
-		return nil
 	})
 
 	raw, err := proto.Marshal(&envelope.Gate2MeshEnvelope{
