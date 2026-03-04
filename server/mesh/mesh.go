@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"net/url"
 	"sync"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/byteweap/wukong/internal/cluster"
 	"github.com/byteweap/wukong/internal/envelope"
 	"github.com/byteweap/wukong/pkg/async"
+	"github.com/byteweap/wukong/pkg/conv"
 	"github.com/byteweap/wukong/server"
 )
 
@@ -153,7 +155,7 @@ func (m *Mesh) Route(cmd, version uint32, handler MessageHandler) {
 // handler 支持两种写法，推荐直接传业务函数
 //
 // 1) 推荐写法
-// func(ctx *RequestContext, req *Request)
+// func(ctx *RequestContext, req *Request) ([]byte, string, int)
 // 示例: mesh.RequestRouteX(cmd, version, HandleRequest)
 //
 // 2) 兼容写法
@@ -230,11 +232,28 @@ func (m *Mesh) loop() error {
 }
 
 // Request 发送请求并等待回复
-func (m *Mesh) Request(subject, cmd, version string, data []byte) (*broker.Message, error) {
+// 入参
+//   - subject: 目标服务
+//   - cmd: 命令
+//   - version: 版本
+//   - data: 业务数据
+//
+// 出参
+//   - data: 业务数据
+//   - tip: 提示信息
+//   - code: 业务状态码
+//   - error: 错误信息
+func (m *Mesh) Request(subject, cmd, version string, data []byte) ([]byte, string, int, error) {
 	header := broker.Header{}
 	header.Set("cmd", cmd)
 	header.Set("version", version)
-	return m.opts.broker.Request(m.ctx, subject, data, broker.RequestHeader(header))
+	result, err := m.opts.broker.Request(m.ctx, subject, data, broker.RequestHeader(header))
+	if err != nil {
+		return nil, "", 0, err
+	}
+	code := result.Header.Get("code")
+	tip := result.Header.Get("tip")
+	return result.Data, tip, conv.Int(code), nil
 }
 
 // okReply 发送成功回复
@@ -245,11 +264,17 @@ func (m *Mesh) okReply(reqMsg *broker.Message, data []byte) error {
 	if reqMsg.Reply == "" {
 		return errors.New("reply subject is empty")
 	}
-	return m.opts.broker.Reply(m.ctx, reqMsg, data)
+	header := reqMsg.Header
+	if header == nil {
+		header = broker.Header{}
+	}
+	header.Set("code", "200")
+	header.Set("tip", "ok")
+	return m.opts.broker.Reply(m.ctx, reqMsg, data, broker.ReplyHeader(header))
 }
 
 // errReply 发送错误回复
-func (m *Mesh) errReply(reqMsg *broker.Message, err string) error {
+func (m *Mesh) errReply(reqMsg *broker.Message, code int, tip string) error {
 	if reqMsg == nil {
 		return errors.New("request message is nil")
 	}
@@ -257,7 +282,11 @@ func (m *Mesh) errReply(reqMsg *broker.Message, err string) error {
 		return errors.New("reply subject is empty")
 	}
 	header := reqMsg.Header
-	header.Set("error", err)
+	if header == nil {
+		header = broker.Header{}
+	}
+	header.Set("code", conv.String(code))
+	header.Set("tip", tip)
 	return m.opts.broker.Reply(m.ctx, reqMsg, nil, broker.ReplyHeader(header))
 }
 
@@ -268,18 +297,37 @@ func (m *Mesh) handlerRequestReplyMessage(msg *broker.Message) {
 	}
 	header := msg.Header
 	if header == nil {
-		if err := m.errReply(msg, "header is nil"); err != nil {
+		if err := m.errReply(msg, 100, "header is nil"); err != nil {
 			log.Errorf("mesh [handlerRequestReplyMessage] reply error: %v", err)
 		}
 		return
 	}
 	cmd, version := header.Get("cmd"), header.Get("version")
 	if handler, ok := m.requestRoutes.Load(requestRouteKey(cmd, version)); ok {
-		handler.(RequestMessageHandler)(m, msg)
+		data, tip, code := handler.(RequestMessageHandler)(m, msg)
+		m.replyRequestResult(msg, data, tip, code)
 	} else {
-		if err := m.errReply(msg, fmt.Sprintf("cmd:%s version:%s not found", cmd, version)); err != nil {
+		if err := m.errReply(msg, 404, fmt.Sprintf("cmd:%s version:%s not found", cmd, version)); err != nil {
 			log.Errorf("mesh [handlerRequestReplyMessage] reply error: %v", err)
 		}
+	}
+}
+
+func (m *Mesh) replyRequestResult(msg *broker.Message, data []byte, tip string, code int) {
+	if code == http.StatusOK {
+		if err := m.okReply(msg, data); err != nil {
+			log.Errorf("mesh request-reply ok reply error: %v", err)
+		}
+		return
+	}
+	if tip == "" {
+		tip = "request failed"
+	}
+	if code == 0 {
+		code = http.StatusInternalServerError
+	}
+	if err := m.errReply(msg, code, tip); err != nil {
+		log.Errorf("mesh request-reply err reply error: %v", err)
 	}
 }
 

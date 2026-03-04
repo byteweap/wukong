@@ -17,8 +17,8 @@ func EnterGame(ctx *mesh.Context, req *Params) {
 
 // FindUser 模拟业务处理函数
 // request-reply
-func FindUser(ctx *mesh.RequestContext, req *Params) {
-	return
+func FindUser(ctx *mesh.RequestContext, req *Params) ([]byte, string, int) {
+	return nil, "ok", 200
 }
 
 // TestMesh

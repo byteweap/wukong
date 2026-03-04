@@ -1,6 +1,7 @@
 package mesh
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/byteweap/wukong/component/broker"
@@ -30,13 +31,16 @@ func TestRouteFastWithWrap(t *testing.T) {
 }
 
 func TestRequestRouteFastWithWrapRequest(t *testing.T) {
-	m := New()
+	mb := &mockBroker{}
+	m := New(Broker(mb))
 
 	called := false
-	m.RequestRoute("findUser", "v1", WrapRequest(func(_ *RequestContext, req *envelope.Envelope) {
+	wantData := []byte("mesh-ok")
+	m.RequestRoute("findUser", "v1", WrapRequest(func(_ *RequestContext, req *envelope.Envelope) ([]byte, string, int) {
 		if req != nil && req.GetApp() == "mesh" {
 			called = true
 		}
+		return wantData, "ok", 200
 	}))
 
 	raw, err := proto.Marshal(&envelope.Envelope{App: "mesh"})
@@ -55,5 +59,14 @@ func TestRequestRouteFastWithWrapRequest(t *testing.T) {
 
 	if !called {
 		t.Fatalf("request route fast handler not called")
+	}
+	if mb.replyCalls != 1 {
+		t.Fatalf("expected 1 reply call, got %d", mb.replyCalls)
+	}
+	if !bytes.Equal(mb.replyData, wantData) {
+		t.Fatalf("unexpected reply data: %v", mb.replyData)
+	}
+	if mb.replyHdr.Get("code") != "200" || mb.replyHdr.Get("tip") != "ok" {
+		t.Fatalf("unexpected reply header: %+v", mb.replyHdr)
 	}
 }

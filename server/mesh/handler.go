@@ -12,9 +12,6 @@ import (
 
 type MessageHandler func(*Mesh, *broker.Message, *envelope.Gate2MeshEnvelope)
 
-// errorType 用于反射校验 handler 返回值类型
-var errorType = reflect.TypeOf((*error)(nil)).Elem()
-
 // Wrap 路由处理函数包装器
 // 统一处理网关消息,处理系统事件,自动解析业务参数 payload
 func Wrap[T any](handler func(*Context, *T)) MessageHandler {

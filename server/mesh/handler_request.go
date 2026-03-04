@@ -5,38 +5,39 @@ import (
 	"reflect"
 
 	"github.com/byteweap/wukong/component/broker"
-	"github.com/byteweap/wukong/component/log"
 	"github.com/byteweap/wukong/encoding/proto"
 )
 
-type RequestMessageHandler func(*Mesh, *broker.Message)
+type RequestMessageHandler func(*Mesh, *broker.Message) ([]byte, string, int)
 
 // WrapRequest 路由处理函数包装器
 // 统一处理request-reply消息,处理系统事件,自动解析业务参数 payload
-func WrapRequest[T any](handler func(*RequestContext, *T)) RequestMessageHandler {
-	return func(m *Mesh, msg *broker.Message) {
+// handler 返回:
+//   - []byte: 业务数据
+//   - string: 错误提示
+//   - int: 业务状态码(200表示成功, 其它表示失败)
+func WrapRequest[T any](handler func(*RequestContext, *T) ([]byte, string, int)) RequestMessageHandler {
+	return func(m *Mesh, msg *broker.Message) ([]byte, string, int) {
 
 		ctx := newRequestContext(m, msg)
 		defer ctx.release()
 
 		if len(msg.Data) == 0 {
-			handler(ctx, nil)
-			return
+			return handler(ctx, nil)
 		}
 		var payload T
 		if err := proto.Unmarshal(msg.Data, &payload); err != nil {
-			log.Errorf("mesh request-reply unmarshal payload error: %v", err)
-			return
+			return nil, "unmarshal payload error", 500
 		}
-		handler(ctx, &payload)
+		return handler(ctx, &payload)
 	}
 }
 
 // adaptRequestMessageHandler 将不同签名的 request handler 统一适配为 RequestMessageHandler
 // 原理:
 // 1) 若本身就是 RequestMessageHandler，直接返回
-// 2) 若是 func(*RequestContext, *T)，使用反射校验签名后包装
-// 3) 包装函数内统一完成 payload 反序列化，再调用业务 handler
+// 2) 若是 func(*RequestContext, *T) ([]byte, string, int)，使用反射校验签名后包装
+// 3) 包装函数内统一完成 payload 反序列化、调用业务 handler、回包
 func adaptRequestMessageHandler(handler any) (RequestMessageHandler, error) {
 	if handler == nil {
 		return nil, fmt.Errorf("mesh: request-reply handler is nil")
@@ -51,8 +52,8 @@ func adaptRequestMessageHandler(handler any) (RequestMessageHandler, error) {
 	if rt.Kind() != reflect.Func {
 		return nil, fmt.Errorf("mesh: unsupported route handler type %T", handler)
 	}
-	if rt.NumIn() != 2 || rt.NumOut() != 0 {
-		return nil, fmt.Errorf("mesh: handler must be func(*RequestContext,*T) or RequestMessageHandler, got %s", rt.String())
+	if rt.NumIn() != 2 || rt.NumOut() != 3 {
+		return nil, fmt.Errorf("mesh: handler must be func(*RequestContext,*T)([]byte,string,int) or RequestMessageHandler, got %s", rt.String())
 	}
 
 	ctxType := reflect.TypeOf((*RequestContext)(nil))
@@ -63,7 +64,17 @@ func adaptRequestMessageHandler(handler any) (RequestMessageHandler, error) {
 	if argType.Kind() != reflect.Ptr {
 		return nil, fmt.Errorf("mesh: handler second arg must be pointer type, got %s", argType.String())
 	}
-	return func(m *Mesh, msg *broker.Message) {
+	if rt.Out(0) != reflect.TypeOf([]byte(nil)) {
+		return nil, fmt.Errorf("mesh: handler first return must be []byte, got %s", rt.Out(0).String())
+	}
+	if rt.Out(1).Kind() != reflect.String {
+		return nil, fmt.Errorf("mesh: handler second return must be string, got %s", rt.Out(1).String())
+	}
+	if rt.Out(2).Kind() != reflect.Int {
+		return nil, fmt.Errorf("mesh: handler third return must be int, got %s", rt.Out(2).String())
+	}
+
+	return func(m *Mesh, msg *broker.Message) ([]byte, string, int) {
 		ctx := newRequestContext(m, msg)
 		defer ctx.release()
 
@@ -71,11 +82,14 @@ func adaptRequestMessageHandler(handler any) (RequestMessageHandler, error) {
 		if len(msg.Data) > 0 {
 			callArg = reflect.New(argType.Elem())
 			if err := proto.Unmarshal(msg.Data, callArg.Interface()); err != nil {
-				log.Errorf("mesh request-reply unmarshal payload error: %v", err)
-				return
+				return nil, "unmarshal payload error", 500
 			}
 		}
 
-		rv.Call([]reflect.Value{reflect.ValueOf(ctx), callArg})
+		out := rv.Call([]reflect.Value{reflect.ValueOf(ctx), callArg})
+		data := out[0].Interface().([]byte)
+		tip := out[1].Interface().(string)
+		code := int(out[2].Int())
+		return data, tip, code
 	}, nil
 }
