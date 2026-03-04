@@ -16,7 +16,7 @@ func TestRouteAutoWrapBusinessPayload(t *testing.T) {
 	var gotCtx *Context
 	var gotReq *envelope.Envelope
 
-	m.Route(1001, 1, func(ctx *Context, req *envelope.Envelope) {
+	m.RouteX(1001, 1, func(ctx *Context, req *envelope.Envelope) {
 		called = true
 		gotCtx = ctx
 		gotReq = req
@@ -50,7 +50,7 @@ func TestRouteAutoWrapEmptyPayloadPassNil(t *testing.T) {
 	m := New()
 
 	var gotReq *envelope.Envelope
-	m.Route(1002, 1, func(_ *Context, req *envelope.Envelope) {
+	m.RouteX(1002, 1, func(_ *Context, req *envelope.Envelope) {
 		gotReq = req
 	})
 
@@ -76,7 +76,7 @@ func TestRouteCompatibleWithMessageHandler(t *testing.T) {
 	m := New()
 
 	called := false
-	m.Route(1003, 1, MessageHandler(func(_ *Mesh, _ *broker.Message, _ *envelope.Gate2MeshEnvelope) {
+	m.RouteX(1003, 1, MessageHandler(func(_ *Mesh, _ *broker.Message, _ *envelope.Gate2MeshEnvelope) {
 		called = true
 	}))
 
@@ -92,7 +92,7 @@ func TestRouteOnlineEventWithoutCallback(t *testing.T) {
 	m := New()
 
 	called := false
-	m.Route(1004, 1, func(_ *Context, _ *envelope.Envelope) {
+	m.RouteX(1004, 1, func(_ *Context, _ *envelope.Envelope) {
 		called = true
 	})
 
@@ -121,7 +121,7 @@ func TestRouteInvalidHandlerPanic(t *testing.T) {
 		}
 	}()
 
-	m.Route(9999, 1, func() error { return nil })
+	m.RouteX(9999, 1, func() error { return nil })
 }
 
 // mustBusinessMessage 构造业务消息封包

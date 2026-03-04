@@ -114,20 +114,21 @@ func (m *Mesh) ReconnectHandler(handler func(uid int64)) {
 	m.reconnectHandler = handler
 }
 
-// Route 注册业务路由处理器(Gate pub-sub)
+// RouteX 注册业务路由处理器(Gate pub-sub)
 // cmd/version 共同确定唯一路由
 // handler 支持两种写法，推荐直接传业务函数
 //
 // 1) 推荐写法
 // func(ctx *Context, req *Request)
-// 示例: mesh.Route(cmd, version, EnterGame)
+// 示例: mesh.RouteX(cmd, version, EnterGame)
 //
 // 2) 兼容写法
 // MessageHandler
-// 示例: mesh.Route(cmd, version, mesh.Wrap(EnterGame))
+// 示例: mesh.RouteX(cmd, version, mesh.Wrap(EnterGame))
 //
 // 如果 handler 签名不合法，函数会 panic
-func (m *Mesh) Route(cmd, version uint32, handler any) {
+// 注意: 使用反射, 热点路由请使用 Route
+func (m *Mesh) RouteX(cmd, version uint32, handler any) {
 	mh, err := adaptMessageHandler(handler)
 	if err != nil {
 		panic(err)
@@ -136,26 +137,49 @@ func (m *Mesh) Route(cmd, version uint32, handler any) {
 	m.routes.Store(key, mh)
 }
 
-// RequestRoute 注册 request-reply 路由处理器
+// Route 注册业务路由处理器
+// 该方法要求显式传入 MessageHandler（通常通过 mesh.Wrap 构造）
+// 运行期不经过反射调用，适合高频热点路由
+func (m *Mesh) Route(cmd, version uint32, handler MessageHandler) {
+	if handler == nil {
+		panic("mesh: handler is nil")
+	}
+	key := routeKey(cmd, version)
+	m.routes.Store(key, handler)
+}
+
+// RequestRouteX 注册 request-reply 路由处理器
 // cmd/version 共同确定唯一路由
 // handler 支持两种写法，推荐直接传业务函数
 //
 // 1) 推荐写法
 // func(ctx *RequestContext, req *Request)
-// 示例: mesh.RequestRoute(cmd, version, HandleRequest)
+// 示例: mesh.RequestRouteX(cmd, version, HandleRequest)
 //
 // 2) 兼容写法
 // RequestMessageHandler
-// 示例: mesh.RequestRoute(cmd, version, mesh.WrapRequest(HandleRequest))
+// 示例: mesh.RequestRouteX(cmd, version, mesh.WrapRequest(HandleRequest))
 //
 // 如果 handler 签名不合法，函数会 panic
-func (m *Mesh) RequestRoute(cmd, version string, handler any) {
+// 注意: 使用反射, 热点路由请使用 RequestRoute
+func (m *Mesh) RequestRouteX(cmd, version string, handler any) {
 	mh, err := adaptRequestMessageHandler(handler)
 	if err != nil {
 		panic(err)
 	}
 	key := requestRouteKey(cmd, version)
 	m.requestRoutes.Store(key, mh)
+}
+
+// RequestRoute 注册 request-reply 路由处理器
+// 该方法要求显式传入 RequestMessageHandler（通常通过 mesh.WrapRequest 构造）
+// 运行期不经过反射调用，适合高频热点路由
+func (m *Mesh) RequestRoute(cmd, version string, handler RequestMessageHandler) {
+	if handler == nil {
+		panic("mesh: request-reply handler is nil")
+	}
+	key := requestRouteKey(cmd, version)
+	m.requestRoutes.Store(key, handler)
 }
 
 // loop 循环

@@ -117,7 +117,7 @@ func TestRequestRouteDispatchByHeader(t *testing.T) {
 	var gotCtx *RequestContext
 	var gotReq *envelope.Envelope
 
-	m.RequestRoute("2001", "1", func(ctx *RequestContext, req *envelope.Envelope) {
+	m.RequestRouteX("2001", "1", func(ctx *RequestContext, req *envelope.Envelope) {
 		called = true
 		gotCtx = ctx
 		gotReq = req
@@ -161,7 +161,7 @@ func TestRequestRouteDispatchEmptyPayloadPassNil(t *testing.T) {
 	m := New()
 
 	var gotReq *envelope.Envelope
-	m.RequestRoute("2002", "1", func(_ *RequestContext, req *envelope.Envelope) {
+	m.RequestRouteX("2002", "1", func(_ *RequestContext, req *envelope.Envelope) {
 		gotReq = req
 	})
 
@@ -178,7 +178,7 @@ func TestRequestRouteDispatchEmptyPayloadPassNil(t *testing.T) {
 	}
 }
 
-// TestRequestRouteInvalidHandlerPanic 验证 RequestRoute 对非法签名会 panic
+// TestRequestRouteInvalidHandlerPanic 验证 RequestRouteX 对非法签名会 panic
 func TestRequestRouteInvalidHandlerPanic(t *testing.T) {
 	m := New()
 
@@ -188,5 +188,5 @@ func TestRequestRouteInvalidHandlerPanic(t *testing.T) {
 		}
 	}()
 
-	m.RequestRoute("9999", "1", func() error { return nil })
+	m.RequestRouteX("9999", "1", func() error { return nil })
 }
