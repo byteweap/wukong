@@ -213,8 +213,8 @@ func (m *Mesh) Request(subject, cmd, version string, data []byte) (*broker.Messa
 	return m.opts.broker.Request(m.ctx, subject, data, broker.RequestHeader(header))
 }
 
-// OKReply 发送成功回复
-func (m *Mesh) OKReply(reqMsg *broker.Message, data []byte) error {
+// okReply 发送成功回复
+func (m *Mesh) okReply(reqMsg *broker.Message, data []byte) error {
 	if reqMsg == nil {
 		return nil
 	}
@@ -224,8 +224,8 @@ func (m *Mesh) OKReply(reqMsg *broker.Message, data []byte) error {
 	return m.opts.broker.Reply(m.ctx, reqMsg, data)
 }
 
-// ErrReply 发送错误回复
-func (m *Mesh) ErrReply(reqMsg *broker.Message, err string) error {
+// errReply 发送错误回复
+func (m *Mesh) errReply(reqMsg *broker.Message, err string) error {
 	if reqMsg == nil {
 		return errors.New("request message is nil")
 	}
@@ -244,7 +244,7 @@ func (m *Mesh) handlerRequestReplyMessage(msg *broker.Message) {
 	}
 	header := msg.Header
 	if header == nil {
-		if err := m.ErrReply(msg, "header is nil"); err != nil {
+		if err := m.errReply(msg, "header is nil"); err != nil {
 			log.Errorf("mesh [handlerRequestReplyMessage] reply error: %v", err)
 		}
 		return
@@ -253,7 +253,7 @@ func (m *Mesh) handlerRequestReplyMessage(msg *broker.Message) {
 	if handler, ok := m.requestRoutes.Load(requestRouteKey(cmd, version)); ok {
 		handler.(RequestMessageHandler)(m, msg)
 	} else {
-		if err := m.ErrReply(msg, fmt.Sprintf("cmd:%s version:%s not found", cmd, version)); err != nil {
+		if err := m.errReply(msg, fmt.Sprintf("cmd:%s version:%s not found", cmd, version)); err != nil {
 			log.Errorf("mesh [handlerRequestReplyMessage] reply error: %v", err)
 		}
 	}
