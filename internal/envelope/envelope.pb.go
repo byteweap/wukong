@@ -21,85 +21,80 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// 系统内部事件
-type Event int32
+type MsgType int32
 
 const (
-	Event_ONLINE    Event = 0 // 上线 [System]
-	Event_OFFLINE   Event = 1 // 掉线 [System]
-	Event_RECONNECT Event = 2 // 重连 [System]
-	Event_Business  Event = 3 // 业务 [Business]
+	MsgType_UNKNOWN  MsgType = 0
+	MsgType_RESPONSE MsgType = 1 // 服务端响应, mesh -> gate -> client
+	MsgType_PUSH     MsgType = 2 // 服务端主推, mesh -> gate -> client
 )
 
-// Enum value maps for Event.
+// Enum value maps for MsgType.
 var (
-	Event_name = map[int32]string{
-		0: "ONLINE",
-		1: "OFFLINE",
-		2: "RECONNECT",
-		3: "Business",
+	MsgType_name = map[int32]string{
+		0: "UNKNOWN",
+		1: "RESPONSE",
+		2: "PUSH",
 	}
-	Event_value = map[string]int32{
-		"ONLINE":    0,
-		"OFFLINE":   1,
-		"RECONNECT": 2,
-		"Business":  3,
+	MsgType_value = map[string]int32{
+		"UNKNOWN":  0,
+		"RESPONSE": 1,
+		"PUSH":     2,
 	}
 )
 
-func (x Event) Enum() *Event {
-	p := new(Event)
+func (x MsgType) Enum() *MsgType {
+	p := new(MsgType)
 	*p = x
 	return p
 }
 
-func (x Event) String() string {
+func (x MsgType) String() string {
 	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
 }
 
-func (Event) Descriptor() protoreflect.EnumDescriptor {
+func (MsgType) Descriptor() protoreflect.EnumDescriptor {
 	return file_envelope_proto_enumTypes[0].Descriptor()
 }
 
-func (Event) Type() protoreflect.EnumType {
+func (MsgType) Type() protoreflect.EnumType {
 	return &file_envelope_proto_enumTypes[0]
 }
 
-func (x Event) Number() protoreflect.EnumNumber {
+func (x MsgType) Number() protoreflect.EnumNumber {
 	return protoreflect.EnumNumber(x)
 }
 
-// Deprecated: Use Event.Descriptor instead.
-func (Event) EnumDescriptor() ([]byte, []int) {
+// Deprecated: Use MsgType.Descriptor instead.
+func (MsgType) EnumDescriptor() ([]byte, []int) {
 	return file_envelope_proto_rawDescGZIP(), []int{0}
 }
 
-// 统一消息 envelope
-type Envelope struct {
+type Header struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Seq           uint64                 `protobuf:"varint,1,opt,name=seq,proto3" json:"seq,omitempty"`         // 唯一标识
-	App           string                 `protobuf:"bytes,2,opt,name=app,proto3" json:"app,omitempty"`          // 目标应用名
-	Cmd           uint32                 `protobuf:"varint,3,opt,name=cmd,proto3" json:"cmd,omitempty"`         // 指令(路由)
-	Version       uint32                 `protobuf:"varint,4,opt,name=version,proto3" json:"version,omitempty"` // 版本
-	Payload       []byte                 `protobuf:"bytes,5,opt,name=payload,proto3" json:"payload,omitempty"`  // 业务消息体
+	Seq           uint64                 `protobuf:"varint,1,opt,name=seq,proto3" json:"seq,omitempty"`                       // 序列(用户维度有序且唯一)
+	Cmd           uint32                 `protobuf:"varint,2,opt,name=cmd,proto3" json:"cmd,omitempty"`                       // 指令(路由)
+	Version       uint32                 `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`               // 版本
+	FromApp       string                 `protobuf:"bytes,4,opt,name=from_app,json=fromApp,proto3" json:"from_app,omitempty"` // 源应用名
+	ToApp         string                 `protobuf:"bytes,5,opt,name=to_app,json=toApp,proto3" json:"to_app,omitempty"`       // 目标应用名
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *Envelope) Reset() {
-	*x = Envelope{}
+func (x *Header) Reset() {
+	*x = Header{}
 	mi := &file_envelope_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Envelope) String() string {
+func (x *Header) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Envelope) ProtoMessage() {}
+func (*Header) ProtoMessage() {}
 
-func (x *Envelope) ProtoReflect() protoreflect.Message {
+func (x *Header) ProtoReflect() protoreflect.Message {
 	mi := &file_envelope_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -111,70 +106,70 @@ func (x *Envelope) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Envelope.ProtoReflect.Descriptor instead.
-func (*Envelope) Descriptor() ([]byte, []int) {
+// Deprecated: Use Header.ProtoReflect.Descriptor instead.
+func (*Header) Descriptor() ([]byte, []int) {
 	return file_envelope_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Envelope) GetSeq() uint64 {
+func (x *Header) GetSeq() uint64 {
 	if x != nil {
 		return x.Seq
 	}
 	return 0
 }
 
-func (x *Envelope) GetApp() string {
-	if x != nil {
-		return x.App
-	}
-	return ""
-}
-
-func (x *Envelope) GetCmd() uint32 {
+func (x *Header) GetCmd() uint32 {
 	if x != nil {
 		return x.Cmd
 	}
 	return 0
 }
 
-func (x *Envelope) GetVersion() uint32 {
+func (x *Header) GetVersion() uint32 {
 	if x != nil {
 		return x.Version
 	}
 	return 0
 }
 
-func (x *Envelope) GetPayload() []byte {
+func (x *Header) GetFromApp() string {
 	if x != nil {
-		return x.Payload
+		return x.FromApp
 	}
-	return nil
+	return ""
 }
 
-// 统一消息 gate -> mesh
-type Gate2MeshEnvelope struct {
+func (x *Header) GetToApp() string {
+	if x != nil {
+		return x.ToApp
+	}
+	return ""
+}
+
+// 输入消息
+// client -> gate -> mesh
+type IMessage struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Meta          *Envelope              `protobuf:"bytes,1,opt,name=meta,proto3" json:"meta,omitempty"`
-	Event         Event                  `protobuf:"varint,2,opt,name=event,proto3,enum=envelope.Event" json:"event,omitempty"`
-	Uid           int64                  `protobuf:"varint,3,opt,name=uid,proto3" json:"uid,omitempty"`
+	Header        *Header                `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`   // 头部信息
+	Payload       []byte                 `protobuf:"bytes,2,opt,name=payload,proto3" json:"payload,omitempty"` // 业务消息体
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *Gate2MeshEnvelope) Reset() {
-	*x = Gate2MeshEnvelope{}
+func (x *IMessage) Reset() {
+	*x = IMessage{}
 	mi := &file_envelope_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Gate2MeshEnvelope) String() string {
+func (x *IMessage) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Gate2MeshEnvelope) ProtoMessage() {}
+func (*IMessage) ProtoMessage() {}
 
-func (x *Gate2MeshEnvelope) ProtoReflect() protoreflect.Message {
+func (x *IMessage) ProtoReflect() protoreflect.Message {
 	mi := &file_envelope_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -186,53 +181,173 @@ func (x *Gate2MeshEnvelope) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Gate2MeshEnvelope.ProtoReflect.Descriptor instead.
-func (*Gate2MeshEnvelope) Descriptor() ([]byte, []int) {
+// Deprecated: Use IMessage.ProtoReflect.Descriptor instead.
+func (*IMessage) Descriptor() ([]byte, []int) {
 	return file_envelope_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *Gate2MeshEnvelope) GetMeta() *Envelope {
+func (x *IMessage) GetHeader() *Header {
 	if x != nil {
-		return x.Meta
+		return x.Header
 	}
 	return nil
 }
 
-func (x *Gate2MeshEnvelope) GetEvent() Event {
+func (x *IMessage) GetPayload() []byte {
 	if x != nil {
-		return x.Event
+		return x.Payload
 	}
-	return Event_ONLINE
+	return nil
 }
 
-func (x *Gate2MeshEnvelope) GetUid() int64 {
+// 输出消息
+// mesh -> gate -> client
+type OMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Header        *Header                `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`                                         // 头部信息
+	MsgType       MsgType                `protobuf:"varint,2,opt,name=msg_type,json=msgType,proto3,enum=envelope.MsgType" json:"msg_type,omitempty"` // 消息类型
+	Result        *Code                  `protobuf:"bytes,3,opt,name=result,proto3" json:"result,omitempty"`                                         // 消息结果
+	Payload       []byte                 `protobuf:"bytes,4,opt,name=payload,proto3" json:"payload,omitempty"`                                       // 业务消息体
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *OMessage) Reset() {
+	*x = OMessage{}
+	mi := &file_envelope_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OMessage) ProtoMessage() {}
+
+func (x *OMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_envelope_proto_msgTypes[2]
 	if x != nil {
-		return x.Uid
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OMessage.ProtoReflect.Descriptor instead.
+func (*OMessage) Descriptor() ([]byte, []int) {
+	return file_envelope_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *OMessage) GetHeader() *Header {
+	if x != nil {
+		return x.Header
+	}
+	return nil
+}
+
+func (x *OMessage) GetMsgType() MsgType {
+	if x != nil {
+		return x.MsgType
+	}
+	return MsgType_UNKNOWN
+}
+
+func (x *OMessage) GetResult() *Code {
+	if x != nil {
+		return x.Result
+	}
+	return nil
+}
+
+func (x *OMessage) GetPayload() []byte {
+	if x != nil {
+		return x.Payload
+	}
+	return nil
+}
+
+type Code struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Code          int32                  `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"` // 消息结果code, 0: 成功, 其它: 失败
+	Tip           string                 `protobuf:"bytes,2,opt,name=tip,proto3" json:"tip,omitempty"`    // 提示信息
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Code) Reset() {
+	*x = Code{}
+	mi := &file_envelope_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Code) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Code) ProtoMessage() {}
+
+func (x *Code) ProtoReflect() protoreflect.Message {
+	mi := &file_envelope_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Code.ProtoReflect.Descriptor instead.
+func (*Code) Descriptor() ([]byte, []int) {
+	return file_envelope_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *Code) GetCode() int32 {
+	if x != nil {
+		return x.Code
 	}
 	return 0
+}
+
+func (x *Code) GetTip() string {
+	if x != nil {
+		return x.Tip
+	}
+	return ""
 }
 
 var File_envelope_proto protoreflect.FileDescriptor
 
 const file_envelope_proto_rawDesc = "" +
 	"\n" +
-	"\x0eenvelope.proto\x12\benvelope\"t\n" +
-	"\bEnvelope\x12\x10\n" +
+	"\x0eenvelope.proto\x12\benvelope\"x\n" +
+	"\x06Header\x12\x10\n" +
 	"\x03seq\x18\x01 \x01(\x04R\x03seq\x12\x10\n" +
-	"\x03app\x18\x02 \x01(\tR\x03app\x12\x10\n" +
-	"\x03cmd\x18\x03 \x01(\rR\x03cmd\x12\x18\n" +
-	"\aversion\x18\x04 \x01(\rR\aversion\x12\x18\n" +
-	"\apayload\x18\x05 \x01(\fR\apayload\"t\n" +
-	"\x11Gate2MeshEnvelope\x12&\n" +
-	"\x04meta\x18\x01 \x01(\v2\x12.envelope.EnvelopeR\x04meta\x12%\n" +
-	"\x05event\x18\x02 \x01(\x0e2\x0f.envelope.EventR\x05event\x12\x10\n" +
-	"\x03uid\x18\x03 \x01(\x03R\x03uid*=\n" +
-	"\x05Event\x12\n" +
-	"\n" +
-	"\x06ONLINE\x10\x00\x12\v\n" +
-	"\aOFFLINE\x10\x01\x12\r\n" +
-	"\tRECONNECT\x10\x02\x12\f\n" +
-	"\bBusiness\x10\x03B\fZ\n" +
+	"\x03cmd\x18\x02 \x01(\rR\x03cmd\x12\x18\n" +
+	"\aversion\x18\x03 \x01(\rR\aversion\x12\x19\n" +
+	"\bfrom_app\x18\x04 \x01(\tR\afromApp\x12\x15\n" +
+	"\x06to_app\x18\x05 \x01(\tR\x05toApp\"N\n" +
+	"\bIMessage\x12(\n" +
+	"\x06header\x18\x01 \x01(\v2\x10.envelope.HeaderR\x06header\x12\x18\n" +
+	"\apayload\x18\x02 \x01(\fR\apayload\"\xa4\x01\n" +
+	"\bOMessage\x12(\n" +
+	"\x06header\x18\x01 \x01(\v2\x10.envelope.HeaderR\x06header\x12,\n" +
+	"\bmsg_type\x18\x02 \x01(\x0e2\x11.envelope.MsgTypeR\amsgType\x12&\n" +
+	"\x06result\x18\x03 \x01(\v2\x0e.envelope.CodeR\x06result\x12\x18\n" +
+	"\apayload\x18\x04 \x01(\fR\apayload\",\n" +
+	"\x04Code\x12\x12\n" +
+	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x10\n" +
+	"\x03tip\x18\x02 \x01(\tR\x03tip*.\n" +
+	"\aMsgType\x12\v\n" +
+	"\aUNKNOWN\x10\x00\x12\f\n" +
+	"\bRESPONSE\x10\x01\x12\b\n" +
+	"\x04PUSH\x10\x02B\fZ\n" +
 	"./envelopeb\x06proto3"
 
 var (
@@ -248,20 +363,24 @@ func file_envelope_proto_rawDescGZIP() []byte {
 }
 
 var file_envelope_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_envelope_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_envelope_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_envelope_proto_goTypes = []any{
-	(Event)(0),                // 0: envelope.Event
-	(*Envelope)(nil),          // 1: envelope.Envelope
-	(*Gate2MeshEnvelope)(nil), // 2: envelope.Gate2MeshEnvelope
+	(MsgType)(0),     // 0: envelope.MsgType
+	(*Header)(nil),   // 1: envelope.Header
+	(*IMessage)(nil), // 2: envelope.IMessage
+	(*OMessage)(nil), // 3: envelope.OMessage
+	(*Code)(nil),     // 4: envelope.Code
 }
 var file_envelope_proto_depIdxs = []int32{
-	1, // 0: envelope.Gate2MeshEnvelope.meta:type_name -> envelope.Envelope
-	0, // 1: envelope.Gate2MeshEnvelope.event:type_name -> envelope.Event
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	1, // 0: envelope.IMessage.header:type_name -> envelope.Header
+	1, // 1: envelope.OMessage.header:type_name -> envelope.Header
+	0, // 2: envelope.OMessage.msg_type:type_name -> envelope.MsgType
+	4, // 3: envelope.OMessage.result:type_name -> envelope.Code
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_envelope_proto_init() }
@@ -275,7 +394,7 @@ func file_envelope_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_envelope_proto_rawDesc), len(file_envelope_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   2,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

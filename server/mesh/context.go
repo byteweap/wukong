@@ -1,11 +1,14 @@
 package mesh
 
 import (
-	"maps"
 	"sync"
 
 	"github.com/byteweap/wukong/component/broker"
+	"github.com/byteweap/wukong/component/log"
+	"github.com/byteweap/wukong/internal/cluster"
 	"github.com/byteweap/wukong/internal/envelope"
+	"github.com/byteweap/wukong/pkg/lang"
+	"google.golang.org/protobuf/proto"
 )
 
 // Context 网关消息上下文
@@ -13,14 +16,16 @@ type Context struct {
 
 	// broker message
 	subject string
-	header  broker.Header
+	reply   string // 回复的subject(由发送方传入)
+	event   cluster.Event
+	uid     int64
 
 	// universal message
 	seq     uint64
-	app     string
+	fromApp string
+	toApp   string
 	cmd     uint32
 	version uint32
-	uid     int64
 
 	// mesh
 	mesh *Mesh
@@ -33,7 +38,7 @@ var ctxPool = sync.Pool{
 }
 
 // newContext 从对象池获取上下文并重置字段
-func newContext(mesh *Mesh, msg *broker.Message, e *envelope.Gate2MeshEnvelope) *Context {
+func newContext(mesh *Mesh, msg *broker.Message, e *envelope.IMessage) *Context {
 	c := ctxPool.Get().(*Context)
 	c.reset(mesh, msg, e)
 	return c
@@ -45,42 +50,42 @@ func (c *Context) release() {
 		return
 	}
 	c.subject = ""
-	c.header = nil
+	c.event = ""
+	c.uid = 0
+
 	c.seq = 0
-	c.app = ""
+	c.fromApp = ""
+	c.toApp = ""
 	c.cmd = 0
 	c.version = 0
-	c.uid = 0
 	c.mesh = nil
 	ctxPool.Put(c)
 }
 
 // reset 按当前消息重置上下文字段
-func (c *Context) reset(mesh *Mesh, msg *broker.Message, e *envelope.Gate2MeshEnvelope) {
-	c.subject = msg.Subject
-	c.header = msg.Header
+func (c *Context) reset(mesh *Mesh, msg *broker.Message, e *envelope.IMessage) {
+
 	c.mesh = mesh
-	if e == nil {
+
+	// broker
+	c.subject = msg.Subject
+	c.reply = cluster.GetReplyByHeader(msg.Header)
+	c.event = cluster.GetEventByHeader(msg.Header)
+	c.uid = cluster.GetUidByHeader(msg.Header)
+
+	if e == nil || e.GetHeader() == nil {
 		c.seq = 0
-		c.app = ""
-		c.cmd = 0
-		c.version = 0
-		c.uid = 0
-		return
-	}
-	c.uid = e.GetUid()
-	meta := e.GetMeta()
-	if meta == nil {
-		c.seq = 0
-		c.app = ""
+		c.toApp = ""
 		c.cmd = 0
 		c.version = 0
 		return
 	}
-	c.seq = meta.GetSeq()
-	c.app = meta.GetApp()
-	c.cmd = meta.GetCmd()
-	c.version = meta.GetVersion()
+	header := e.GetHeader()
+	c.seq = header.GetSeq()
+	c.fromApp = header.GetFromApp()
+	c.toApp = header.GetToApp()
+	c.cmd = header.GetCmd()
+	c.version = header.GetVersion()
 }
 
 // Uid 返回用户 ID
@@ -93,9 +98,14 @@ func (c *Context) Seq() uint64 {
 	return c.seq
 }
 
-// App 返回应用标识
-func (c *Context) App() string {
-	return c.app
+// FromApp 返回应用标识
+func (c *Context) FromApp() string {
+	return c.fromApp
+}
+
+// ToApp 返回应用标识
+func (c *Context) ToApp() string {
+	return c.toApp
 }
 
 // Cmd 返回路由命令字
@@ -113,11 +123,6 @@ func (c *Context) Subject() string {
 	return c.subject
 }
 
-// Header 返回 broker 消息头
-func (c *Context) Header() broker.Header {
-	return c.header
-}
-
 // Copy 复制
 // 当在新的goroutine中使用context时,应使用Copy方法复制context
 func (c *Context) Copy() *Context {
@@ -126,22 +131,81 @@ func (c *Context) Copy() *Context {
 	}
 	return &Context{
 		subject: c.subject,
-		header:  copyHeader(c.header),
-		seq:     c.seq,
-		app:     c.app,
-		cmd:     c.cmd,
+		reply:   c.reply,
+		event:   c.event,
 		uid:     c.uid,
+		seq:     c.seq,
+		fromApp: c.fromApp,
+		toApp:   c.toApp,
+		cmd:     c.cmd,
 		version: c.version,
 		mesh:    c.mesh,
 	}
 }
 
-// copyHeader 深拷贝 header，避免异步共享底层引用
-func copyHeader(h broker.Header) broker.Header {
-	if h == nil {
-		return nil
+// OkResp 返回成功响应
+func (c *Context) OkResp(args ...proto.Message) {
+
+	out := &envelope.OMessage{
+		Header: &envelope.Header{
+			Seq:     c.Seq(),
+			Cmd:     c.Cmd(),
+			Version: c.Version(),
+			FromApp: c.mesh.appName,
+			ToApp:   c.FromApp(),
+		},
+		MsgType: envelope.MsgType_RESPONSE,
 	}
-	cp := make(broker.Header, len(h))
-	maps.Copy(cp, h)
-	return cp
+
+	var err error
+	if len(args) > 0 {
+		out.Payload, err = proto.Marshal(args[0])
+		if err != nil {
+			log.Errorf("[mesh].[OkResponse] marshal payload error, err: %v", err)
+			return
+		}
+	}
+	bytes, err := proto.Marshal(out)
+	if err != nil {
+		log.Errorf("[mesh].[OkResponse] marshal message error, err: %v", err)
+		return
+	}
+	// 发送
+	if err = c.mesh.sendMessage(c.reply, bytes, c.uid); err != nil {
+		log.Errorf("[mesh].[OkResponse] send message error, subject: %v, err: %v", c.reply, err)
+	}
+}
+
+// ErrResp 返回错误响应
+func (c *Context) ErrResp(code int, args ...string) {
+
+	tip := lang.If(len(args) > 0, args[0], "mesh internal error")
+
+	out := &envelope.OMessage{
+		Header: &envelope.Header{
+			Seq:     c.Seq(),
+			Cmd:     c.Cmd(),
+			Version: c.Version(),
+			FromApp: c.mesh.appName,
+			ToApp:   c.FromApp(),
+		},
+		MsgType: envelope.MsgType_RESPONSE,
+		Result: &envelope.Code{
+			Code: int32(code),
+			Tip:  tip,
+		},
+	}
+	bytes, err := proto.Marshal(out)
+	if err != nil {
+		log.Errorf("[mesh].[OkResponse] marshal message error, err: %v", err)
+		return
+	}
+	// 发送
+	if err = c.mesh.sendMessage(c.reply, bytes, c.uid); err != nil {
+		log.Errorf("[mesh].[OkResponse] send message error, subject: %v, err: %v", c.reply, err)
+	}
+}
+
+func (c *Context) Broadcast() {
+	// todo
 }

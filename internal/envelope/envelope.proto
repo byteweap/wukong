@@ -2,26 +2,37 @@ syntax = "proto3";
 package envelope;
 option go_package = "./envelope";
 
-// 统一消息 envelope
-message Envelope {
-  uint64 seq = 1;     // 唯一标识
-  string app = 2;     // 目标应用名
-  uint32 cmd = 3;     // 指令(路由)
-  uint32 version = 4; // 版本
-  bytes payload = 5;  // 业务消息体
+message Header {
+  uint64 seq = 1;           // 序列(用户维度有序且唯一)
+  uint32 cmd = 2;           // 指令(路由)
+  uint32 version = 3;       // 版本
+  string from_app = 4;      // 源应用名
+  string to_app = 5;        // 目标应用名
 }
 
-// 系统内部事件
-enum Event {
-  ONLINE = 0;     // 上线 [System]
-  OFFLINE = 1;    // 掉线 [System]
-  RECONNECT = 2;  // 重连 [System]
-  Business = 3;   // 业务 [Business]
+// 输入消息
+// client -> gate -> mesh
+message IMessage {
+  Header header = 1; // 头部信息
+  bytes payload = 2; // 业务消息体
 }
 
-// 统一消息 gate -> mesh
-message Gate2MeshEnvelope {
-  Envelope meta = 1;
-  Event event = 2;
-  int64 uid = 3;
+// 输出消息
+// mesh -> gate -> client
+message OMessage {
+  Header header = 1;      // 头部信息
+  MsgType msg_type = 2;   // 消息类型
+  Code result = 3;        // 消息结果
+  bytes payload = 4;      // 业务消息体
+}
+
+enum MsgType {
+  UNKNOWN = 0;
+  RESPONSE = 1;  // 服务端响应, mesh -> gate -> client
+  PUSH = 2;      // 服务端主推, mesh -> gate -> client
+}
+
+message Code {
+  int32 code = 1; // 消息结果code, 0: 成功, 其它: 失败
+  string tip = 2; // 提示信息
 }

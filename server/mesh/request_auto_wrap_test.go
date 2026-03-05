@@ -16,20 +16,22 @@ func TestAdaptRequestAutoWrapPayload(t *testing.T) {
 
 	called := false
 	var gotCtx *RequestContext
-	var gotReq *envelope.Envelope
+	var gotReq *envelope.IMessage
 
 	wantData := []byte("ok-data")
-	h := mustAdaptRequestHandler(t, func(ctx *RequestContext, req *envelope.Envelope) ([]byte, string, int) {
+	h := mustAdaptRequestHandler(t, func(ctx *RequestContext, req *envelope.IMessage) ([]byte, string, int) {
 		called = true
 		gotCtx = ctx
 		gotReq = req
 		return wantData, "ok", 200
 	})
 
-	raw, err := proto.Marshal(&envelope.Envelope{
-		Seq: 11,
-		App: "rpc",
-		Cmd: 88,
+	raw, err := proto.Marshal(&envelope.IMessage{
+		Header: &envelope.Header{
+			Seq:   11,
+			ToApp: "rpc",
+			Cmd:   88,
+		},
 	})
 	if err != nil {
 		t.Fatalf("marshal payload: %v", err)
@@ -54,7 +56,7 @@ func TestAdaptRequestAutoWrapPayload(t *testing.T) {
 	if gotReq == nil {
 		t.Fatalf("request payload should not be nil")
 	}
-	if gotReq.GetApp() != "rpc" || gotReq.GetCmd() != 88 || gotReq.GetSeq() != 11 {
+	if gotReq.GetHeader().GetToApp() != "rpc" || gotReq.GetHeader().GetCmd() != 88 || gotReq.GetHeader().GetSeq() != 11 {
 		t.Fatalf("unexpected payload: %+v", gotReq)
 	}
 	if !bytes.Equal(gotData, wantData) || gotTip != "ok" || gotCode != 200 {
@@ -66,8 +68,8 @@ func TestAdaptRequestAutoWrapPayload(t *testing.T) {
 func TestAdaptRequestAutoWrapEmptyPayloadPassNil(t *testing.T) {
 	m := New()
 
-	var gotReq *envelope.Envelope
-	h := mustAdaptRequestHandler(t, func(_ *RequestContext, req *envelope.Envelope) ([]byte, string, int) {
+	var gotReq *envelope.IMessage
+	h := mustAdaptRequestHandler(t, func(_ *RequestContext, req *envelope.IMessage) ([]byte, string, int) {
 		gotReq = req
 		return nil, "ok", 200
 	})
@@ -124,20 +126,22 @@ func TestRequestRouteDispatchByHeader(t *testing.T) {
 
 	called := false
 	var gotCtx *RequestContext
-	var gotReq *envelope.Envelope
+	var gotReq *envelope.IMessage
 
 	wantData := []byte("route-ok")
-	m.RequestRouteX("2001", "1", func(ctx *RequestContext, req *envelope.Envelope) ([]byte, string, int) {
+	m.RequestRouteX("2001", "1", func(ctx *RequestContext, req *envelope.IMessage) ([]byte, string, int) {
 		called = true
 		gotCtx = ctx
 		gotReq = req
 		return wantData, "ok", 200
 	})
 
-	raw, err := proto.Marshal(&envelope.Envelope{
-		Seq: 21,
-		App: "mesh",
-		Cmd: 2001,
+	raw, err := proto.Marshal(&envelope.IMessage{
+		Header: &envelope.Header{
+			Seq:   21,
+			ToApp: "mesh",
+			Cmd:   2001,
+		},
 	})
 	if err != nil {
 		t.Fatalf("marshal payload: %v", err)
@@ -162,7 +166,8 @@ func TestRequestRouteDispatchByHeader(t *testing.T) {
 	if gotReq == nil {
 		t.Fatalf("request payload should not be nil")
 	}
-	if gotReq.GetApp() != "mesh" || gotReq.GetCmd() != 2001 || gotReq.GetSeq() != 21 {
+
+	if gotReq.GetHeader().GetToApp() != "mesh" || gotReq.GetHeader().GetCmd() != 2001 || gotReq.GetHeader().GetSeq() != 21 {
 		t.Fatalf("unexpected payload: %+v", gotReq)
 	}
 	if mb.replyCalls != 1 {
@@ -181,8 +186,8 @@ func TestRequestRouteDispatchEmptyPayloadPassNil(t *testing.T) {
 	mb := &mockBroker{}
 	m := New(Broker(mb))
 
-	var gotReq *envelope.Envelope
-	m.RequestRouteX("2002", "1", func(_ *RequestContext, req *envelope.Envelope) ([]byte, string, int) {
+	var gotReq *envelope.IMessage
+	m.RequestRouteX("2002", "1", func(_ *RequestContext, req *envelope.IMessage) ([]byte, string, int) {
 		gotReq = req
 		return nil, "ok", 200
 	})
@@ -205,7 +210,7 @@ func TestRequestRouteErrorReply(t *testing.T) {
 	mb := &mockBroker{}
 	m := New(Broker(mb))
 
-	m.RequestRouteX("2003", "1", func(_ *RequestContext, _ *envelope.Envelope) ([]byte, string, int) {
+	m.RequestRouteX("2003", "1", func(_ *RequestContext, _ *envelope.IMessage) ([]byte, string, int) {
 		return []byte("ignored"), "bad request", 400
 	})
 

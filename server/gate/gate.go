@@ -16,7 +16,6 @@ import (
 	"github.com/byteweap/wukong/internal/cluster"
 	"github.com/byteweap/wukong/internal/envelope"
 	"github.com/byteweap/wukong/pkg/async"
-	"github.com/byteweap/wukong/pkg/conv"
 	"github.com/byteweap/wukong/pkg/endpoint"
 	"github.com/byteweap/wukong/pkg/host"
 	"github.com/byteweap/wukong/server"
@@ -225,9 +224,9 @@ func (g *Gate) onConnect(s *melody.Session) {
 	}
 
 	// 广播 上线、重连 事件到上游服务
-	event := envelope.Event_ONLINE
+	event := cluster.Event_Online
 	if ok {
-		event = envelope.Event_RECONNECT
+		event = cluster.Event_Reconnect
 	}
 	g.broadcastEvent(uid, event)
 }
@@ -262,7 +261,7 @@ func (g *Gate) onDisconnect(s *melody.Session) {
 	}
 
 	// 广播掉线事件到上游服务
-	g.broadcastEvent(uid, envelope.Event_OFFLINE)
+	g.broadcastEvent(uid, cluster.Event_Offline)
 }
 
 // 接收到文本消息时调用
@@ -273,7 +272,7 @@ func (g *Gate) onTextMessage(s *melody.Session, msg []byte) {
 // 接收到二进制消息时调用
 func (g *Gate) onBinaryMessage(s *melody.Session, msg []byte) {
 
-	meta := &envelope.Envelope{}
+	meta := &envelope.IMessage{}
 	if err := proto.Unmarshal(msg, meta); err != nil {
 		log.Errorf("[websocket] unmarshal envelope error: %v", err)
 		return
@@ -286,22 +285,18 @@ func (g *Gate) onBinaryMessage(s *melody.Session, msg []byte) {
 	uid := uids.(int64)
 
 	// 业务消息分发
-	g.dispatch(&envelope.Gate2MeshEnvelope{
-		Meta:  meta,
-		Event: envelope.Event_Business,
-		Uid:   uid,
-	})
+	g.dispatch(uid, meta)
 }
 
 // 业务消息分发至 mesh
-func (g *Gate) dispatch(e *envelope.Gate2MeshEnvelope) {
+func (g *Gate) dispatch(uid int64, e *envelope.IMessage) {
 
-	if e == nil || e.GetMeta() == nil {
+	if e == nil {
 		log.Errorf("[websocket] dispatch error, envelope is nil")
 		return
 	}
 	var (
-		uid, toApp  = e.Uid, e.GetMeta().GetApp()
+		toApp       = e.GetHeader().GetToApp()
 		loc, bro, _ = g.opts.locator, g.opts.broker, g.opts.discovery
 	)
 
@@ -324,9 +319,12 @@ func (g *Gate) dispatch(e *envelope.Gate2MeshEnvelope) {
 		//	return
 		//}
 	}
+	// 构建消息头
+	reply := g.Subject(toApp) // 回复主题
+	header := cluster.BuildHeader(uid, cluster.Event_Business, reply)
 	// 发布消息到 Mesh
 	subject := cluster.Subject(g.opts.prefix, g.appName, toApp, node)
-	if err = bro.Pub(g.ctx, subject, data); err != nil {
+	if err = bro.Pub(g.ctx, subject, data, broker.PubHeader(header)); err != nil {
 		log.Errorf("[websocket] dispatch error, uid: %v, subject: %v, err: %v", uid, subject, err)
 		return
 	}
@@ -334,34 +332,28 @@ func (g *Gate) dispatch(e *envelope.Gate2MeshEnvelope) {
 }
 
 // 广播系统事件
-func (g *Gate) broadcastEvent(uid int64, event envelope.Event) {
+func (g *Gate) broadcastEvent(uid int64, event cluster.Event) {
 
 	// 获取玩家当前所在所有节点
 	snMap, err := g.opts.locator.AllNodes(g.ctx, uid)
 	if err != nil {
-		log.Errorf("[websocket] broadcast event, get all nodes error, uid: %v, event: %v, err: %v", uid, event.String(), err)
+		log.Errorf("[websocket] broadcast event, get all nodes error, uid: %v, event: %v, err: %v", uid, event, err)
 		return
 	}
-	evo := &envelope.Gate2MeshEnvelope{
-		Event: event,
-		Uid:   uid,
-	}
-	data, err := proto.Marshal(evo)
-	if err != nil {
-		log.Errorf("[websocket] broadcast event, marshal envelope error, uid: %v, err: %v", uid, err)
-		return
-	}
+	// 构建消息头
+
 	for service, node := range snMap {
 		if service == g.appName { // 不包括 gate
 			continue
 		}
+		header := cluster.BuildHeader(uid, event, g.Subject(service))
 		// 发布消息到 Mesh
 		subject := cluster.Subject(g.opts.prefix, g.appName, service, node)
-		if err = g.opts.broker.Pub(g.ctx, subject, data); err != nil {
+		if err = g.opts.broker.Pub(g.ctx, subject, nil, broker.PubHeader(header)); err != nil {
 			log.Errorf("[websocket] broadcast event error, uid: %v, subject: %v, err: %v", uid, subject, err)
 			return
 		}
-		log.Debugf("[websocket] broadcast event success, uid: %v, subject: %v, event: %v", uid, subject, event.String())
+		log.Debugf("[websocket] broadcast event success, uid: %v, subject: %v, event: %v", uid, subject, event)
 	}
 }
 
@@ -419,7 +411,7 @@ func (g *Gate) handleRequestReplyMessage(msg *broker.Message) {
 // handlerPubSubMessage 来自Mesh服务的(pub-sub)消息
 func (g *Gate) handlePubSubMessage(msg *broker.Message) {
 	// 2. 直接回复给玩家的消息
-	uid := conv.Int64(msg.Header.Get("uid")) // todo
+	uid := cluster.GetUidByHeader(msg.Header)
 	if uid <= 0 {
 		log.Errorf("[websocket] reply2player get uid error, uid: %v", uid)
 		return
@@ -443,4 +435,8 @@ func (g *Gate) handleMessage(msg *broker.Message) {
 	} else {
 		g.handlePubSubMessage(msg)
 	}
+}
+
+func (g *Gate) Subject(fromApp string) string {
+	return cluster.Subject(g.opts.prefix, fromApp, g.appName, g.appID)
 }

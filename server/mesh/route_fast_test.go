@@ -13,15 +13,13 @@ func TestRouteFastWithWrap(t *testing.T) {
 	m := New()
 
 	called := false
-	m.Route(3001, 1, Wrap(func(_ *Context, req *envelope.Envelope) {
+	m.Route(3001, 1, Wrap(func(_ *Context, req *envelope.Header) {
 		if req != nil && req.GetCmd() == 3001 {
 			called = true
 		}
 	}))
 
-	raw := mustBusinessMessage(t, &envelope.Envelope{
-		Cmd: 3001,
-	})
+	raw := mustBusinessMessage(t, 3001, 1, &envelope.Header{Cmd: 3001})
 
 	h := mustLoadRouteHandler(t, m, 3001, 1)
 	invokeRouteHandler(t, h, m, &broker.Message{Data: raw}, raw)
@@ -36,14 +34,18 @@ func TestRequestRouteFastWithWrapRequest(t *testing.T) {
 
 	called := false
 	wantData := []byte("mesh-ok")
-	m.RequestRoute("findUser", "v1", WrapRequest(func(_ *RequestContext, req *envelope.Envelope) ([]byte, string, int) {
-		if req != nil && req.GetApp() == "mesh" {
+	m.RequestRoute("findUser", "v1", WrapRequest(func(_ *RequestContext, req *envelope.IMessage) ([]byte, string, int) {
+		if req != nil && req.GetHeader().GetToApp() == "mesh" {
 			called = true
 		}
 		return wantData, "ok", 200
 	}))
 
-	raw, err := proto.Marshal(&envelope.Envelope{App: "mesh"})
+	raw, err := proto.Marshal(&envelope.IMessage{
+		Header: &envelope.Header{
+			ToApp: "mesh",
+		},
+	})
 	if err != nil {
 		t.Fatalf("marshal payload: %v", err)
 	}

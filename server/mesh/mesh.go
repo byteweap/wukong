@@ -303,6 +303,18 @@ func (m *Mesh) Request(subject, cmd, version string, data []byte) ([]byte, strin
 	return result.Data, tip, conv.Int(code), nil
 }
 
+// sendMessage 发送消息
+func (m *Mesh) sendMessage(subject string, bytes []byte, uids ...int64) error {
+	var err error
+	for _, uid := range uids {
+		header := cluster.BuildHeader(uid, cluster.Event_Business, "")
+		if e := m.opts.broker.Pub(m.ctx, subject, bytes, broker.PubHeader(header)); e != nil {
+			err = errors.Join(err, e)
+		}
+	}
+	return err
+}
+
 // okReply 发送成功回复
 func (m *Mesh) okReply(reqMsg *broker.Message, data []byte) error {
 	if reqMsg == nil {
@@ -380,32 +392,35 @@ func (m *Mesh) replyRequestResult(msg *broker.Message, data []byte, tip string, 
 
 // handlerPubSubMessage 来自Gate的(pub-sub)消息
 func (m *Mesh) handlerPubSubMessage(msg *broker.Message) {
-	envy := &envelope.Gate2MeshEnvelope{}
-	if err := proto.Unmarshal(msg.Data, envy); err != nil {
-		log.Errorf("mesh unmarshal Gate2MeshEnvelope error: %v", err)
-		return
-	}
-	switch envy.Event {
-	case envelope.Event_ONLINE:
+
+	var (
+		uid   = cluster.GetUidByHeader(msg.Header)
+		event = cluster.GetEventByHeader(msg.Header)
+	)
+
+	switch event {
+	case cluster.Event_Online:
 		if m.onlineHandler != nil {
-			m.onlineHandler(envy.Uid)
+			m.onlineHandler(uid)
 		}
-	case envelope.Event_OFFLINE:
+	case cluster.Event_Offline:
 		if m.offlineHandler != nil {
-			m.offlineHandler(envy.Uid)
+			m.offlineHandler(uid)
 		}
-	case envelope.Event_RECONNECT:
+	case cluster.Event_Reconnect:
 		if m.reconnectHandler != nil {
-			m.reconnectHandler(envy.Uid)
+			m.reconnectHandler(uid)
 		}
-	case envelope.Event_Business:
-		meta := envy.GetMeta()
-		if meta == nil {
-			log.Errorf("mesh missing meta in Gate2MeshEnvelope")
+	default:
+		e := &envelope.IMessage{}
+		if err := proto.Unmarshal(msg.Data, e); err != nil {
+			log.Errorf("mesh unmarshal Gate2MeshEnvelope error: %v", err)
 			return
 		}
-		if handler, ok := m.routes.Load(routeKey(meta.GetCmd(), meta.GetVersion())); ok {
-			handler.(MessageHandler)(m, msg, envy)
+		header := e.GetHeader()
+		cmd, version := header.GetCmd(), header.GetVersion()
+		if handler, ok := m.routes.Load(routeKey(cmd, version)); ok {
+			handler.(MessageHandler)(m, msg, e)
 		}
 	}
 }

@@ -5,6 +5,7 @@ import (
 
 	"github.com/byteweap/wukong/component/broker"
 	"github.com/byteweap/wukong/encoding/proto"
+	"github.com/byteweap/wukong/internal/cluster"
 	"github.com/byteweap/wukong/internal/envelope"
 )
 
@@ -14,19 +15,15 @@ func TestRouteAutoWrapBusinessPayload(t *testing.T) {
 
 	called := false
 	var gotCtx *Context
-	var gotReq *envelope.Envelope
+	var gotReq *envelope.Header
 
-	m.RouteX(1001, 1, func(ctx *Context, req *envelope.Envelope) {
+	m.RouteX(1001, 1, func(ctx *Context, req *envelope.Header) {
 		called = true
 		gotCtx = ctx
 		gotReq = req
 	})
 
-	raw := mustBusinessMessage(t, &envelope.Envelope{
-		Seq: 99,
-		App: "game",
-		Cmd: 1001,
-	})
+	raw := mustBusinessMessage(t, 1001, 1, &envelope.Header{Seq: 99, ToApp: "game", Cmd: 1001})
 
 	h := mustLoadRouteHandler(t, m, 1001, 1)
 	invokeRouteHandler(t, h, m, &broker.Message{Data: raw}, raw)
@@ -40,7 +37,7 @@ func TestRouteAutoWrapBusinessPayload(t *testing.T) {
 	if gotReq == nil {
 		t.Fatalf("request should not be nil")
 	}
-	if gotReq.GetApp() != "game" || gotReq.GetCmd() != 1001 || gotReq.GetSeq() != 99 {
+	if gotReq.GetToApp() != "game" || gotReq.GetCmd() != 1001 || gotReq.GetSeq() != 99 {
 		t.Fatalf("unexpected payload: %+v", gotReq)
 	}
 }
@@ -49,15 +46,15 @@ func TestRouteAutoWrapBusinessPayload(t *testing.T) {
 func TestRouteAutoWrapEmptyPayloadPassNil(t *testing.T) {
 	m := New()
 
-	var gotReq *envelope.Envelope
-	m.RouteX(1002, 1, func(_ *Context, req *envelope.Envelope) {
+	var gotReq *envelope.Header
+	m.RouteX(1002, 1, func(_ *Context, req *envelope.Header) {
 		gotReq = req
 	})
 
-	raw, err := proto.Marshal(&envelope.Gate2MeshEnvelope{
-		Event: envelope.Event_Business,
-		Meta: &envelope.Envelope{
-			Cmd: 1002,
+	raw, err := proto.Marshal(&envelope.IMessage{
+		Header: &envelope.Header{
+			Cmd:     1002,
+			Version: 1,
 		},
 	})
 	if err != nil {
@@ -76,12 +73,12 @@ func TestRouteCompatibleWithMessageHandler(t *testing.T) {
 	m := New()
 
 	called := false
-	m.RouteX(1003, 1, MessageHandler(func(_ *Mesh, _ *broker.Message, _ *envelope.Gate2MeshEnvelope) {
+	m.RouteX(1003, 1, MessageHandler(func(_ *Mesh, _ *broker.Message, _ *envelope.IMessage) {
 		called = true
 	}))
 
 	h := mustLoadRouteHandler(t, m, 1003, 1)
-	h(m, &broker.Message{}, &envelope.Gate2MeshEnvelope{})
+	h(m, &broker.Message{}, &envelope.IMessage{})
 	if !called {
 		t.Fatalf("message handler not called")
 	}
@@ -92,20 +89,14 @@ func TestRouteOnlineEventWithoutCallback(t *testing.T) {
 	m := New()
 
 	called := false
-	m.RouteX(1004, 1, func(_ *Context, _ *envelope.Envelope) {
+	m.RouteX(1004, 1, func(_ *Context, _ *envelope.Header) {
 		called = true
 	})
 
-	raw, err := proto.Marshal(&envelope.Gate2MeshEnvelope{
-		Event: envelope.Event_ONLINE,
-		Uid:   7,
+	m.handlerPubSubMessage(&broker.Message{
+		Header: cluster.BuildHeader(7, cluster.Event_Online, ""),
+		Data:   nil,
 	})
-	if err != nil {
-		t.Fatalf("marshal gate envelope: %v", err)
-	}
-
-	h := mustLoadRouteHandler(t, m, 1004, 1)
-	invokeRouteHandler(t, h, m, &broker.Message{Data: raw}, raw)
 	if called {
 		t.Fatalf("business handler should not be called for online event")
 	}
@@ -125,19 +116,19 @@ func TestRouteInvalidHandlerPanic(t *testing.T) {
 }
 
 // mustBusinessMessage 构造业务消息封包
-func mustBusinessMessage(t *testing.T, payload *envelope.Envelope) []byte {
+func mustBusinessMessage(t *testing.T, cmd, version uint32, payload *envelope.Header) []byte {
 	t.Helper()
 
 	p, err := proto.Marshal(payload)
 	if err != nil {
 		t.Fatalf("marshal payload: %v", err)
 	}
-	raw, err := proto.Marshal(&envelope.Gate2MeshEnvelope{
-		Event: envelope.Event_Business,
-		Meta: &envelope.Envelope{
-			Cmd:     payload.GetCmd(),
-			Payload: p,
+	raw, err := proto.Marshal(&envelope.IMessage{
+		Header: &envelope.Header{
+			Cmd:     cmd,
+			Version: version,
 		},
+		Payload: p,
 	})
 	if err != nil {
 		t.Fatalf("marshal gate envelope: %v", err)
@@ -163,7 +154,7 @@ func mustLoadRouteHandler(t *testing.T, m *Mesh, cmd, version uint32) MessageHan
 func invokeRouteHandler(t *testing.T, h MessageHandler, m *Mesh, msg *broker.Message, raw []byte) {
 	t.Helper()
 
-	envy := &envelope.Gate2MeshEnvelope{}
+	envy := &envelope.IMessage{}
 	if err := proto.Unmarshal(raw, envy); err != nil {
 		t.Fatalf("unmarshal gate envelope: %v", err)
 	}
