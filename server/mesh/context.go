@@ -171,8 +171,13 @@ func (c *Context) OkResp(args ...proto.Message) {
 		return
 	}
 	// 发送
+	if c.reply == "" {
+		log.Errorf("[mesh].[OkResponse] reply subject is empty")
+		return
+	}
 	if err = c.mesh.sendMessage(c.reply, bytes, c.uid); err != nil {
 		log.Errorf("[mesh].[OkResponse] send message error, subject: %v, err: %v", c.reply, err)
+		return
 	}
 }
 
@@ -197,12 +202,16 @@ func (c *Context) ErrResp(code int, args ...string) {
 	}
 	bytes, err := proto.Marshal(out)
 	if err != nil {
-		log.Errorf("[mesh].[OkResponse] marshal message error, err: %v", err)
+		log.Errorf("[mesh].[ErrResponse] marshal message error, err: %v", err)
 		return
 	}
 	// 发送
+	if c.reply == "" {
+		log.Errorf("[mesh].[ErrResponse] reply subject is empty")
+		return
+	}
 	if err = c.mesh.sendMessage(c.reply, bytes, c.uid); err != nil {
-		log.Errorf("[mesh].[OkResponse] send message error, subject: %v, err: %v", c.reply, err)
+		log.Errorf("[mesh].[ErrResponse] send message error, subject: %v, err: %v", c.reply, err)
 	}
 }
 
