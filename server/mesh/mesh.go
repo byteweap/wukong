@@ -28,7 +28,7 @@ type Mesh struct {
 
 	opts          *options
 	routes        sync.Map // key: cmd<<32|version (uint64), value: MessageHandler
-	requestRoutes sync.Map // key: cmd.version (string), value: RequestMessageHandler
+	requestRoutes sync.Map // key: cmd.version (string), value: RpcMessageHandler
 
 	onlineHandler    func(uid int64) // 玩家上线
 	offlineHandler   func(uid int64) // 玩家掉线
@@ -207,17 +207,17 @@ func (m *Mesh) Route(cmd, version uint32, handler MessageHandler) {
 // handler 支持两种写法，推荐直接传业务函数
 //
 // 1) 推荐写法
-// func(ctx *RequestContext, req *Request) ([]byte, string, int)
+// func(ctx *RpcContext, req *Request) ([]byte, string, int)
 // 示例: mesh.RequestRouteX(cmd, version, HandleRequest)
 //
 // 2) 兼容写法
-// RequestMessageHandler
-// 示例: mesh.RequestRouteX(cmd, version, mesh.WrapRequest(HandleRequest))
+// RpcMessageHandler
+// 示例: mesh.RequestRouteX(cmd, version, mesh.WrapRpc(HandleRequest))
 //
 // 如果 handler 签名不合法，函数会 panic
 // 注意: 使用反射, 热点路由请使用 RequestRoute
 func (m *Mesh) RequestRouteX(cmd, version string, handler any) {
-	mh, err := adaptRequestMessageHandler(handler)
+	mh, err := adaptRpcMessageHandler(handler)
 	if err != nil {
 		panic(err)
 	}
@@ -226,9 +226,9 @@ func (m *Mesh) RequestRouteX(cmd, version string, handler any) {
 }
 
 // RequestRoute 注册 request-reply 路由处理器
-// 该方法要求显式传入 RequestMessageHandler（通常通过 mesh.WrapRequest 构造）
+// 该方法要求显式传入 RpcMessageHandler（通常通过 mesh.WrapRpc 构造）
 // 运行期不经过反射调用，适合高频热点路由
-func (m *Mesh) RequestRoute(cmd, version string, handler RequestMessageHandler) {
+func (m *Mesh) RequestRoute(cmd, version string, handler RpcMessageHandler) {
 	if handler == nil {
 		panic("mesh: request-reply handler is nil")
 	}
@@ -363,7 +363,7 @@ func (m *Mesh) handlerRequestReplyMessage(msg *broker.Message) {
 	}
 	cmd, version := header.Get("cmd"), header.Get("version")
 	if handler, ok := m.requestRoutes.Load(requestRouteKey(cmd, version)); ok {
-		data, tip, code := handler.(RequestMessageHandler)(m, msg)
+		data, tip, code := handler.(RpcMessageHandler)(m, msg)
 		m.replyRequestResult(msg, data, tip, code)
 	} else {
 		if err := m.errReply(msg, 404, fmt.Sprintf("cmd:%s version:%s not found", cmd, version)); err != nil {

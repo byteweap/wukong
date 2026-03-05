@@ -17,7 +17,7 @@ func EnterGame(ctx *mesh.Context, req *Params) {
 
 // FindUser 模拟业务处理函数
 // request-reply
-func FindUser(ctx *mesh.RequestContext, req *Params) ([]byte, string, int) {
+func FindUser(ctx *mesh.RpcContext, req *Params) ([]byte, string, int) {
 	return nil, "ok", 200
 }
 
@@ -35,6 +35,6 @@ func TestMesh(t *testing.T) {
 	// 	2.1. 写法简单,但使用反射,有性能开销, 不推荐用于高频路由
 	app.RequestRouteX("findUser", "v1", FindUser)
 	// 	2.2. 推荐写法, 避免反射调用, 推荐用于高频路由
-	app.RequestRoute("findUser1", "v1", mesh.WrapRequest(FindUser))
+	app.RequestRoute("findUser1", "v1", mesh.WrapRpc(FindUser))
 
 }

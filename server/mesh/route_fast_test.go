@@ -34,7 +34,7 @@ func TestRequestRouteFastWithWrapRequest(t *testing.T) {
 
 	called := false
 	wantData := []byte("mesh-ok")
-	m.RequestRoute("findUser", "v1", WrapRequest(func(_ *RequestContext, req *envelope.IMessage) ([]byte, string, int) {
+	m.RequestRoute("findUser", "v1", WrapRpc(func(_ *RpcContext, req *envelope.IMessage) ([]byte, string, int) {
 		if req != nil && req.GetService() == "mesh" {
 			called = true
 		}

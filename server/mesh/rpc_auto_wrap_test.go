@@ -15,11 +15,11 @@ func TestAdaptRequestAutoWrapPayload(t *testing.T) {
 	m := New()
 
 	called := false
-	var gotCtx *RequestContext
+	var gotCtx *RpcContext
 	var gotReq *envelope.IMessage
 
 	wantData := []byte("ok-data")
-	h := mustAdaptRequestHandler(t, func(ctx *RequestContext, req *envelope.IMessage) ([]byte, string, int) {
+	h := mustAdaptRequestHandler(t, func(ctx *RpcContext, req *envelope.IMessage) ([]byte, string, int) {
 		called = true
 		gotCtx = ctx
 		gotReq = req
@@ -69,7 +69,7 @@ func TestAdaptRequestAutoWrapEmptyPayloadPassNil(t *testing.T) {
 	m := New()
 
 	var gotReq *envelope.IMessage
-	h := mustAdaptRequestHandler(t, func(_ *RequestContext, req *envelope.IMessage) ([]byte, string, int) {
+	h := mustAdaptRequestHandler(t, func(_ *RpcContext, req *envelope.IMessage) ([]byte, string, int) {
 		gotReq = req
 		return nil, "ok", 200
 	})
@@ -80,12 +80,12 @@ func TestAdaptRequestAutoWrapEmptyPayloadPassNil(t *testing.T) {
 	}
 }
 
-// TestAdaptRequestCompatibleWithRequestMessageHandler 验证兼容直接传 RequestMessageHandler
+// TestAdaptRequestCompatibleWithRequestMessageHandler 验证兼容直接传 RpcMessageHandler
 func TestAdaptRequestCompatibleWithRequestMessageHandler(t *testing.T) {
 	m := New()
 
 	called := false
-	h, err := adaptRequestMessageHandler(RequestMessageHandler(func(_ *Mesh, _ *broker.Message) ([]byte, string, int) {
+	h, err := adaptRpcMessageHandler(RpcMessageHandler(func(_ *Mesh, _ *broker.Message) ([]byte, string, int) {
 		called = true
 		return nil, "ok", 200
 	}))
@@ -101,18 +101,18 @@ func TestAdaptRequestCompatibleWithRequestMessageHandler(t *testing.T) {
 
 // TestAdaptRequestInvalidHandlerError 验证非法签名会返回错误
 func TestAdaptRequestInvalidHandlerError(t *testing.T) {
-	_, err := adaptRequestMessageHandler(func() error { return nil })
+	_, err := adaptRpcMessageHandler(func() error { return nil })
 	if err == nil {
 		t.Fatalf("expected error for invalid request handler")
 	}
-	if !strings.Contains(err.Error(), "func(*RequestContext,*T)([]byte,string,int)") {
+	if !strings.Contains(err.Error(), "func(*RpcContext,*T)([]byte,string,int)") {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
-func mustAdaptRequestHandler(t *testing.T, handler any) RequestMessageHandler {
+func mustAdaptRequestHandler(t *testing.T, handler any) RpcMessageHandler {
 	t.Helper()
-	h, err := adaptRequestMessageHandler(handler)
+	h, err := adaptRpcMessageHandler(handler)
 	if err != nil {
 		t.Fatalf("adapt request handler: %v", err)
 	}
@@ -125,11 +125,11 @@ func TestRequestRouteDispatchByHeader(t *testing.T) {
 	m := New(Broker(mb))
 
 	called := false
-	var gotCtx *RequestContext
+	var gotCtx *RpcContext
 	var gotReq *envelope.IMessage
 
 	wantData := []byte("route-ok")
-	m.RequestRouteX("2001", "1", func(ctx *RequestContext, req *envelope.IMessage) ([]byte, string, int) {
+	m.RequestRouteX("2001", "1", func(ctx *RpcContext, req *envelope.IMessage) ([]byte, string, int) {
 		called = true
 		gotCtx = ctx
 		gotReq = req
@@ -187,7 +187,7 @@ func TestRequestRouteDispatchEmptyPayloadPassNil(t *testing.T) {
 	m := New(Broker(mb))
 
 	var gotReq *envelope.IMessage
-	m.RequestRouteX("2002", "1", func(_ *RequestContext, req *envelope.IMessage) ([]byte, string, int) {
+	m.RequestRouteX("2002", "1", func(_ *RpcContext, req *envelope.IMessage) ([]byte, string, int) {
 		gotReq = req
 		return nil, "ok", 200
 	})
@@ -210,7 +210,7 @@ func TestRequestRouteErrorReply(t *testing.T) {
 	mb := &mockBroker{}
 	m := New(Broker(mb))
 
-	m.RequestRouteX("2003", "1", func(_ *RequestContext, _ *envelope.IMessage) ([]byte, string, int) {
+	m.RequestRouteX("2003", "1", func(_ *RpcContext, _ *envelope.IMessage) ([]byte, string, int) {
 		return []byte("ignored"), "bad request", 400
 	})
 

@@ -8,18 +8,18 @@ import (
 	"github.com/byteweap/wukong/encoding/proto"
 )
 
-type RequestMessageHandler func(*Mesh, *broker.Message) ([]byte, string, int)
+type RpcMessageHandler func(*Mesh, *broker.Message) ([]byte, string, int)
 
-// WrapRequest 路由处理函数包装器
+// WrapRpc 路由处理函数包装器
 // 统一处理request-reply消息,处理系统事件,自动解析业务参数 payload
 // handler 返回:
 //   - []byte: 业务数据
 //   - string: 错误提示
 //   - int: 业务状态码(200表示成功, 其它表示失败)
-func WrapRequest[T any](handler func(*RequestContext, *T) ([]byte, string, int)) RequestMessageHandler {
+func WrapRpc[T any](handler func(*RpcContext, *T) ([]byte, string, int)) RpcMessageHandler {
 	return func(m *Mesh, msg *broker.Message) ([]byte, string, int) {
 
-		ctx := newRequestContext(m, msg)
+		ctx := newRpcContext(m, msg)
 		defer ctx.release()
 
 		if len(msg.Data) == 0 {
@@ -33,17 +33,17 @@ func WrapRequest[T any](handler func(*RequestContext, *T) ([]byte, string, int))
 	}
 }
 
-// adaptRequestMessageHandler 将不同签名的 request handler 统一适配为 RequestMessageHandler
+// adaptRpcMessageHandler 将不同签名的 request handler 统一适配为 RpcMessageHandler
 // 原理:
-// 1) 若本身就是 RequestMessageHandler，直接返回
-// 2) 若是 func(*RequestContext, *T) ([]byte, string, int)，使用反射校验签名后包装
+// 1) 若本身就是 RpcMessageHandler，直接返回
+// 2) 若是 func(*RpcContext, *T) ([]byte, string, int)，使用反射校验签名后包装
 // 3) 包装函数内统一完成 payload 反序列化、调用业务 handler、回包
-func adaptRequestMessageHandler(handler any) (RequestMessageHandler, error) {
+func adaptRpcMessageHandler(handler any) (RpcMessageHandler, error) {
 	if handler == nil {
 		return nil, fmt.Errorf("mesh: request-reply handler is nil")
 	}
 
-	if mh, ok := handler.(RequestMessageHandler); ok {
+	if mh, ok := handler.(RpcMessageHandler); ok {
 		return mh, nil
 	}
 
@@ -53,12 +53,12 @@ func adaptRequestMessageHandler(handler any) (RequestMessageHandler, error) {
 		return nil, fmt.Errorf("mesh: unsupported route handler type %T", handler)
 	}
 	if rt.NumIn() != 2 || rt.NumOut() != 3 {
-		return nil, fmt.Errorf("mesh: handler must be func(*RequestContext,*T)([]byte,string,int) or RequestMessageHandler, got %s", rt.String())
+		return nil, fmt.Errorf("mesh: handler must be func(*RpcContext,*T)([]byte,string,int) or RpcMessageHandler, got %s", rt.String())
 	}
 
-	ctxType := reflect.TypeOf((*RequestContext)(nil))
+	ctxType := reflect.TypeOf((*RpcContext)(nil))
 	if rt.In(0) != ctxType {
-		return nil, fmt.Errorf("mesh: handler first arg must be *mesh.RequestContext, got %s", rt.In(0).String())
+		return nil, fmt.Errorf("mesh: handler first arg must be *mesh.RpcContext, got %s", rt.In(0).String())
 	}
 	argType := rt.In(1)
 	if argType.Kind() != reflect.Ptr {
@@ -75,7 +75,7 @@ func adaptRequestMessageHandler(handler any) (RequestMessageHandler, error) {
 	}
 
 	return func(m *Mesh, msg *broker.Message) ([]byte, string, int) {
-		ctx := newRequestContext(m, msg)
+		ctx := newRpcContext(m, msg)
 		defer ctx.release()
 
 		callArg := reflect.Zero(argType)

@@ -15,7 +15,7 @@ func New() *server.Server {
 	g.Route(2, 1, mesh.Wrap(e.GameExit))
 
 	r := rpc.New(g)
-	g.RequestRoute("findRoom", "v1", mesh.WrapRequest(r.FindRoom))
+	g.RequestRoute("findRoom", "v1", mesh.WrapRpc(r.FindRoom))
 
 	// todo
 
