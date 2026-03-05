@@ -6,24 +6,25 @@ message Header {
   uint64 seq = 1;           // 序列(用户维度有序且唯一)
   uint32 cmd = 2;           // 指令(路由)
   uint32 version = 3;       // 版本
-  string from_app = 4;      // 源应用名
-  string to_app = 5;        // 目标应用名
+  int64 timestamp = 4;      // 时间戳,ms
 }
 
 // 输入消息
 // client -> gate -> mesh
 message IMessage {
-  Header header = 1; // 头部信息
-  bytes payload = 2; // 业务消息体
+  Header header = 1;  // 头部信息
+  string service = 2; // 目标服务名，由业务层进行约束
+  bytes payload = 3;  // 业务消息体
 }
 
 // 输出消息
 // mesh -> gate -> client
 message OMessage {
   Header header = 1;      // 头部信息
-  MsgType msg_type = 2;   // 消息类型
-  Code result = 3;        // 消息结果
-  bytes payload = 4;      // 业务消息体
+  string service = 2;     // 发送方的服务名，由业务层进行约束
+  MsgType msg_type = 3;   // 消息类型
+  Code result = 4;        // 消息结果
+  bytes payload = 5;      // 业务消息体
 }
 
 enum MsgType {

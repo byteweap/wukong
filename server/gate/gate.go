@@ -296,15 +296,16 @@ func (g *Gate) dispatch(uid int64, e *envelope.IMessage) {
 		return
 	}
 	var (
-		toApp       = e.GetHeader().GetToApp()
+		toService   = e.GetService()
 		loc, bro, _ = g.opts.locator, g.opts.broker, g.opts.discovery
 	)
 
-	curNode, err := loc.Node(g.ctx, uid, toApp)
+	curNode, err := loc.Node(g.ctx, uid, toService)
 	if err != nil {
-		log.Errorf("[websocket] dispatch get mesh node error, uid: %v, toApp: %v, err: %v", uid, toApp, err)
+		log.Errorf("[websocket] dispatch get mesh node error, uid: %v, toService: %v, err: %v", uid, toService, err)
 		return
 	}
+
 	data, err := proto.Marshal(e)
 	if err != nil {
 		log.Errorf("[websocket] dispatch marshal to mesh data error: %v", err)
@@ -313,17 +314,19 @@ func (g *Gate) dispatch(uid int64, e *envelope.IMessage) {
 	node := curNode
 	if curNode == "" {
 		// todo 确定一个mesh节点(负载均衡算法)
-		//services, err := disc.GetService(g.ctx, toApp)
+		//services, err := disc.GetService(g.ctx, toService)
 		//if err != nil {
-		//	log.Errorf("[websocket] dispatch get all services error, uid: %v, app: %v, err: %v", uid, toApp, err)
+		//	log.Errorf("[websocket] dispatch get all services error, uid: %v, app: %v, err: %v", uid, toService, err)
 		//	return
 		//}
 	}
 	// 构建消息头
-	reply := g.Subject(toApp) // 回复主题
-	header := cluster.BuildHeader(uid, cluster.Event_Business, reply)
+	var (
+		reply  = g.Subject(toService) // 回复主题
+		header = cluster.BuildHeader(uid, cluster.Event_Business, reply, g.appName, toService)
+	)
 	// 发布消息到 Mesh
-	subject := cluster.Subject(g.opts.prefix, g.appName, toApp, node)
+	subject := cluster.Subject(g.opts.prefix, g.appName, toService, node)
 	if err = bro.Pub(g.ctx, subject, data, broker.PubHeader(header)); err != nil {
 		log.Errorf("[websocket] dispatch error, uid: %v, subject: %v, err: %v", uid, subject, err)
 		return
@@ -340,15 +343,15 @@ func (g *Gate) broadcastEvent(uid int64, event cluster.Event) {
 		log.Errorf("[websocket] broadcast event, get all nodes error, uid: %v, event: %v, err: %v", uid, event, err)
 		return
 	}
-	// 构建消息头
-
 	for service, node := range snMap {
 		if service == g.appName { // 不包括 gate
 			continue
 		}
-		header := cluster.BuildHeader(uid, event, g.Subject(service))
 		// 发布消息到 Mesh
-		subject := cluster.Subject(g.opts.prefix, g.appName, service, node)
+		var (
+			header  = cluster.BuildHeader(uid, event, g.Subject(service), g.appName, service)
+			subject = cluster.Subject(g.opts.prefix, g.appName, service, node)
+		)
 		if err = g.opts.broker.Pub(g.ctx, subject, nil, broker.PubHeader(header)); err != nil {
 			log.Errorf("[websocket] broadcast event error, uid: %v, subject: %v, err: %v", uid, subject, err)
 			return
@@ -411,7 +414,7 @@ func (g *Gate) handleRequestReplyMessage(msg *broker.Message) {
 // handlerPubSubMessage 来自Mesh服务的(pub-sub)消息
 func (g *Gate) handlePubSubMessage(msg *broker.Message) {
 	// 2. 直接回复给玩家的消息
-	uid := cluster.GetUidByHeader(msg.Header)
+	uid := cluster.GetUidBy(msg.Header)
 	if uid <= 0 {
 		log.Errorf("[websocket] reply2player get uid error, uid: %v", uid)
 		return
@@ -437,6 +440,7 @@ func (g *Gate) handleMessage(msg *broker.Message) {
 	}
 }
 
+// Subject 获取当前服务主题
 func (g *Gate) Subject(fromApp string) string {
 	return cluster.Subject(g.opts.prefix, fromApp, g.appName, g.appID)
 }

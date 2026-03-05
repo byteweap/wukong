@@ -2,6 +2,7 @@ package mesh
 
 import (
 	"sync"
+	"time"
 
 	"github.com/byteweap/wukong/component/broker"
 	"github.com/byteweap/wukong/component/log"
@@ -21,11 +22,12 @@ type Context struct {
 	uid     int64
 
 	// universal message
-	seq     uint64
-	fromApp string
-	toApp   string
-	cmd     uint32
-	version uint32
+	seq         uint64
+	fromService string
+	toApp       string
+	cmd         uint32
+	version     uint32
+	timestamp   int64
 
 	// mesh
 	mesh *Mesh
@@ -54,7 +56,7 @@ func (c *Context) release() {
 	c.uid = 0
 
 	c.seq = 0
-	c.fromApp = ""
+	c.fromService = ""
 	c.toApp = ""
 	c.cmd = 0
 	c.version = 0
@@ -69,23 +71,24 @@ func (c *Context) reset(mesh *Mesh, msg *broker.Message, e *envelope.IMessage) {
 
 	// broker
 	c.subject = msg.Subject
-	c.reply = cluster.GetReplyByHeader(msg.Header)
-	c.event = cluster.GetEventByHeader(msg.Header)
-	c.uid = cluster.GetUidByHeader(msg.Header)
+	c.reply = cluster.GetReplyBy(msg.Header)
+	c.fromService = cluster.GetFromServiceBy(msg.Header)
+	c.toApp = cluster.GetToServiceBy(msg.Header)
+	c.event = cluster.GetEventBy(msg.Header)
+	c.uid = cluster.GetUidBy(msg.Header)
 
 	if e == nil || e.GetHeader() == nil {
 		c.seq = 0
-		c.toApp = ""
 		c.cmd = 0
 		c.version = 0
+		c.timestamp = 0
 		return
 	}
 	header := e.GetHeader()
 	c.seq = header.GetSeq()
-	c.fromApp = header.GetFromApp()
-	c.toApp = header.GetToApp()
 	c.cmd = header.GetCmd()
 	c.version = header.GetVersion()
+	c.timestamp = header.GetTimestamp()
 }
 
 // Uid 返回用户 ID
@@ -98,13 +101,13 @@ func (c *Context) Seq() uint64 {
 	return c.seq
 }
 
-// FromApp 返回应用标识
-func (c *Context) FromApp() string {
-	return c.fromApp
+// FromService 返回应用标识
+func (c *Context) FromService() string {
+	return c.fromService
 }
 
-// ToApp 返回应用标识
-func (c *Context) ToApp() string {
+// ToService 返回应用标识
+func (c *Context) ToService() string {
 	return c.toApp
 }
 
@@ -123,6 +126,11 @@ func (c *Context) Subject() string {
 	return c.subject
 }
 
+// Timestamp 返回消息时间戳
+func (c *Context) Timestamp() int64 {
+	return c.timestamp
+}
+
 // Copy 复制
 // 当在新的goroutine中使用context时,应使用Copy方法复制context
 func (c *Context) Copy() *Context {
@@ -130,16 +138,17 @@ func (c *Context) Copy() *Context {
 		return &Context{}
 	}
 	return &Context{
-		subject: c.subject,
-		reply:   c.reply,
-		event:   c.event,
-		uid:     c.uid,
-		seq:     c.seq,
-		fromApp: c.fromApp,
-		toApp:   c.toApp,
-		cmd:     c.cmd,
-		version: c.version,
-		mesh:    c.mesh,
+		subject:     c.subject,
+		reply:       c.reply,
+		event:       c.event,
+		uid:         c.uid,
+		seq:         c.seq,
+		fromService: c.fromService,
+		toApp:       c.toApp,
+		cmd:         c.cmd,
+		version:     c.version,
+		timestamp:   c.timestamp,
+		mesh:        c.mesh,
 	}
 }
 
@@ -148,11 +157,10 @@ func (c *Context) OkResp(args ...proto.Message) {
 
 	out := &envelope.OMessage{
 		Header: &envelope.Header{
-			Seq:     c.Seq(),
-			Cmd:     c.Cmd(),
-			Version: c.Version(),
-			FromApp: c.mesh.appName,
-			ToApp:   c.FromApp(),
+			Seq:       c.Seq(),
+			Cmd:       c.Cmd(),
+			Version:   c.Version(),
+			Timestamp: time.Now().UnixMilli(),
 		},
 		MsgType: envelope.MsgType_RESPONSE,
 	}
@@ -175,7 +183,7 @@ func (c *Context) OkResp(args ...proto.Message) {
 		log.Errorf("[mesh].[OkResponse] reply subject is empty")
 		return
 	}
-	if err = c.mesh.sendMessage(c.reply, bytes, c.uid); err != nil {
+	if err = c.mesh.sendMessage(c.reply, c.fromService, bytes, c.uid); err != nil {
 		log.Errorf("[mesh].[OkResponse] send message error, subject: %v, err: %v", c.reply, err)
 		return
 	}
@@ -188,11 +196,10 @@ func (c *Context) ErrResp(code int, args ...string) {
 
 	out := &envelope.OMessage{
 		Header: &envelope.Header{
-			Seq:     c.Seq(),
-			Cmd:     c.Cmd(),
-			Version: c.Version(),
-			FromApp: c.mesh.appName,
-			ToApp:   c.FromApp(),
+			Seq:       c.Seq(),
+			Cmd:       c.Cmd(),
+			Version:   c.Version(),
+			Timestamp: time.Now().UnixMilli(),
 		},
 		MsgType: envelope.MsgType_RESPONSE,
 		Result: &envelope.Code{
@@ -210,7 +217,7 @@ func (c *Context) ErrResp(code int, args ...string) {
 		log.Errorf("[mesh].[ErrResponse] reply subject is empty")
 		return
 	}
-	if err = c.mesh.sendMessage(c.reply, bytes, c.uid); err != nil {
+	if err = c.mesh.sendMessage(c.reply, c.fromService, bytes, c.uid); err != nil {
 		log.Errorf("[mesh].[ErrResponse] send message error, subject: %v, err: %v", c.reply, err)
 	}
 }

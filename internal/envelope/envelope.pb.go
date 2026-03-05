@@ -72,11 +72,10 @@ func (MsgType) EnumDescriptor() ([]byte, []int) {
 
 type Header struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Seq           uint64                 `protobuf:"varint,1,opt,name=seq,proto3" json:"seq,omitempty"`                       // 序列(用户维度有序且唯一)
-	Cmd           uint32                 `protobuf:"varint,2,opt,name=cmd,proto3" json:"cmd,omitempty"`                       // 指令(路由)
-	Version       uint32                 `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`               // 版本
-	FromApp       string                 `protobuf:"bytes,4,opt,name=from_app,json=fromApp,proto3" json:"from_app,omitempty"` // 源应用名
-	ToApp         string                 `protobuf:"bytes,5,opt,name=to_app,json=toApp,proto3" json:"to_app,omitempty"`       // 目标应用名
+	Seq           uint64                 `protobuf:"varint,1,opt,name=seq,proto3" json:"seq,omitempty"`             // 序列(用户维度有序且唯一)
+	Cmd           uint32                 `protobuf:"varint,2,opt,name=cmd,proto3" json:"cmd,omitempty"`             // 指令(路由)
+	Version       uint32                 `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`     // 版本
+	Timestamp     int64                  `protobuf:"varint,4,opt,name=timestamp,proto3" json:"timestamp,omitempty"` // 时间戳,ms
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -132,18 +131,11 @@ func (x *Header) GetVersion() uint32 {
 	return 0
 }
 
-func (x *Header) GetFromApp() string {
+func (x *Header) GetTimestamp() int64 {
 	if x != nil {
-		return x.FromApp
+		return x.Timestamp
 	}
-	return ""
-}
-
-func (x *Header) GetToApp() string {
-	if x != nil {
-		return x.ToApp
-	}
-	return ""
+	return 0
 }
 
 // 输入消息
@@ -151,7 +143,8 @@ func (x *Header) GetToApp() string {
 type IMessage struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Header        *Header                `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`   // 头部信息
-	Payload       []byte                 `protobuf:"bytes,2,opt,name=payload,proto3" json:"payload,omitempty"` // 业务消息体
+	Service       string                 `protobuf:"bytes,2,opt,name=service,proto3" json:"service,omitempty"` // 目标服务名，由业务层进行约束
+	Payload       []byte                 `protobuf:"bytes,3,opt,name=payload,proto3" json:"payload,omitempty"` // 业务消息体
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -193,6 +186,13 @@ func (x *IMessage) GetHeader() *Header {
 	return nil
 }
 
+func (x *IMessage) GetService() string {
+	if x != nil {
+		return x.Service
+	}
+	return ""
+}
+
 func (x *IMessage) GetPayload() []byte {
 	if x != nil {
 		return x.Payload
@@ -205,9 +205,10 @@ func (x *IMessage) GetPayload() []byte {
 type OMessage struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Header        *Header                `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`                                         // 头部信息
-	MsgType       MsgType                `protobuf:"varint,2,opt,name=msg_type,json=msgType,proto3,enum=envelope.MsgType" json:"msg_type,omitempty"` // 消息类型
-	Result        *Code                  `protobuf:"bytes,3,opt,name=result,proto3" json:"result,omitempty"`                                         // 消息结果
-	Payload       []byte                 `protobuf:"bytes,4,opt,name=payload,proto3" json:"payload,omitempty"`                                       // 业务消息体
+	Service       string                 `protobuf:"bytes,2,opt,name=service,proto3" json:"service,omitempty"`                                       // 发送方的服务名，由业务层进行约束
+	MsgType       MsgType                `protobuf:"varint,3,opt,name=msg_type,json=msgType,proto3,enum=envelope.MsgType" json:"msg_type,omitempty"` // 消息类型
+	Result        *Code                  `protobuf:"bytes,4,opt,name=result,proto3" json:"result,omitempty"`                                         // 消息结果
+	Payload       []byte                 `protobuf:"bytes,5,opt,name=payload,proto3" json:"payload,omitempty"`                                       // 业务消息体
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -247,6 +248,13 @@ func (x *OMessage) GetHeader() *Header {
 		return x.Header
 	}
 	return nil
+}
+
+func (x *OMessage) GetService() string {
+	if x != nil {
+		return x.Service
+	}
+	return ""
 }
 
 func (x *OMessage) GetMsgType() MsgType {
@@ -326,21 +334,22 @@ var File_envelope_proto protoreflect.FileDescriptor
 
 const file_envelope_proto_rawDesc = "" +
 	"\n" +
-	"\x0eenvelope.proto\x12\benvelope\"x\n" +
+	"\x0eenvelope.proto\x12\benvelope\"d\n" +
 	"\x06Header\x12\x10\n" +
 	"\x03seq\x18\x01 \x01(\x04R\x03seq\x12\x10\n" +
 	"\x03cmd\x18\x02 \x01(\rR\x03cmd\x12\x18\n" +
-	"\aversion\x18\x03 \x01(\rR\aversion\x12\x19\n" +
-	"\bfrom_app\x18\x04 \x01(\tR\afromApp\x12\x15\n" +
-	"\x06to_app\x18\x05 \x01(\tR\x05toApp\"N\n" +
+	"\aversion\x18\x03 \x01(\rR\aversion\x12\x1c\n" +
+	"\ttimestamp\x18\x04 \x01(\x03R\ttimestamp\"h\n" +
 	"\bIMessage\x12(\n" +
 	"\x06header\x18\x01 \x01(\v2\x10.envelope.HeaderR\x06header\x12\x18\n" +
-	"\apayload\x18\x02 \x01(\fR\apayload\"\xa4\x01\n" +
+	"\aservice\x18\x02 \x01(\tR\aservice\x12\x18\n" +
+	"\apayload\x18\x03 \x01(\fR\apayload\"\xbe\x01\n" +
 	"\bOMessage\x12(\n" +
-	"\x06header\x18\x01 \x01(\v2\x10.envelope.HeaderR\x06header\x12,\n" +
-	"\bmsg_type\x18\x02 \x01(\x0e2\x11.envelope.MsgTypeR\amsgType\x12&\n" +
-	"\x06result\x18\x03 \x01(\v2\x0e.envelope.CodeR\x06result\x12\x18\n" +
-	"\apayload\x18\x04 \x01(\fR\apayload\",\n" +
+	"\x06header\x18\x01 \x01(\v2\x10.envelope.HeaderR\x06header\x12\x18\n" +
+	"\aservice\x18\x02 \x01(\tR\aservice\x12,\n" +
+	"\bmsg_type\x18\x03 \x01(\x0e2\x11.envelope.MsgTypeR\amsgType\x12&\n" +
+	"\x06result\x18\x04 \x01(\v2\x0e.envelope.CodeR\x06result\x12\x18\n" +
+	"\apayload\x18\x05 \x01(\fR\apayload\",\n" +
 	"\x04Code\x12\x12\n" +
 	"\x04code\x18\x01 \x01(\x05R\x04code\x12\x10\n" +
 	"\x03tip\x18\x02 \x01(\tR\x03tip*.\n" +

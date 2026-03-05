@@ -304,10 +304,10 @@ func (m *Mesh) Request(subject, cmd, version string, data []byte) ([]byte, strin
 }
 
 // sendMessage 发送消息
-func (m *Mesh) sendMessage(subject string, bytes []byte, uids ...int64) error {
+func (m *Mesh) sendMessage(subject, toService string, bytes []byte, uids ...int64) error {
 	var err error
 	for _, uid := range uids {
-		header := cluster.BuildHeader(uid, cluster.Event_Business, "")
+		header := cluster.BuildHeader(uid, cluster.Event_Business, "", m.appName, toService)
 		if e := m.opts.broker.Pub(m.ctx, subject, bytes, broker.PubHeader(header)); e != nil {
 			err = errors.Join(err, e)
 		}
@@ -394,8 +394,8 @@ func (m *Mesh) replyRequestResult(msg *broker.Message, data []byte, tip string, 
 func (m *Mesh) handlerPubSubMessage(msg *broker.Message) {
 
 	var (
-		uid   = cluster.GetUidByHeader(msg.Header)
-		event = cluster.GetEventByHeader(msg.Header)
+		uid   = cluster.GetUidBy(msg.Header)
+		event = cluster.GetEventBy(msg.Header)
 	)
 
 	switch event {
