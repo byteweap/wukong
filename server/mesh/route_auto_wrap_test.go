@@ -23,7 +23,7 @@ func TestRouteAutoWrapBusinessPayload(t *testing.T) {
 		gotReq = req
 	})
 
-	raw := mustBusinessMessage(t, 1001, 1, &envelope.Header{Seq: 99, ToApp: "game", Cmd: 1001})
+	raw := mustBusinessMessage(t, 1001, 1, "game", &envelope.Header{Seq: 99, Cmd: 1001})
 
 	h := mustLoadRouteHandler(t, m, 1001, 1)
 	invokeRouteHandler(t, h, m, &broker.Message{Data: raw}, raw)
@@ -37,7 +37,7 @@ func TestRouteAutoWrapBusinessPayload(t *testing.T) {
 	if gotReq == nil {
 		t.Fatalf("request should not be nil")
 	}
-	if gotReq.GetToApp() != "game" || gotReq.GetCmd() != 1001 || gotReq.GetSeq() != 99 {
+	if gotReq.GetCmd() != 1001 || gotReq.GetSeq() != 99 {
 		t.Fatalf("unexpected payload: %+v", gotReq)
 	}
 }
@@ -94,7 +94,7 @@ func TestRouteOnlineEventWithoutCallback(t *testing.T) {
 	})
 
 	m.handlerPubSubMessage(&broker.Message{
-		Header: cluster.BuildHeader(7, cluster.Event_Online, ""),
+		Header: cluster.BuildHeader(7, cluster.Event_Online, "", "gate", "mesh"),
 		Data:   nil,
 	})
 	if called {
@@ -116,7 +116,7 @@ func TestRouteInvalidHandlerPanic(t *testing.T) {
 }
 
 // mustBusinessMessage 构造业务消息封包
-func mustBusinessMessage(t *testing.T, cmd, version uint32, payload *envelope.Header) []byte {
+func mustBusinessMessage(t *testing.T, cmd, version uint32, service string, payload *envelope.Header) []byte {
 	t.Helper()
 
 	p, err := proto.Marshal(payload)
@@ -128,6 +128,7 @@ func mustBusinessMessage(t *testing.T, cmd, version uint32, payload *envelope.He
 			Cmd:     cmd,
 			Version: version,
 		},
+		Service: service,
 		Payload: p,
 	})
 	if err != nil {

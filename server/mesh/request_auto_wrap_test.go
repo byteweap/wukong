@@ -28,10 +28,10 @@ func TestAdaptRequestAutoWrapPayload(t *testing.T) {
 
 	raw, err := proto.Marshal(&envelope.IMessage{
 		Header: &envelope.Header{
-			Seq:   11,
-			ToApp: "rpc",
-			Cmd:   88,
+			Seq: 11,
+			Cmd: 88,
 		},
+		Service: "rpc",
 	})
 	if err != nil {
 		t.Fatalf("marshal payload: %v", err)
@@ -56,7 +56,7 @@ func TestAdaptRequestAutoWrapPayload(t *testing.T) {
 	if gotReq == nil {
 		t.Fatalf("request payload should not be nil")
 	}
-	if gotReq.GetHeader().GetToApp() != "rpc" || gotReq.GetHeader().GetCmd() != 88 || gotReq.GetHeader().GetSeq() != 11 {
+	if gotReq.GetService() != "rpc" || gotReq.GetHeader().GetCmd() != 88 || gotReq.GetHeader().GetSeq() != 11 {
 		t.Fatalf("unexpected payload: %+v", gotReq)
 	}
 	if !bytes.Equal(gotData, wantData) || gotTip != "ok" || gotCode != 200 {
@@ -138,10 +138,10 @@ func TestRequestRouteDispatchByHeader(t *testing.T) {
 
 	raw, err := proto.Marshal(&envelope.IMessage{
 		Header: &envelope.Header{
-			Seq:   21,
-			ToApp: "mesh",
-			Cmd:   2001,
+			Seq: 21,
+			Cmd: 2001,
 		},
+		Service: "mesh",
 	})
 	if err != nil {
 		t.Fatalf("marshal payload: %v", err)
@@ -167,7 +167,7 @@ func TestRequestRouteDispatchByHeader(t *testing.T) {
 		t.Fatalf("request payload should not be nil")
 	}
 
-	if gotReq.GetHeader().GetToApp() != "mesh" || gotReq.GetHeader().GetCmd() != 2001 || gotReq.GetHeader().GetSeq() != 21 {
+	if gotReq.GetService() != "mesh" || gotReq.GetHeader().GetCmd() != 2001 || gotReq.GetHeader().GetSeq() != 21 {
 		t.Fatalf("unexpected payload: %+v", gotReq)
 	}
 	if mb.replyCalls != 1 {

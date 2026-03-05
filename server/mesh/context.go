@@ -162,6 +162,7 @@ func (c *Context) OkResp(args ...proto.Message) {
 			Version:   c.Version(),
 			Timestamp: time.Now().UnixMilli(),
 		},
+		Service: c.mesh.appName,
 		MsgType: envelope.MsgType_RESPONSE,
 	}
 
@@ -201,6 +202,7 @@ func (c *Context) ErrResp(code int, args ...string) {
 			Version:   c.Version(),
 			Timestamp: time.Now().UnixMilli(),
 		},
+		Service: c.mesh.appName,
 		MsgType: envelope.MsgType_RESPONSE,
 		Result: &envelope.Code{
 			Code: int32(code),
