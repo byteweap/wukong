@@ -2,9 +2,25 @@ syntax = "proto3";
 option go_package = "./pb";
 
 message EnterGameRequest {
+  string tip = 1;
+}
 
+message EnterGameResponse {
+  string tip = 1;
 }
 
 message ExitGameRequest {
+  string tip = 1;
+}
 
+message ExitGameResponse {
+  string tip = 1;
+}
+
+message FindRoomRequest {
+  int32 room_id = 1;
+}
+
+message FindRoomResponse {
+  int32 room_id = 1;
 }

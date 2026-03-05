@@ -23,6 +23,7 @@ const (
 
 type EnterGameRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Tip           string                 `protobuf:"bytes,1,opt,name=tip,proto3" json:"tip,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -57,15 +58,67 @@ func (*EnterGameRequest) Descriptor() ([]byte, []int) {
 	return file_request_proto_rawDescGZIP(), []int{0}
 }
 
+func (x *EnterGameRequest) GetTip() string {
+	if x != nil {
+		return x.Tip
+	}
+	return ""
+}
+
+type EnterGameResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Tip           string                 `protobuf:"bytes,1,opt,name=tip,proto3" json:"tip,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EnterGameResponse) Reset() {
+	*x = EnterGameResponse{}
+	mi := &file_request_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EnterGameResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EnterGameResponse) ProtoMessage() {}
+
+func (x *EnterGameResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_request_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EnterGameResponse.ProtoReflect.Descriptor instead.
+func (*EnterGameResponse) Descriptor() ([]byte, []int) {
+	return file_request_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *EnterGameResponse) GetTip() string {
+	if x != nil {
+		return x.Tip
+	}
+	return ""
+}
+
 type ExitGameRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	Tip           string                 `protobuf:"bytes,1,opt,name=tip,proto3" json:"tip,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ExitGameRequest) Reset() {
 	*x = ExitGameRequest{}
-	mi := &file_request_proto_msgTypes[1]
+	mi := &file_request_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -77,7 +130,7 @@ func (x *ExitGameRequest) String() string {
 func (*ExitGameRequest) ProtoMessage() {}
 
 func (x *ExitGameRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_request_proto_msgTypes[1]
+	mi := &file_request_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -90,16 +143,165 @@ func (x *ExitGameRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExitGameRequest.ProtoReflect.Descriptor instead.
 func (*ExitGameRequest) Descriptor() ([]byte, []int) {
-	return file_request_proto_rawDescGZIP(), []int{1}
+	return file_request_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *ExitGameRequest) GetTip() string {
+	if x != nil {
+		return x.Tip
+	}
+	return ""
+}
+
+type ExitGameResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Tip           string                 `protobuf:"bytes,1,opt,name=tip,proto3" json:"tip,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ExitGameResponse) Reset() {
+	*x = ExitGameResponse{}
+	mi := &file_request_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ExitGameResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ExitGameResponse) ProtoMessage() {}
+
+func (x *ExitGameResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_request_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ExitGameResponse.ProtoReflect.Descriptor instead.
+func (*ExitGameResponse) Descriptor() ([]byte, []int) {
+	return file_request_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *ExitGameResponse) GetTip() string {
+	if x != nil {
+		return x.Tip
+	}
+	return ""
+}
+
+type FindRoomRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoomId        int32                  `protobuf:"varint,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FindRoomRequest) Reset() {
+	*x = FindRoomRequest{}
+	mi := &file_request_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FindRoomRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FindRoomRequest) ProtoMessage() {}
+
+func (x *FindRoomRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_request_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FindRoomRequest.ProtoReflect.Descriptor instead.
+func (*FindRoomRequest) Descriptor() ([]byte, []int) {
+	return file_request_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *FindRoomRequest) GetRoomId() int32 {
+	if x != nil {
+		return x.RoomId
+	}
+	return 0
+}
+
+type FindRoomResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	RoomId        int32                  `protobuf:"varint,1,opt,name=room_id,json=roomId,proto3" json:"room_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FindRoomResponse) Reset() {
+	*x = FindRoomResponse{}
+	mi := &file_request_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FindRoomResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FindRoomResponse) ProtoMessage() {}
+
+func (x *FindRoomResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_request_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FindRoomResponse.ProtoReflect.Descriptor instead.
+func (*FindRoomResponse) Descriptor() ([]byte, []int) {
+	return file_request_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *FindRoomResponse) GetRoomId() int32 {
+	if x != nil {
+		return x.RoomId
+	}
+	return 0
 }
 
 var File_request_proto protoreflect.FileDescriptor
 
 const file_request_proto_rawDesc = "" +
 	"\n" +
-	"\rrequest.proto\"\x12\n" +
-	"\x10EnterGameRequest\"\x11\n" +
-	"\x0fExitGameRequestB\x06Z\x04./pbb\x06proto3"
+	"\rrequest.proto\"$\n" +
+	"\x10EnterGameRequest\x12\x10\n" +
+	"\x03tip\x18\x01 \x01(\tR\x03tip\"%\n" +
+	"\x11EnterGameResponse\x12\x10\n" +
+	"\x03tip\x18\x01 \x01(\tR\x03tip\"#\n" +
+	"\x0fExitGameRequest\x12\x10\n" +
+	"\x03tip\x18\x01 \x01(\tR\x03tip\"$\n" +
+	"\x10ExitGameResponse\x12\x10\n" +
+	"\x03tip\x18\x01 \x01(\tR\x03tip\"*\n" +
+	"\x0fFindRoomRequest\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\x05R\x06roomId\"+\n" +
+	"\x10FindRoomResponse\x12\x17\n" +
+	"\aroom_id\x18\x01 \x01(\x05R\x06roomIdB\x06Z\x04./pbb\x06proto3"
 
 var (
 	file_request_proto_rawDescOnce sync.Once
@@ -113,10 +315,14 @@ func file_request_proto_rawDescGZIP() []byte {
 	return file_request_proto_rawDescData
 }
 
-var file_request_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_request_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_request_proto_goTypes = []any{
-	(*EnterGameRequest)(nil), // 0: EnterGameRequest
-	(*ExitGameRequest)(nil),  // 1: ExitGameRequest
+	(*EnterGameRequest)(nil),  // 0: EnterGameRequest
+	(*EnterGameResponse)(nil), // 1: EnterGameResponse
+	(*ExitGameRequest)(nil),   // 2: ExitGameRequest
+	(*ExitGameResponse)(nil),  // 3: ExitGameResponse
+	(*FindRoomRequest)(nil),   // 4: FindRoomRequest
+	(*FindRoomResponse)(nil),  // 5: FindRoomResponse
 }
 var file_request_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -137,7 +343,7 @@ func file_request_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_request_proto_rawDesc), len(file_request_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   6,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

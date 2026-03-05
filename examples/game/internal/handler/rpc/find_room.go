@@ -3,13 +3,11 @@ package rpc
 import (
 	"net/http"
 
+	"github.com/byteweap/wukong/examples/game/internal/pb"
 	"github.com/byteweap/wukong/server/mesh"
 )
 
-type FindRoomParams struct {
-}
-
-func (h *RpcHandler) FindRoom(ctx *mesh.RpcContext, req *FindRoomParams) ([]byte, string, int) {
-	//todo
+func (h *RpcHandler) FindRoom(ctx *mesh.RpcContext, req *pb.FindRoomRequest) ([]byte, string, int) {
+	//pb.
 	return nil, "", http.StatusOK
 }

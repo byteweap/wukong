@@ -202,21 +202,21 @@ func (m *Mesh) Route(cmd, version uint32, handler MessageHandler) {
 	m.routes.Store(key, handler)
 }
 
-// RequestRouteX 注册 request-reply 路由处理器
+// RpcRouteX 注册 request-reply 路由处理器
 // cmd/version 共同确定唯一路由
 // handler 支持两种写法，推荐直接传业务函数
 //
 // 1) 推荐写法
 // func(ctx *RpcContext, req *Request) ([]byte, string, int)
-// 示例: mesh.RequestRouteX(cmd, version, HandleRequest)
+// 示例: mesh.RpcRouteX(cmd, version, HandleRequest)
 //
 // 2) 兼容写法
 // RpcMessageHandler
-// 示例: mesh.RequestRouteX(cmd, version, mesh.WrapRpc(HandleRequest))
+// 示例: mesh.RpcRouteX(cmd, version, mesh.WrapRpc(HandleRequest))
 //
 // 如果 handler 签名不合法，函数会 panic
-// 注意: 使用反射, 热点路由请使用 RequestRoute
-func (m *Mesh) RequestRouteX(cmd, version string, handler any) {
+// 注意: 使用反射, 热点路由请使用 RpcRoute
+func (m *Mesh) RpcRouteX(cmd, version string, handler any) {
 	mh, err := adaptRpcMessageHandler(handler)
 	if err != nil {
 		panic(err)
@@ -225,10 +225,10 @@ func (m *Mesh) RequestRouteX(cmd, version string, handler any) {
 	m.requestRoutes.Store(key, mh)
 }
 
-// RequestRoute 注册 request-reply 路由处理器
+// RpcRoute 注册 request-reply 路由处理器
 // 该方法要求显式传入 RpcMessageHandler（通常通过 mesh.WrapRpc 构造）
 // 运行期不经过反射调用，适合高频热点路由
-func (m *Mesh) RequestRoute(cmd, version string, handler RpcMessageHandler) {
+func (m *Mesh) RpcRoute(cmd, version string, handler RpcMessageHandler) {
 	if handler == nil {
 		panic("mesh: request-reply handler is nil")
 	}

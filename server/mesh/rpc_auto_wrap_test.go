@@ -129,7 +129,7 @@ func TestRequestRouteDispatchByHeader(t *testing.T) {
 	var gotReq *envelope.IMessage
 
 	wantData := []byte("route-ok")
-	m.RequestRouteX("2001", "1", func(ctx *RpcContext, req *envelope.IMessage) ([]byte, string, int) {
+	m.RpcRouteX("2001", "1", func(ctx *RpcContext, req *envelope.IMessage) ([]byte, string, int) {
 		called = true
 		gotCtx = ctx
 		gotReq = req
@@ -187,7 +187,7 @@ func TestRequestRouteDispatchEmptyPayloadPassNil(t *testing.T) {
 	m := New(Broker(mb))
 
 	var gotReq *envelope.IMessage
-	m.RequestRouteX("2002", "1", func(_ *RpcContext, req *envelope.IMessage) ([]byte, string, int) {
+	m.RpcRouteX("2002", "1", func(_ *RpcContext, req *envelope.IMessage) ([]byte, string, int) {
 		gotReq = req
 		return nil, "ok", 200
 	})
@@ -210,7 +210,7 @@ func TestRequestRouteErrorReply(t *testing.T) {
 	mb := &mockBroker{}
 	m := New(Broker(mb))
 
-	m.RequestRouteX("2003", "1", func(_ *RpcContext, _ *envelope.IMessage) ([]byte, string, int) {
+	m.RpcRouteX("2003", "1", func(_ *RpcContext, _ *envelope.IMessage) ([]byte, string, int) {
 		return []byte("ignored"), "bad request", 400
 	})
 
@@ -234,7 +234,7 @@ func TestRequestRouteErrorReply(t *testing.T) {
 	}
 }
 
-// TestRequestRouteInvalidHandlerPanic 验证 RequestRouteX 对非法签名会 panic
+// TestRequestRouteInvalidHandlerPanic 验证 RpcRouteX 对非法签名会 panic
 func TestRequestRouteInvalidHandlerPanic(t *testing.T) {
 	m := New()
 
@@ -244,5 +244,5 @@ func TestRequestRouteInvalidHandlerPanic(t *testing.T) {
 		}
 	}()
 
-	m.RequestRouteX("9999", "1", func() error { return nil })
+	m.RpcRouteX("9999", "1", func() error { return nil })
 }
