@@ -116,8 +116,10 @@ func (m *Mesh) Stop(ctx context.Context) error {
 	}
 	select {
 	case <-done:
+		log.Infof("%s.%s server stop success", m.appName, m.appID)
 		return nil
 	case <-ctx.Done():
+		log.Warnf("%s.%s server stop timeout", m.appName, m.appID)
 		return ctx.Err()
 	}
 }
@@ -131,7 +133,7 @@ func (m *Mesh) Endpoint(ctx context.Context) (*url.URL, error) {
 	host := app.Name() + "." + app.ID()
 	return &url.URL{
 		Scheme: "mesh",
-		Host:   host,
+		Host:   host + ":0000",
 	}, nil
 }
 
@@ -255,6 +257,9 @@ func (m *Mesh) loop() error {
 	if err != nil {
 		return err
 	}
+
+	log.Infof("%s.%s server start success", m.appName, m.appID)
+
 	defer func() {
 		// 异常捕获,防止崩溃
 		async.Recover(func(r any) {

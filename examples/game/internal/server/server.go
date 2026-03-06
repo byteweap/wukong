@@ -14,8 +14,8 @@ type Server struct {
 	rooms map[int]*room.Room
 }
 
-func New() *Server {
-	m := mesh.New()
+func New(opts ...mesh.Option) *Server {
+	m := mesh.New(opts...)
 	return &Server{
 		Mesh:  m,
 		rooms: make(map[int]*room.Room),

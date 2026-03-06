@@ -34,4 +34,5 @@ go.work.sum
 
 # log file
 logs/
+*.log
 
