@@ -1,6 +1,6 @@
 module github.com/byteweap/wukong/contrib/log/aliyun
 
-go 1.25.5
+go 1.26.1
 
 require (
 	github.com/aliyun/aliyun-log-go-sdk v0.1.115
