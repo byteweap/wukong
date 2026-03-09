@@ -11,7 +11,10 @@ expected="v${version}"
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-mapfile -t go_mods < <(find "$root" -name go.mod -print0 | xargs -0 -n1 printf '%s\n' | grep -vE '/\.git(/|$)')
+go_mods=()
+while IFS= read -r go_mod; do
+  go_mods+=("$go_mod")
+done < <(find "$root" -name go.mod -print0 | xargs -0 -n1 printf '%s\n' | grep -vE '/\.git(/|$)')
 
 update_go_mod() {
   local file="$1"
@@ -86,7 +89,10 @@ if [[ -n "$(git status --porcelain)" ]]; then
   git push origin "$branch"
 fi
 
-mapfile -t modules < <(printf '%s\n' "${go_mods[@]}" | xargs -n1 dirname | sort -u)
+modules=()
+while IFS= read -r module; do
+  modules+=("$module")
+done < <(printf '%s\n' "${go_mods[@]}" | xargs -n1 dirname | sort -u)
 
 tags=()
 for module in "${modules[@]}"; do

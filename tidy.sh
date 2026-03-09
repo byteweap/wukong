@@ -3,7 +3,10 @@ set -euo pipefail
 
 readonly directory=$(cd "$(dirname "$0")" && pwd)
 
-mapfile -t modules < <(
+modules=()
+while IFS= read -r module; do
+  modules+=("${module}")
+done < <(
   find "${directory}" -name go.mod -type f \
     -not -path "*/.git/*" \
     -print |
