@@ -1,13 +1,11 @@
 package rpc
 
-import (
-	"github.com/byteweap/wukong/examples/game/internal/handler"
-)
+import "github.com/byteweap/wukong/examples/game/internal/service"
 
 type RpcHandler struct {
-	gs handler.IService
+	gs service.IRoomService
 }
 
-func New(gs handler.IService) *RpcHandler {
+func New(gs service.IRoomService) *RpcHandler {
 	return &RpcHandler{gs: gs}
 }

@@ -1,0 +1,12 @@
+syntax = "proto3";
+option go_package = "./pb";
+
+// EnterGameRequest 进入游戏请求
+message EnterGameRequest {
+  string tip = 1;
+}
+
+// ExitGameRequest 退出游戏请求
+message ExitGameRequest {
+  string tip = 1;
+}

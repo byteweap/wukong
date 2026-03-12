@@ -1,13 +1,13 @@
 package event
 
-import (
-	"github.com/byteweap/wukong/examples/game/internal/handler"
-)
+import "github.com/byteweap/wukong/examples/game/internal/service"
 
 type EventHandler struct {
-	gs handler.IService
+	svc service.EventService
 }
 
-func New(gs handler.IService) *EventHandler {
-	return &EventHandler{gs: gs}
+func New(svc service.EventService) *EventHandler {
+	return &EventHandler{
+		svc: svc,
+	}
 }

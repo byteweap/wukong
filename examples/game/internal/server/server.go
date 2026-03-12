@@ -22,13 +22,3 @@ func New(opts ...mesh.Option) *Server {
 		playerSpace: player.NewSpace(),
 	}
 }
-
-// RoomSpace 房间空间
-func (g *Server) RoomSpace() *room.Space {
-	return g.roomSpace
-}
-
-// PlayerSpace 玩家空间
-func (g *Server) PlayerSpace() *player.Space {
-	return g.playerSpace
-}

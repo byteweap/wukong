@@ -1,0 +1,7 @@
+syntax = "proto3";
+option go_package = "./pb";
+
+// FindRoomRequest 查找房间请求
+message FindRoomRequest {
+  int32 room_id = 1;
+}
