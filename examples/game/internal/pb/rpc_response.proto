@@ -1,7 +1,0 @@
-syntax = "proto3";
-option go_package = "./pb";
-
-// FindRoomResponse 查找房间响应
-message FindRoomResponse {
-  int32 room_id = 1;
-}

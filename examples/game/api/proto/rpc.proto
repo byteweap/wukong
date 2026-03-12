@@ -1,0 +1,14 @@
+syntax = "proto3";
+package game;
+
+option go_package = "github.com/byteweap/wukong/examples/game/internal/pb;pb";
+
+// FindRoomRequest 查找房间请求
+message FindRoomRequest {
+  int32 room_id = 1;
+}
+
+// FindRoomResponse 查找房间响应
+message FindRoomResponse {
+  int32 room_id = 1;
+}

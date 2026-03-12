@@ -1,0 +1,24 @@
+syntax = "proto3";
+package game;
+
+option go_package = "github.com/byteweap/wukong/examples/game/internal/pb;pb";
+
+// EnterGameRequest 进入游戏请求
+message EnterGameRequest {
+  string tip = 1;
+}
+
+// EnterGameResponse 进入游戏响应
+message EnterGameResponse {
+  string tip = 1;
+}
+
+// ExitGameRequest 退出游戏请求
+message ExitGameRequest {
+  string tip = 1;
+}
+
+// ExitGameResponse 退出游戏响应
+message ExitGameResponse {
+  string tip = 1;
+}
