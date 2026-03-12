@@ -4,17 +4,19 @@ import (
 	"fmt"
 	"math/rand/v2"
 
+	"github.com/nacos-group/nacos-sdk-go/clients"
+	"github.com/nacos-group/nacos-sdk-go/clients/naming_client"
+	"github.com/nacos-group/nacos-sdk-go/common/constant"
+	"github.com/nacos-group/nacos-sdk-go/vo"
+
 	"github.com/byteweap/wukong"
 	"github.com/byteweap/wukong/component/log"
 	"github.com/byteweap/wukong/contrib/registry/nacos"
 	"github.com/byteweap/wukong/examples/game/internal"
-	"github.com/nacos-group/nacos-sdk-go/clients"
-	"github.com/nacos-group/nacos-sdk-go/common/constant"
-	"github.com/nacos-group/nacos-sdk-go/vo"
 )
 
-func main() {
-	clientCfg := &constant.ClientConfig{
+func newNamingClient() naming_client.INamingClient {
+	clientCfg := constant.ClientConfig{
 		NamespaceId:  "zhaobin",
 		BeatInterval: 5000,
 	}
@@ -25,24 +27,35 @@ func main() {
 			ContextPath: "/nacos",
 		},
 	}
-	nc, err := clients.NewNamingClient(vo.NacosClientParam{
-		ClientConfig:  clientCfg,
-		ServerConfigs: serverCfgs,
-	})
+	nc, err := clients.NewNamingClient(
+		vo.NacosClientParam{
+			ClientConfig:  &clientCfg,
+			ServerConfigs: serverCfgs,
+		},
+	)
 	if err != nil {
 		panic(err)
 	}
-	r := nacos.New(nc)
+	return nc
+}
 
+func main() {
+
+	// 1. nacos注册中心
+	nc := newNamingClient()
+	registry := nacos.New(nc)
+
+	// 2. server [mesh]
 	s := internal.New()
+
 	id := rand.IntN(10)
-	err = wukong.New(
+	err := wukong.New(
 		wukong.ID(fmt.Sprintf("game-%d", id)),
 		wukong.Name("game"),
 		wukong.Version("v1.0.0"),
 		wukong.Metadata(map[string]string{"author": "Leo"}),
 		wukong.Server(s),
-		wukong.Registry(r),
+		wukong.Registry(registry),
 	).Run()
 	if err != nil {
 		log.Info(err)
