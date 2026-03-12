@@ -2,7 +2,7 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-proto_dir="${root}/api/proto"
+proto_dir="${root}/proto"
 out_dir="${root}/internal/pb"
 
 docker run --rm \

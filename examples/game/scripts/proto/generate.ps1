@@ -2,7 +2,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 $root = Resolve-Path (Join-Path $PSScriptRoot "../..")
-$protoDir = Join-Path $root "api/proto"
+$protoDir = Join-Path $root "proto"
 $outDir = Join-Path $root "internal/pb"
 
 & docker run --rm `
