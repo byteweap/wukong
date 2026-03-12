@@ -46,11 +46,14 @@ func main() {
 	registry := nacos.New(nc)
 
 	// 2. server [mesh]
-	s := internal.New()
+	s, cleanup, err := internal.New()
+	if err != nil {
+		panic(err)
+	}
+	defer cleanup()
 
-	id := rand.IntN(10)
-	err := wukong.New(
-		wukong.ID(fmt.Sprintf("game-%d", id)),
+	err = wukong.New(
+		wukong.ID(fmt.Sprintf("game-%d", rand.IntN(10))),
 		wukong.Name("game"),
 		wukong.Version("v1.0.0"),
 		wukong.Metadata(map[string]string{"author": "Leo"}),

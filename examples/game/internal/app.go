@@ -1,16 +1,17 @@
 package internal
 
 import (
+	goredis "github.com/redis/go-redis/v9"
+
 	"github.com/byteweap/wukong/contrib/broker/nats"
 	"github.com/byteweap/wukong/contrib/locator/redis"
 	"github.com/byteweap/wukong/examples/game/internal/handler/event"
 	"github.com/byteweap/wukong/examples/game/internal/handler/rpc"
 	"github.com/byteweap/wukong/examples/game/internal/server"
 	"github.com/byteweap/wukong/server/mesh"
-	goredis "github.com/redis/go-redis/v9"
 )
 
-func New() *server.Server {
+func New() (*server.Server, func(), error) {
 
 	loc := redis.New(goredis.UniversalOptions{
 		Addrs: []string{"localhost:6379"},
@@ -20,7 +21,7 @@ func New() *server.Server {
 		nats.URLs("nats://localhost:4222"),
 	)
 	if err != nil {
-		panic(err)
+		return nil, nil, err
 	}
 
 	g := server.New(
@@ -35,7 +36,8 @@ func New() *server.Server {
 	r := rpc.New(g)
 	g.RpcRoute("findRoom", "v1", mesh.WrapRpc(r.FindRoom))
 
-	// todo
-
-	return g
+	return g, func() {
+		_ = loc.Close()
+		_ = bro.Close()
+	}, nil
 }

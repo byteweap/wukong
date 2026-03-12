@@ -1,29 +1,34 @@
 package server
 
 import (
-	"sync"
-
+	"github.com/byteweap/wukong/examples/game/internal/player"
 	"github.com/byteweap/wukong/examples/game/internal/room"
 	"github.com/byteweap/wukong/server/mesh"
 )
 
+// Server 核心服务
 type Server struct {
 	*mesh.Mesh
 
-	mu    sync.RWMutex
-	rooms map[int]*room.Room
+	roomSpace   *room.Space   // 房间空间
+	playerSpace *player.Space // 玩家空间
 }
 
 func New(opts ...mesh.Option) *Server {
 	m := mesh.New(opts...)
 	return &Server{
-		Mesh:  m,
-		rooms: make(map[int]*room.Room),
+		Mesh:        m,
+		roomSpace:   room.NewSpace(),
+		playerSpace: player.NewSpace(),
 	}
 }
 
-func (g *Server) NumRooms() int {
-	g.mu.RLock()
-	defer g.mu.RUnlock()
-	return len(g.rooms)
+// RoomSpace 房间空间
+func (g *Server) RoomSpace() *room.Space {
+	return g.roomSpace
+}
+
+// PlayerSpace 玩家空间
+func (g *Server) PlayerSpace() *player.Space {
+	return g.playerSpace
 }
