@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"net/url"
 
+	"github.com/olahol/melody"
+
 	"github.com/byteweap/wukong"
 	"github.com/byteweap/wukong/component/broker"
 	"github.com/byteweap/wukong/component/log"
@@ -19,7 +21,6 @@ import (
 	"github.com/byteweap/wukong/pkg/endpoint"
 	"github.com/byteweap/wukong/pkg/host"
 	"github.com/byteweap/wukong/server"
-	"github.com/olahol/melody"
 )
 
 type Gate struct {
@@ -383,13 +384,15 @@ func (g *Gate) loop() error {
 
 	// 处理收到的消息
 	go func(ctx context.Context, sub broker.Subscription, ch <-chan *broker.Message) {
-		// 异常捕获,防止崩溃
-		async.Recover(func(r any) {
-			log.Errorf("gate handler panic error: %v", r)
-		})
-		if err = sub.Close(); err != nil {
-			log.Errorf("gate close subscription error: %v", err)
-		}
+		defer func() {
+			// 异常捕获,防止崩溃
+			async.Recover(func(r any) {
+				log.Errorf("gate handler panic error: %v", r)
+			})
+			if err = sub.Close(); err != nil {
+				log.Errorf("gate close subscription error: %v", err)
+			}
+		}()
 		for {
 			select {
 			case <-ctx.Done():
