@@ -5,6 +5,11 @@ import (
 	"github.com/byteweap/wukong/component/locator"
 )
 
+const (
+	defaultPrefix     = "wukong"
+	defaultBufferSize = 256
+)
+
 // options 选项
 type options struct {
 	prefix            string          // subject \ redis key 前缀
@@ -19,12 +24,12 @@ type Option func(*options)
 // defaultOptions 返回默认配置
 func defaultOptions() *options {
 	return &options{
-		prefix:            "wukong",
-		messageBufferSize: 256,
+		prefix:            defaultPrefix,
+		messageBufferSize: defaultBufferSize,
 	}
 }
 
-// Prefix 设置 broker subject 前缀
+// Prefix 设置 broker subject 前缀, 默认: wukong
 func Prefix(prefix string) Option {
 	return func(o *options) {
 		if prefix != "" {
