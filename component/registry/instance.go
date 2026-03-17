@@ -15,7 +15,7 @@ type ServiceInstance struct {
 	// Metadata 服务实例关联的键值对元数据
 	Metadata map[string]string `json:"metadata"`
 	// Endpoints 服务实例的端点地址
-	// 格式示例:
+	// e.g.
 	//   http://127.0.0.1:8000?isSecure=false
 	//   grpc://127.0.0.1:9000?isSecure=false
 	Endpoints []string `json:"endpoints"`
