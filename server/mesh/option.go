@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	defaultPrefix     = "wukong"
-	defaultBufferSize = 256
+	defaultPrefix            = "wukong"
+	defaultMessageBufferSize = 256
 )
 
 // options 选项
@@ -25,7 +25,7 @@ type Option func(*options)
 func defaultOptions() *options {
 	return &options{
 		prefix:            defaultPrefix,
-		messageBufferSize: defaultBufferSize,
+		messageBufferSize: defaultMessageBufferSize,
 	}
 }
 

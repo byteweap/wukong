@@ -10,6 +10,17 @@ import (
 	"github.com/byteweap/wukong/pkg/conv"
 )
 
+const (
+	defaultPrefix            = "wukong"
+	defaultPath              = "/"
+	defaultAddr              = ":9000"
+	defaultWriteTimeout      = 5 * time.Second
+	defaultPongTimeout       = 60 * time.Second
+	defaultPingInterval      = 10 * time.Second
+	defaultMaxMessageSize    = 1024 * 2
+	defaultMessageBufferSize = 256
+)
+
 // IdExtractor 用户id提取器
 // gate 会在建立连接时调用此函数获取用户id
 type IdExtractor func(r *http.Request) int64
@@ -40,14 +51,14 @@ type Option func(*options)
 
 func defaultOptions() *options {
 	return &options{
-		prefix:            "wukong",
-		path:              "/",
-		addr:              ":9000",
-		writeTimeout:      5 * time.Second,
-		pongTimeout:       60 * time.Second,
-		pingInterval:      10 * time.Second,
-		maxMessageSize:    1024 * 2, // 2k
-		messageBufferSize: 256,
+		prefix:            defaultPrefix,
+		path:              defaultPath,
+		addr:              defaultAddr,
+		writeTimeout:      defaultWriteTimeout,
+		pongTimeout:       defaultPongTimeout,
+		pingInterval:      defaultPingInterval,
+		maxMessageSize:    defaultMaxMessageSize, // 2k
+		messageBufferSize: defaultMessageBufferSize,
 		userIdExtractor: func(r *http.Request) int64 {
 			return conv.Int64(r.FormValue("uid"))
 		},
