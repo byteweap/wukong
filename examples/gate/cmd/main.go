@@ -44,7 +44,9 @@ func main() {
 	reg := nacos.New(newNamingClient())
 
 	// 2. 定位器
-	loc := redis.New(goredis.UniversalOptions{}, "wukong")
+	loc := redis.New(goredis.UniversalOptions{
+		Addrs: []string{"127.0.0.1:6379"},
+	}, "wukong")
 	defer loc.Close()
 
 	// 3. broker
