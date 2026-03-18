@@ -69,6 +69,6 @@ func main() {
 		wukong.Registry(reg),
 	).Run()
 	if err != nil {
-		log.Info(err)
+		log.Errorf("app run error: %v", err)
 	}
 }
