@@ -31,10 +31,10 @@ func New() (*server.Server, func(), error) {
 
 	e := event.New(g)
 	g.Route(1, 1, mesh.Wrap(e.EnterGame))
-	g.Route(2, 1, mesh.Wrap(e.GameExit))
+	g.Route(2, 1, mesh.Wrap(e.ExitGame))
 
 	r := rpc.New(g)
-	g.RpcRoute("findRoom", "v1", mesh.WrapRpc(r.FindRoom))
+	g.RpcRoute("hello", "v1", mesh.WrapRpc(r.Hello))
 
 	return g, func() {
 		_ = loc.Close()

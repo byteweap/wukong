@@ -2,6 +2,7 @@ package event
 
 import "github.com/byteweap/wukong/examples/game/internal/service"
 
+// EventHandler 事件处理
 type EventHandler struct {
 	svc service.EventService
 }

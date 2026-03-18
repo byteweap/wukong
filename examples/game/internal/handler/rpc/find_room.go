@@ -7,7 +7,7 @@ import (
 	"github.com/byteweap/wukong/server/mesh"
 )
 
-func (h *RpcHandler) FindRoom(ctx *mesh.RpcContext, req *pb.FindRoomRequest) ([]byte, string, int) {
-	//pb.
-	return nil, "", http.StatusOK
+// Hello RPC示例接口
+func (h *RpcHandler) Hello(ctx *mesh.RpcContext, req *pb.FindRoomRequest) ([]byte, string, int) {
+	return []byte("Hello RPC"), "", http.StatusOK
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/byteweap/wukong/server/mesh"
 )
 
-func (h *EventHandler) GameExit(ctx *mesh.Context, req *pb.ExitGameRequest) {
-	log.Infof("GameExit, ctx: %v, req: %v", ctx, req.String())
+// ExitGame 退出游戏
+func (h *EventHandler) ExitGame(ctx *mesh.Context, req *pb.ExitGameRequest) {
+	log.Infof("ExitGame, ctx: %v, req: %v", ctx, req.String())
 }

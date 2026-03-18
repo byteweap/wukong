@@ -5,9 +5,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/byteweap/wukong"
 	"github.com/byteweap/wukong/server/gate"
-	"github.com/stretchr/testify/require"
 )
 
 func TestGate(t *testing.T) {
@@ -23,7 +24,7 @@ func TestGate(t *testing.T) {
 		gate.MessageBufferSize(256),
 		//gate.Locator(locator.Locator()),
 		//gate.Broker(broker.Broker("")),
-		//gate.Discovery(registry.Discovery("")),
+		//gate.Discovery(discovery.Discovery("")),
 	)
 	ctx := wukong.NewContext(context.Background(), wukong.New())
 

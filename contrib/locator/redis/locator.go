@@ -4,10 +4,10 @@ package redis
 import (
 	"context"
 
-	"github.com/byteweap/wukong/pkg/conv"
 	"github.com/redis/go-redis/v9"
 
 	"github.com/byteweap/wukong/component/locator"
+	"github.com/byteweap/wukong/pkg/conv"
 )
 
 // ID Redis 定位器实现标识符

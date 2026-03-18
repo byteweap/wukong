@@ -6,6 +6,7 @@ import (
 	"github.com/byteweap/wukong/server/mesh"
 )
 
+// EnterGame 进入游戏
 func (h *EventHandler) EnterGame(ctx *mesh.Context, req *pb.EnterGameRequest) {
 	log.Infof("EnterGame, ctx: %v, req: %v", ctx, req.String())
 	ctx.OkResp()

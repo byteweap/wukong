@@ -17,12 +17,12 @@ import (
 
 func newNamingClient() naming_client.INamingClient {
 	clientCfg := constant.ClientConfig{
-		NamespaceId:  "zhaobin",
-		BeatInterval: 5000,
+		//NamespaceId:  "zhaobin",
+		//BeatInterval: 5000,
 	}
 	serverCfgs := []constant.ServerConfig{
 		{
-			IpAddr:      "10.80.1.67",
+			IpAddr:      "127.0.0.1",
 			Port:        18848,
 			ContextPath: "/nacos",
 		},
