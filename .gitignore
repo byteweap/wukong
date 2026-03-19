@@ -36,3 +36,5 @@ go.work.sum
 logs/
 *.log
 
+
+temp
