@@ -10,10 +10,11 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/byteweap/wukong/component/registry"
 	"github.com/nacos-group/nacos-sdk-go/clients/naming_client"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/vo"
+
+	"github.com/byteweap/wukong/component/registry"
 )
 
 var ErrServiceInstanceNameEmpty = errors.New("wukong/nacos: ServiceInstance.Name can not be empty")
@@ -22,10 +23,6 @@ var ErrServiceInstanceNameEmpty = errors.New("wukong/nacos: ServiceInstance.Name
 type Registry struct {
 	opts options
 	cli  naming_client.INamingClient
-}
-
-func (r *Registry) ID() string {
-	return "nacos"
 }
 
 var _ registry.Registry = (*Registry)(nil)
@@ -46,6 +43,10 @@ func New(cli naming_client.INamingClient, opts ...Option) (r *Registry) {
 		opts: op,
 		cli:  cli,
 	}
+}
+
+func (r *Registry) ID() string {
+	return "nacos"
 }
 
 // Register 注册服务
