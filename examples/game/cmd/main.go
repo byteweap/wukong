@@ -53,7 +53,7 @@ func main() {
 	defer cleanup()
 
 	err = wukong.New(
-		wukong.ID(fmt.Sprintf("game-%d", rand.IntN(10))),
+		wukong.ID(fmt.Sprintf("game-%d", rand.IntN(100))),
 		wukong.Name("game"),
 		wukong.Version("v1.0.0"),
 		wukong.Metadata(map[string]string{"author": "Leo"}),

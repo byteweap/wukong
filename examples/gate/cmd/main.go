@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"math/rand/v2"
+
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/clients/naming_client"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
@@ -57,11 +60,12 @@ func main() {
 	defer broker.Close()
 
 	err = wukong.New(
-		wukong.ID("gate-1"),
+		wukong.ID(fmt.Sprintf("gate-%d", rand.IntN(100))),
 		wukong.Name("gate"),
 		wukong.Version("v1.0.0"),
 		wukong.Metadata(map[string]string{"author": "Leo"}),
 		wukong.Server(gate.New(
+			gate.Addr(fmt.Sprintf(":%d", rand.IntN(1000)+8000)),
 			gate.Locator(loc),
 			gate.Discovery(reg),
 			gate.Broker(broker),
