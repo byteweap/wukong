@@ -6,8 +6,9 @@ import (
 	"path"
 	"sync/atomic"
 
-	"github.com/byteweap/wukong/component/registry"
 	"github.com/go-zookeeper/zk"
+
+	"github.com/byteweap/wukong/component/registry"
 )
 
 var ErrWatcherStopped = errors.New("watcher stopped")

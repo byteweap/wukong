@@ -3,8 +3,9 @@ package servicecomb
 import (
 	"context"
 
-	"github.com/byteweap/wukong/component/registry"
 	"github.com/go-chassis/sc-client"
+
+	"github.com/byteweap/wukong/component/registry"
 )
 
 type Watcher struct {

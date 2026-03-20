@@ -1,8 +1,9 @@
 package zerolog
 
 import (
-	"github.com/byteweap/wukong/component/log"
 	"github.com/rs/zerolog"
+
+	"github.com/byteweap/wukong/component/log"
 )
 
 // Logger 日志记录器

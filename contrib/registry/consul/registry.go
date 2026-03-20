@@ -7,8 +7,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/byteweap/wukong/component/registry"
 	"github.com/hashicorp/consul/api"
+
+	"github.com/byteweap/wukong/component/registry"
 )
 
 // Config 是 consul 注册中心配置

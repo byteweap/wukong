@@ -12,9 +12,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hashicorp/consul/api"
+
 	"github.com/byteweap/wukong/component/log"
 	"github.com/byteweap/wukong/component/registry"
-	"github.com/hashicorp/consul/api"
 )
 
 type Datacenter string

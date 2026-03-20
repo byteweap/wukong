@@ -4,8 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/byteweap/wukong/component/registry"
 	clientv3 "go.etcd.io/etcd/client/v3"
+
+	"github.com/byteweap/wukong/component/registry"
 )
 
 type watcher struct {

@@ -4,10 +4,11 @@ import (
 	"context"
 	"testing"
 
-	"github.com/byteweap/wukong/component/registry"
 	pb "github.com/go-chassis/cari/discovery"
 	"github.com/go-chassis/sc-client"
 	"github.com/gofrs/uuid"
+
+	"github.com/byteweap/wukong/component/registry"
 )
 
 var r *Registry

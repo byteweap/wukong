@@ -6,12 +6,13 @@ import (
 	"os"
 	"time"
 
-	"github.com/byteweap/wukong/component/log"
-	"github.com/byteweap/wukong/component/registry"
 	"github.com/go-chassis/cari/discovery"
 	"github.com/go-chassis/cari/pkg/errsvc"
 	"github.com/go-chassis/sc-client"
 	"github.com/gofrs/uuid"
+
+	"github.com/byteweap/wukong/component/log"
+	"github.com/byteweap/wukong/component/registry"
 )
 
 func init() {

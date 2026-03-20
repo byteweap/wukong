@@ -6,9 +6,10 @@ import (
 	"path"
 	"time"
 
-	"github.com/byteweap/wukong/component/registry"
 	"github.com/go-zookeeper/zk"
 	"golang.org/x/sync/singleflight"
+
+	"github.com/byteweap/wukong/component/registry"
 )
 
 // Registry 是 zookeeper 注册中心实现

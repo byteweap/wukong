@@ -5,10 +5,11 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/byteweap/wukong/component/registry"
 	"github.com/nacos-group/nacos-sdk-go/clients/naming_client"
 	"github.com/nacos-group/nacos-sdk-go/model"
 	"github.com/nacos-group/nacos-sdk-go/vo"
+
+	"github.com/byteweap/wukong/component/registry"
 )
 
 type watcher struct {

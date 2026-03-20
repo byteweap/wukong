@@ -6,11 +6,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/byteweap/wukong/component/registry"
 	"github.com/nacos-group/nacos-sdk-go/clients"
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/vo"
 	"gopkg.in/natefinch/lumberjack.v2"
+
+	"github.com/byteweap/wukong/component/registry"
 )
 
 var testServerConfig = []constant.ServerConfig{

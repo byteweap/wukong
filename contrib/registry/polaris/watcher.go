@@ -3,9 +3,10 @@ package polaris
 import (
 	"context"
 
-	"github.com/byteweap/wukong/component/registry"
 	"github.com/polarismesh/polaris-go/api"
 	"github.com/polarismesh/polaris-go/pkg/model"
+
+	"github.com/byteweap/wukong/component/registry"
 )
 
 type watcher struct {

@@ -14,8 +14,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/byteweap/wukong/component/registry"
 	"github.com/hashicorp/consul/api"
+
+	"github.com/byteweap/wukong/component/registry"
 )
 
 func tcpServer(lis net.Listener) {
