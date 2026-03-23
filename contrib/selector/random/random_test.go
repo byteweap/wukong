@@ -7,19 +7,6 @@ import (
 	"github.com/byteweap/wukong/component/selector"
 )
 
-type testNode struct {
-	id     string
-	weight float64
-	meta   map[string]any
-}
-
-func (n testNode) ID() string           { return n.id }
-func (n testNode) App() string          { return "" }
-func (n testNode) Weight() float64      { return n.weight }
-func (n testNode) Scheme() string       { return "" }
-func (n testNode) Version() string      { return "" }
-func (n testNode) Meta() map[string]any { return n.meta }
-
 func TestRandomSelector_Select_EmptyNodes(t *testing.T) {
 	rs := NewRandomSelector()
 	rs.Update([]selector.Node{})
@@ -36,8 +23,8 @@ func TestRandomSelector_Select_EmptyNodes(t *testing.T) {
 func TestRandomSelector_UpdateAndNodes(t *testing.T) {
 	rs := NewRandomSelector()
 	nodes := []selector.Node{
-		testNode{id: "node-a", weight: 1, meta: map[string]any{"zone": "1"}},
-		testNode{id: "node-b", weight: 2, meta: map[string]any{"zone": "2"}},
+		selector.NewNode("node-a", "service1", "mesh", "v1.0.0", 1, map[string]any{"zone": "1"}),
+		selector.NewNode("node-b", "service1", "mesh", "v1.0.0", 2, map[string]any{"zone": "2"}),
 	}
 
 	rs.Update(nodes)
@@ -50,8 +37,8 @@ func TestRandomSelector_UpdateAndNodes(t *testing.T) {
 func TestRandomSelector_Select_WeightedBias(t *testing.T) {
 	rs := NewRandomSelector()
 	rs.Update([]selector.Node{
-		testNode{id: "node-a", weight: 2},
-		testNode{id: "node-b", weight: 1},
+		selector.NewNode("node-a", "service1", "mesh", "v1.0.0", 2, nil),
+		selector.NewNode("node-b", "service1", "mesh", "v1.0.0", 1, nil),
 	})
 
 	counts := map[string]int{}
@@ -71,8 +58,8 @@ func TestRandomSelector_Select_WeightedBias(t *testing.T) {
 func TestRandomSelector_Update_DefaultWeightForNonPositive(t *testing.T) {
 	rs := NewRandomSelector()
 	rs.Update([]selector.Node{
-		testNode{id: "node-a", weight: 0},
-		testNode{id: "node-b", weight: 1},
+		selector.NewNode("node-a", "service1", "mesh", "v1.0.0", 0, nil),
+		selector.NewNode("node-b", "service1", "mesh", "v1.0.0", 1, nil),
 	})
 
 	if rs.totalWeight != 2 {
@@ -86,8 +73,8 @@ func TestRandomSelector_Update_DefaultWeightForNonPositive(t *testing.T) {
 func TestRandomSelector_Select_WithFilter(t *testing.T) {
 	rs := NewRandomSelector()
 	rs.Update([]selector.Node{
-		testNode{id: "node-a", weight: 1},
-		testNode{id: "node-b", weight: 1},
+		selector.NewNode("node-a", "service1", "mesh", "v1.0.0", 1, nil),
+		selector.NewNode("node-b", "service1", "mesh", "v1.0.0", 1, nil),
 	})
 
 	onlyB := func(nodes []selector.Node) []selector.Node {

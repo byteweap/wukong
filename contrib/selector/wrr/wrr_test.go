@@ -8,19 +8,6 @@ import (
 	"github.com/byteweap/wukong/component/selector"
 )
 
-type testNode struct {
-	id     string
-	weight float64
-	meta   map[string]any
-}
-
-func (n testNode) ID() string           { return n.id }
-func (n testNode) App() string          { return "" }
-func (n testNode) Weight() float64      { return n.weight }
-func (n testNode) Scheme() string       { return "" }
-func (n testNode) Version() string      { return "" }
-func (n testNode) Meta() map[string]any { return n.meta }
-
 func TestWRRSelector_Select_EmptyNodes(t *testing.T) {
 	ws := NewWRRSelector()
 	ws.Update([]selector.Node{})
@@ -37,8 +24,8 @@ func TestWRRSelector_Select_EmptyNodes(t *testing.T) {
 func TestWRRSelector_UpdateAndNodes(t *testing.T) {
 	ws := NewWRRSelector()
 	nodes := []selector.Node{
-		testNode{id: "node-a", weight: 1, meta: map[string]any{"zone": "1"}},
-		testNode{id: "node-b", weight: 2, meta: map[string]any{"zone": "2"}},
+		selector.NewNode("node-a", "service1", "mesh", "v1.0.0", 1, map[string]any{"zone": "1"}),
+		selector.NewNode("node-b", "service1", "mesh", "v1.0.0", 2, map[string]any{"zone": "2"}),
 	}
 
 	ws.Update(nodes)
@@ -51,8 +38,8 @@ func TestWRRSelector_UpdateAndNodes(t *testing.T) {
 func TestWRRSelector_Select_SmoothSequence(t *testing.T) {
 	ws := NewWRRSelector()
 	ws.Update([]selector.Node{
-		testNode{id: "node-a", weight: 2},
-		testNode{id: "node-b", weight: 1},
+		selector.NewNode("node-a", "service1", "mesh", "v1.0.0", 2, nil),
+		selector.NewNode("node-b", "service1", "mesh", "v1.0.0", 1, nil),
 	})
 
 	want := []string{"node-a", "node-b", "node-a", "node-a", "node-b", "node-a"}
@@ -73,8 +60,8 @@ func TestWRRSelector_Select_SmoothSequence(t *testing.T) {
 func TestWRRSelector_UpdateResetsState(t *testing.T) {
 	ws := NewWRRSelector()
 	ws.Update([]selector.Node{
-		testNode{id: "node-a", weight: 2},
-		testNode{id: "node-b", weight: 1},
+		selector.NewNode("node-a", "service1", "mesh", "v1.0.0", 2, nil),
+		selector.NewNode("node-b", "service1", "mesh", "v1.0.0", 1, nil),
 	})
 
 	for i := 0; i < 3; i++ {
@@ -84,8 +71,8 @@ func TestWRRSelector_UpdateResetsState(t *testing.T) {
 	}
 
 	ws.Update([]selector.Node{
-		testNode{id: "node-c", weight: 1},
-		testNode{id: "node-d", weight: 1},
+		selector.NewNode("node-c", "service1", "mesh", "v1.0.0", 1, nil),
+		selector.NewNode("node-d", "service1", "mesh", "v1.0.0", 1, nil),
 	})
 
 	want := []string{"node-c", "node-d", "node-c", "node-d"}
@@ -106,8 +93,8 @@ func TestWRRSelector_UpdateResetsState(t *testing.T) {
 func TestWRRSelector_Select_DefaultWeightForNonPositive(t *testing.T) {
 	ws := NewWRRSelector()
 	ws.Update([]selector.Node{
-		testNode{id: "node-a", weight: -2},
-		testNode{id: "node-b", weight: 1},
+		selector.NewNode("node-a", "service1", "mesh", "v1.0.0", -2, nil),
+		selector.NewNode("node-b", "service1", "mesh", "v1.0.0", 1, nil),
 	})
 
 	want := []string{"node-a", "node-b", "node-a", "node-b"}
@@ -128,9 +115,9 @@ func TestWRRSelector_Select_DefaultWeightForNonPositive(t *testing.T) {
 func TestWRRSelector_Select_WithFilter(t *testing.T) {
 	ws := NewWRRSelector()
 	ws.Update([]selector.Node{
-		testNode{id: "node-a", weight: 1},
-		testNode{id: "node-b", weight: 1},
-		testNode{id: "node-c", weight: 1},
+		selector.NewNode("node-a", "service1", "mesh", "v1.0.0", 1, nil),
+		selector.NewNode("node-b", "service1", "mesh", "v1.0.0", 1, nil),
+		selector.NewNode("node-c", "service1", "mesh", "v1.0.0", 1, nil),
 	})
 
 	onlyB := func(nodes []selector.Node) []selector.Node {
