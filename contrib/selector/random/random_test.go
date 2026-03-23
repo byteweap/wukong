@@ -23,8 +23,8 @@ func TestRandomSelector_Select_EmptyNodes(t *testing.T) {
 func TestRandomSelector_UpdateAndNodes(t *testing.T) {
 	rs := NewRandomSelector()
 	nodes := []selector.Node{
-		selector.NewNode("node-a", "service1", "mesh", "v1.0.0", 1, map[string]any{"zone": "1"}),
-		selector.NewNode("node-b", "service1", "mesh", "v1.0.0", 2, map[string]any{"zone": "2"}),
+		selector.NewNode("node-a", "service1", "v1.0.0", map[string]string{"weight": "1"}),
+		selector.NewNode("node-b", "service1", "v1.0.0", map[string]string{"weight": "2"}),
 	}
 
 	rs.Update(nodes)
@@ -37,8 +37,8 @@ func TestRandomSelector_UpdateAndNodes(t *testing.T) {
 func TestRandomSelector_Select_WeightedBias(t *testing.T) {
 	rs := NewRandomSelector()
 	rs.Update([]selector.Node{
-		selector.NewNode("node-a", "service1", "mesh", "v1.0.0", 2, nil),
-		selector.NewNode("node-b", "service1", "mesh", "v1.0.0", 1, nil),
+		selector.NewNode("node-a", "service1", "v1.0.0", map[string]string{"weight": "2"}),
+		selector.NewNode("node-b", "service1", "v1.0.0", map[string]string{"weight": "1"}),
 	})
 
 	counts := map[string]int{}
@@ -58,8 +58,8 @@ func TestRandomSelector_Select_WeightedBias(t *testing.T) {
 func TestRandomSelector_Update_DefaultWeightForNonPositive(t *testing.T) {
 	rs := NewRandomSelector()
 	rs.Update([]selector.Node{
-		selector.NewNode("node-a", "service1", "mesh", "v1.0.0", 0, nil),
-		selector.NewNode("node-b", "service1", "mesh", "v1.0.0", 1, nil),
+		selector.NewNode("node-a", "service1", "v1.0.0", map[string]string{"weight": "0"}),
+		selector.NewNode("node-b", "service1", "v1.0.0", map[string]string{"weight": "1"}),
 	})
 
 	if rs.totalWeight != 2 {
@@ -73,8 +73,8 @@ func TestRandomSelector_Update_DefaultWeightForNonPositive(t *testing.T) {
 func TestRandomSelector_Select_WithFilter(t *testing.T) {
 	rs := NewRandomSelector()
 	rs.Update([]selector.Node{
-		selector.NewNode("node-a", "service1", "mesh", "v1.0.0", 1, nil),
-		selector.NewNode("node-b", "service1", "mesh", "v1.0.0", 1, nil),
+		selector.NewNode("node-a", "service1", "v1.0.0", map[string]string{"weight": "1"}),
+		selector.NewNode("node-b", "service1", "v1.0.0", map[string]string{"weight": "1"}),
 	})
 
 	onlyB := func(nodes []selector.Node) []selector.Node {

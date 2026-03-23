@@ -1,29 +1,26 @@
 package selector
 
+import "github.com/byteweap/wukong/pkg/conv"
+
 type Node interface {
 	ID() string
-	App() string
+	Service() string
 	Weight() float64
-	Scheme() string
 	Version() string
-	Meta() map[string]any
+	Meta() map[string]string
 }
 
 type node struct {
 	id      string
-	app     string
-	weight  float64
-	scheme  string
+	service string
 	version string
-	meta    map[string]any
+	meta    map[string]string
 }
 
-func NewNode(id, app, scheme, version string, weight float64, meta map[string]any) Node {
+func NewNode(id, service, version string, meta map[string]string) Node {
 	return &node{
 		id:      id,
-		app:     app,
-		weight:  weight,
-		scheme:  scheme,
+		service: service,
 		version: version,
 		meta:    meta,
 	}
@@ -32,19 +29,17 @@ func NewNode(id, app, scheme, version string, weight float64, meta map[string]an
 func (n *node) ID() string {
 	return n.id
 }
-func (n *node) App() string {
-	return n.app
+func (n *node) Service() string {
+	return n.service
 }
 func (n *node) Weight() float64 {
-	return n.weight
-}
-func (n *node) Scheme() string {
-	return n.scheme
+	return conv.Float64(n.meta["weight"])
 }
 
 func (n *node) Version() string {
 	return n.version
 }
-func (n *node) Meta() map[string]any {
+
+func (n *node) Meta() map[string]string {
 	return n.meta
 }

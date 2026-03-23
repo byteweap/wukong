@@ -8,5 +8,5 @@ var (
 	ErrLocatorRequired   = errors.New("locator required")
 	ErrBrokerRequired    = errors.New("broker required")
 	ErrDiscoveryRequired = errors.New("discovery required")
-	ErrSelectorRequired  = errors.New("selector required")
+	ErrSelectorRequired  = errors.New("selector func required")
 )

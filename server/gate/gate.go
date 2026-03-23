@@ -7,12 +7,15 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"sync"
 
 	"github.com/olahol/melody"
 
 	"github.com/byteweap/wukong"
 	"github.com/byteweap/wukong/component/broker"
 	"github.com/byteweap/wukong/component/log"
+	"github.com/byteweap/wukong/component/registry"
+	"github.com/byteweap/wukong/component/selector"
 	"github.com/byteweap/wukong/encoding/proto"
 	es "github.com/byteweap/wukong/errors"
 	"github.com/byteweap/wukong/internal/cluster"
@@ -35,6 +38,10 @@ type Gate struct {
 	endpoint *url.URL       // server endpoint
 	ws       *melody.Melody // WebSocket server
 	sessions *Sessions      // player sessions
+
+	mu        sync.RWMutex
+	selectors map[string]selector.Selector // 服务节点选择器 key: 服务名
+	watchers  map[string]registry.Watcher  // 服务节点监听器 key: 服务名
 }
 
 var _ server.Server = (*Gate)(nil)
@@ -47,10 +54,12 @@ func New(opts ...Option) *Gate {
 	}
 
 	return &Gate{
-		ctx:      context.Background(),
-		opts:     o,
-		Server:   &http.Server{},
-		sessions: newSessions(),
+		ctx:       context.Background(),
+		opts:      o,
+		Server:    &http.Server{},
+		sessions:  newSessions(),
+		selectors: make(map[string]selector.Selector),
+		watchers:  make(map[string]registry.Watcher),
 	}
 }
 
@@ -70,6 +79,9 @@ func (g *Gate) validate() error {
 	}
 	if g.opts.discovery == nil {
 		return es.ErrDiscoveryRequired
+	}
+	if g.opts.selectorFunc == nil {
+		return es.ErrSelectorRequired
 	}
 	return nil
 }
@@ -160,7 +172,18 @@ func (g *Gate) Stop(ctx context.Context) error {
 		e2 = g.ws.Close()
 	}
 
-	if err := errors.Join(e1, e2); err != nil {
+	err := errors.Join(e1, e2)
+
+	// 3. 停止监听器
+	g.mu.Lock()
+	for _, watcher := range g.watchers {
+		if e := watcher.Stop(); e != nil {
+			err = errors.Join(err, e)
+		}
+	}
+	g.mu.Unlock()
+
+	if err != nil {
 		return err
 	}
 	log.Info("[gate] server stopped")
@@ -451,4 +474,59 @@ func (g *Gate) handleMessage(msg *broker.Message) {
 // Subject 获取当前服务主题
 func (g *Gate) Subject(fromApp string) string {
 	return cluster.Subject(g.opts.prefix, fromApp, g.appName, g.appID)
+}
+
+// 确保选择器
+func (g *Gate) ensure(service string) (selector.Selector, error) {
+
+	g.mu.RLock()
+	sel := g.selectors[service]
+	g.mu.RUnlock()
+	if sel != nil {
+		return sel, nil
+	}
+	g.mu.Lock()
+	defer g.mu.Unlock()
+
+	// double check
+	if sel = g.selectors[service]; sel != nil {
+		return sel, nil
+	}
+
+	sel = g.opts.selectorFunc()
+	g.selectors[service] = sel
+
+	w, err := g.opts.discovery.Watch(g.ctx, service)
+	if err != nil {
+		log.Errorf("[websocket] ensure watch service error, service: %v, err: %v", service, err)
+		return nil, err
+	}
+	g.watchers[service] = w
+
+	go func() {
+		for {
+			select {
+			case <-g.ctx.Done():
+				return
+			default:
+				instances, err := w.Next()
+				if err != nil {
+					return
+				}
+				nodes := make([]selector.Node, 0, len(instances))
+				for _, instance := range instances {
+					nodes = append(nodes,
+						selector.NewNode(
+							instance.ID,
+							instance.Name,
+							instance.Version,
+							instance.Metadata,
+						),
+					)
+				}
+				sel.Update(nodes) // 更新节点
+			}
+		}
+	}()
+	return sel, nil
 }

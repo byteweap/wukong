@@ -7,6 +7,7 @@ import (
 	"github.com/byteweap/wukong/component/broker"
 	"github.com/byteweap/wukong/component/locator"
 	"github.com/byteweap/wukong/component/registry"
+	"github.com/byteweap/wukong/component/selector"
 	"github.com/byteweap/wukong/pkg/conv"
 )
 
@@ -42,9 +43,10 @@ type options struct {
 	messageBufferSize int           // 消息缓冲区大小, websocket 和 broker 都用
 
 	// component
-	locator   locator.Locator   // 玩家位置定位器
-	broker    broker.Broker     // 消息传输代理
-	discovery registry.Registry // 服务发现
+	locator      locator.Locator          // 玩家位置定位器
+	broker       broker.Broker            // 消息传输代理
+	discovery    registry.Registry        // 服务发现
+	selectorFunc func() selector.Selector // 选择器创建函数
 }
 
 type Option func(*options)
@@ -170,6 +172,15 @@ func Discovery(discovery registry.Registry) Option {
 	return func(o *options) {
 		if discovery != nil {
 			o.discovery = discovery
+		}
+	}
+}
+
+// SelectorFunc 设置选择器创建函数
+func SelectorFunc(selectorFunc func() selector.Selector) Option {
+	return func(o *options) {
+		if selectorFunc != nil {
+			o.selectorFunc = selectorFunc
 		}
 	}
 }
