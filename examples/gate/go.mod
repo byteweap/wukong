@@ -7,6 +7,7 @@ require (
 	github.com/byteweap/wukong/contrib/broker/nats v0.0.0-00010101000000-000000000000
 	github.com/byteweap/wukong/contrib/locator/redis v0.0.0-00010101000000-000000000000
 	github.com/byteweap/wukong/contrib/registry/nacos v0.0.0-00010101000000-000000000000
+	github.com/byteweap/wukong/contrib/selector v0.0.0-00010101000000-000000000000
 	github.com/nacos-group/nacos-sdk-go v1.1.6
 	github.com/redis/go-redis/v9 v9.18.0
 )
@@ -47,3 +48,5 @@ replace github.com/byteweap/wukong/contrib/broker/nats => ../../contrib/broker/n
 replace github.com/byteweap/wukong/contrib/locator/redis => ../../contrib/locator/redis
 
 replace github.com/byteweap/wukong/contrib/registry/nacos => ../../contrib/registry/nacos
+
+replace github.com/byteweap/wukong/contrib/selector => ../../contrib/selector

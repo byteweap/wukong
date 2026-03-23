@@ -24,8 +24,8 @@ type state struct {
 
 var _ selector.Selector = (*Selector)(nil)
 
-// NewWRRSelector 创建 WRRSelector 实例
-func NewWRRSelector() *Selector {
+// New 创建 WRRSelector 实例
+func New() *Selector {
 	return &Selector{}
 }
 

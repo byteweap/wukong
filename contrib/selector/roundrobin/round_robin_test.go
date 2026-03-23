@@ -9,7 +9,7 @@ import (
 )
 
 func TestRoundRobinSelector_Select_EmptyNodes(t *testing.T) {
-	rr := NewRoundRobinSelector()
+	rr := New()
 	rr.Update([]selector.Node{})
 
 	got, err := rr.Select("k")
@@ -22,7 +22,7 @@ func TestRoundRobinSelector_Select_EmptyNodes(t *testing.T) {
 }
 
 func TestRoundRobinSelector_UpdateAndNodes(t *testing.T) {
-	rr := NewRoundRobinSelector()
+	rr := New()
 	nodes := []selector.Node{
 		selector.NewNode("node-a", "service1", "v1.0.0", map[string]string{"weight": "1"}),
 		selector.NewNode("node-b", "service1", "v1.0.0", map[string]string{"weight": "2"}),
@@ -36,7 +36,7 @@ func TestRoundRobinSelector_UpdateAndNodes(t *testing.T) {
 }
 
 func TestRoundRobinSelector_Select_Sequence(t *testing.T) {
-	rr := NewRoundRobinSelector()
+	rr := New()
 	rr.Update([]selector.Node{
 		selector.NewNode("node-a", "service1", "v1.0.0", map[string]string{"weight": "0"}),
 		selector.NewNode("node-b", "service1", "v1.0.0", map[string]string{"weight": "0"}),
@@ -58,7 +58,7 @@ func TestRoundRobinSelector_Select_Sequence(t *testing.T) {
 }
 
 func TestRoundRobinSelector_UpdateResetsState(t *testing.T) {
-	rr := NewRoundRobinSelector()
+	rr := New()
 	rr.Update([]selector.Node{
 		selector.NewNode("node-a", "service1", "v1.0.0", map[string]string{"weight": "0"}),
 		selector.NewNode("node-b", "service1", "v1.0.0", map[string]string{"weight": "0"}),
@@ -91,7 +91,7 @@ func TestRoundRobinSelector_UpdateResetsState(t *testing.T) {
 }
 
 func TestRoundRobinSelector_Select_WithFilter(t *testing.T) {
-	rr := NewRoundRobinSelector()
+	rr := New()
 	rr.Update([]selector.Node{
 		selector.NewNode("node-a", "service1", "v1.0.0", map[string]string{"weight": "0"}),
 		selector.NewNode("node-b", "service1", "v1.0.0", map[string]string{"weight": "0"}),

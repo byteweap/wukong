@@ -12,9 +12,11 @@ import (
 
 	"github.com/byteweap/wukong"
 	"github.com/byteweap/wukong/component/log"
+	"github.com/byteweap/wukong/component/selector"
 	"github.com/byteweap/wukong/contrib/broker/nats"
 	"github.com/byteweap/wukong/contrib/locator/redis"
 	"github.com/byteweap/wukong/contrib/registry/nacos"
+	"github.com/byteweap/wukong/contrib/selector/wrr"
 	"github.com/byteweap/wukong/server/gate"
 )
 
@@ -69,6 +71,9 @@ func main() {
 			gate.Locator(loc),
 			gate.Discovery(reg),
 			gate.Broker(broker),
+			gate.SelectorFunc(func() selector.Selector {
+				return wrr.New()
+			}),
 		)),
 		wukong.Registry(reg),
 	).Run()

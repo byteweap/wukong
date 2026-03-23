@@ -8,7 +8,7 @@ import (
 )
 
 func TestRandomSelector_Select_EmptyNodes(t *testing.T) {
-	rs := NewRandomSelector()
+	rs := New()
 	rs.Update([]selector.Node{})
 
 	got, err := rs.Select("k")
@@ -21,7 +21,7 @@ func TestRandomSelector_Select_EmptyNodes(t *testing.T) {
 }
 
 func TestRandomSelector_UpdateAndNodes(t *testing.T) {
-	rs := NewRandomSelector()
+	rs := New()
 	nodes := []selector.Node{
 		selector.NewNode("node-a", "service1", "v1.0.0", map[string]string{"weight": "1"}),
 		selector.NewNode("node-b", "service1", "v1.0.0", map[string]string{"weight": "2"}),
@@ -35,7 +35,7 @@ func TestRandomSelector_UpdateAndNodes(t *testing.T) {
 }
 
 func TestRandomSelector_Select_WeightedBias(t *testing.T) {
-	rs := NewRandomSelector()
+	rs := New()
 	rs.Update([]selector.Node{
 		selector.NewNode("node-a", "service1", "v1.0.0", map[string]string{"weight": "2"}),
 		selector.NewNode("node-b", "service1", "v1.0.0", map[string]string{"weight": "1"}),
@@ -56,7 +56,7 @@ func TestRandomSelector_Select_WeightedBias(t *testing.T) {
 }
 
 func TestRandomSelector_Update_DefaultWeightForNonPositive(t *testing.T) {
-	rs := NewRandomSelector()
+	rs := New()
 	rs.Update([]selector.Node{
 		selector.NewNode("node-a", "service1", "v1.0.0", map[string]string{"weight": "0"}),
 		selector.NewNode("node-b", "service1", "v1.0.0", map[string]string{"weight": "1"}),
@@ -71,7 +71,7 @@ func TestRandomSelector_Update_DefaultWeightForNonPositive(t *testing.T) {
 }
 
 func TestRandomSelector_Select_WithFilter(t *testing.T) {
-	rs := NewRandomSelector()
+	rs := New()
 	rs.Update([]selector.Node{
 		selector.NewNode("node-a", "service1", "v1.0.0", map[string]string{"weight": "1"}),
 		selector.NewNode("node-b", "service1", "v1.0.0", map[string]string{"weight": "1"}),

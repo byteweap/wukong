@@ -14,8 +14,8 @@ type Selector struct {
 
 var _ selector.Selector = (*Selector)(nil)
 
-// NewRoundRobinSelector 创建轮询选择器实例
-func NewRoundRobinSelector() *Selector {
+// New 创建轮询选择器实例
+func New() *Selector {
 	rr := &Selector{}
 	rr.nodes.Store([]selector.Node{})
 	return rr

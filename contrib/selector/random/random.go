@@ -20,8 +20,8 @@ var _ selector.Selector = (*Selector)(nil)
 
 const maxRandInt63 = int64(^uint64(0) >> 1)
 
-// NewRandomSelector 创建随机选择器实例
-func NewRandomSelector() *Selector {
+// New 创建随机选择器实例
+func New() *Selector {
 	return &Selector{}
 }
 

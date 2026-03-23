@@ -9,7 +9,7 @@ import (
 )
 
 func TestWRRSelector_Select_EmptyNodes(t *testing.T) {
-	ws := NewWRRSelector()
+	ws := New()
 	ws.Update([]selector.Node{})
 
 	got, err := ws.Select("ignored")
@@ -22,7 +22,7 @@ func TestWRRSelector_Select_EmptyNodes(t *testing.T) {
 }
 
 func TestWRRSelector_UpdateAndNodes(t *testing.T) {
-	ws := NewWRRSelector()
+	ws := New()
 	nodes := []selector.Node{
 		selector.NewNode("node-a", "service1", "v1.0.0", map[string]string{"weight": "1"}),
 		selector.NewNode("node-b", "service1", "v1.0.0", map[string]string{"weight": "2"}),
@@ -36,7 +36,7 @@ func TestWRRSelector_UpdateAndNodes(t *testing.T) {
 }
 
 func TestWRRSelector_Select_SmoothSequence(t *testing.T) {
-	ws := NewWRRSelector()
+	ws := New()
 	ws.Update([]selector.Node{
 		selector.NewNode("node-a", "service1", "v1.0.0", map[string]string{"weight": "2"}),
 		selector.NewNode("node-b", "service1", "v1.0.0", map[string]string{"weight": "1"}),
@@ -58,7 +58,7 @@ func TestWRRSelector_Select_SmoothSequence(t *testing.T) {
 }
 
 func TestWRRSelector_UpdateResetsState(t *testing.T) {
-	ws := NewWRRSelector()
+	ws := New()
 	ws.Update([]selector.Node{
 		selector.NewNode("node-a", "service1", "v1.0.0", map[string]string{"weight": "2"}),
 		selector.NewNode("node-b", "service1", "v1.0.0", map[string]string{"weight": "1"}),
@@ -91,7 +91,7 @@ func TestWRRSelector_UpdateResetsState(t *testing.T) {
 }
 
 func TestWRRSelector_Select_DefaultWeightForNonPositive(t *testing.T) {
-	ws := NewWRRSelector()
+	ws := New()
 	ws.Update([]selector.Node{
 		selector.NewNode("node-a", "service1", "v1.0.0", map[string]string{"weight": "-2"}),
 		selector.NewNode("node-b", "service1", "v1.0.0", map[string]string{"weight": "1"}),
@@ -113,7 +113,7 @@ func TestWRRSelector_Select_DefaultWeightForNonPositive(t *testing.T) {
 }
 
 func TestWRRSelector_Select_WithFilter(t *testing.T) {
-	ws := NewWRRSelector()
+	ws := New()
 	ws.Update([]selector.Node{
 		selector.NewNode("node-a", "service1", "v1.0.0", map[string]string{"weight": "1"}),
 		selector.NewNode("node-b", "service1", "v1.0.0", map[string]string{"weight": "1"}),
