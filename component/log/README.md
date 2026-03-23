@@ -1,5 +1,9 @@
 # Logger
 
+## 说明
+
+log 组件提供统一的结构化日志接口，包含日志级别、字段、辅助器与过滤器等能力。
+
 ## Usage
 
 ### Structured logging
@@ -35,18 +39,24 @@ log.Warn("warn log")
 log.Error("warn log")
 ```
 
-## Third party log library
+## Contrib 实现
 
 ### zap
 
 ```shell
-go get -u github.com/byteweap/wukong/contrib/log/zap/v2
+go get -u github.com/byteweap/wukong/contrib/log/zap
 ```
 
 ### logrus
 
 ```shell
 go get -u github.com/byteweap/wukong/contrib/log/logrus
+```
+
+### zerolog
+
+```shell
+go get -u github.com/byteweap/wukong/contrib/log/zerolog
 ```
 
 ### fluent
@@ -59,4 +69,10 @@ go get -u github.com/byteweap/wukong/contrib/log/fluent
 
 ```shell
 go get -u github.com/byteweap/wukong/contrib/log/aliyun
+```
+
+### tencent
+
+```shell
+go get -u github.com/byteweap/wukong/contrib/log/tencent
 ```
