@@ -2,7 +2,6 @@ package random
 
 import (
 	"errors"
-	"math/rand"
 	"testing"
 
 	"github.com/byteweap/wukong/component/selector"
@@ -50,7 +49,6 @@ func TestRandomSelector_UpdateAndNodes(t *testing.T) {
 
 func TestRandomSelector_Select_WeightedBias(t *testing.T) {
 	rs := NewRandomSelector()
-	rs.rng = rand.New(rand.NewSource(1))
 	rs.Update([]selector.Node{
 		testNode{id: "node-a", weight: 2},
 		testNode{id: "node-b", weight: 1},
@@ -87,7 +85,6 @@ func TestRandomSelector_Update_DefaultWeightForNonPositive(t *testing.T) {
 
 func TestRandomSelector_Select_WithFilter(t *testing.T) {
 	rs := NewRandomSelector()
-	rs.rng = rand.New(rand.NewSource(1))
 	rs.Update([]selector.Node{
 		testNode{id: "node-a", weight: 1},
 		testNode{id: "node-b", weight: 1},

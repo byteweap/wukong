@@ -1,18 +1,16 @@
 package random
 
 import (
-	"math/rand"
 	"sort"
 	"sync"
-	"time"
 
 	"github.com/byteweap/wukong/component/selector"
+	"github.com/byteweap/wukong/pkg/xrand"
 )
 
 // Selector 随机选择器（按权重加权随机）
 type Selector struct {
 	mu          sync.Mutex
-	rng         *rand.Rand
 	nodes       []selector.Node
 	cumulative  []float64
 	totalWeight float64
@@ -20,11 +18,11 @@ type Selector struct {
 
 var _ selector.Selector = (*Selector)(nil)
 
+const maxRandInt63 = int64(^uint64(0) >> 1)
+
 // NewRandomSelector 创建随机选择器实例
 func NewRandomSelector() *Selector {
-	return &Selector{
-		rng: rand.New(rand.NewSource(time.Now().UnixNano())),
-	}
+	return &Selector{}
 }
 
 // Select 选择一个节点（忽略 key）
@@ -63,7 +61,9 @@ func (rs *Selector) Select(_ string, filters ...selector.Filter) (selector.Node,
 		return nil, selector.ErrNoAvailableNode
 	}
 
-	r := rs.rng.Float64() * totalWeight
+	randInt := xrand.Int64(0, maxRandInt63)
+	r := float64(randInt) / float64(maxRandInt63)
+	r *= totalWeight
 	idx := sort.Search(len(cumulative), func(i int) bool {
 		return cumulative[i] > r
 	})
