@@ -50,11 +50,11 @@ func (g *Gate) dispatch(uid int64, e *envelope.IMessage) {
 		return
 	}
 	var (
-		toService      = e.GetService()
-		loc, bro, disc = g.opts.locator, g.opts.broker, g.opts.discovery
+		toService = e.GetService()
+		loc, bro  = g.opts.locator, g.opts.broker
 	)
 
-	curNode, err := loc.Node(g.ctx, uid, toService)
+	curNodeID, err := loc.Node(g.ctx, uid, toService)
 	if err != nil {
 		log.Errorf("[websocket] dispatch | get mesh node error, uid: %v, toService: %v, err: %v", uid, toService, err)
 		return
@@ -65,19 +65,19 @@ func (g *Gate) dispatch(uid int64, e *envelope.IMessage) {
 		log.Errorf("[websocket] dispatch | marshal to mesh data error: %v", err)
 		return
 	}
-	node := curNode
-	if curNode == "" {
-		// todo 确定一个mesh节点(负载均衡算法),暂时使用第一个服务节点
-		services, err := disc.GetService(g.ctx, toService)
+	nodeID := curNodeID
+	if curNodeID == "" {
+		sel, err := g.ensure(toService)
 		if err != nil {
-			log.Errorf("[websocket] dispatch | get all services error, uid: %v, app: %v, err: %v", uid, toService, err)
+			log.Errorf("[websocket] dispatch | get mesh node error, uid: %v, toService: %v, err: %v", uid, toService, err)
 			return
 		}
-		if len(services) == 0 {
-			log.Errorf("[websocket] dispatch | no services found for app: %v", toService)
+		node, err := sel.Select("")
+		if err != nil {
+			log.Errorf("[websocket] dispatch | select mesh node error, uid: %v, toService: %v, err: %v", uid, toService, err)
 			return
 		}
-		node = services[0].ID
+		nodeID = node.ID()
 	}
 	// 构建消息头
 	var (
@@ -85,7 +85,7 @@ func (g *Gate) dispatch(uid int64, e *envelope.IMessage) {
 		header = cluster.BuildHeader(uid, cluster.Event_Business, reply, g.appName, toService)
 	)
 	// 发布消息到 Mesh
-	subject := cluster.Subject(g.opts.prefix, g.appName, toService, node)
+	subject := cluster.Subject(g.opts.prefix, g.appName, toService, nodeID)
 	if err = bro.Pub(g.ctx, subject, data, broker.PubHeader(header)); err != nil {
 		log.Errorf("[websocket] dispatch error, uid: %v, subject: %v, err: %v", uid, subject, err)
 		return
