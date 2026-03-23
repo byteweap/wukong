@@ -16,10 +16,8 @@ import (
 	"github.com/byteweap/wukong/component/log"
 	"github.com/byteweap/wukong/component/registry"
 	"github.com/byteweap/wukong/component/selector"
-	"github.com/byteweap/wukong/encoding/proto"
 	es "github.com/byteweap/wukong/errors"
 	"github.com/byteweap/wukong/internal/cluster"
-	"github.com/byteweap/wukong/internal/envelope"
 	"github.com/byteweap/wukong/pkg/async"
 	"github.com/byteweap/wukong/pkg/endpoint"
 	"github.com/byteweap/wukong/pkg/host"
@@ -106,17 +104,14 @@ func (g *Gate) setup(name, appID string, ctx context.Context) error {
 	m.Config.MaxMessageSize = o.maxMessageSize
 	m.Config.MessageBufferSize = o.messageBufferSize
 	m.Config.ConcurrentMessageHandling = false
-	m.HandleConnect(g.onConnect)
-	m.HandleDisconnect(g.onDisconnect)
-	m.HandleMessage(g.onTextMessage)
-	m.HandleMessageBinary(g.onBinaryMessage)
-	m.HandleError(func(s *melody.Session, err error) {
-		log.Errorf("[websocket] error occurred, err: %v", err)
-	})
-	m.HandleClose(func(s *melody.Session, code int, reason string) error {
-		log.Infof("[websocket] connection closed, code: %v, reason: %v", code, reason)
-		return nil
-	})
+
+	m.HandleConnect(g.handleConnect)
+	m.HandleDisconnect(g.handleDisconnect)
+	m.HandleMessage(g.handleTextMessage)
+	m.HandleMessageBinary(g.handleBinaryMessage)
+	m.HandleError(g.handleError)
+	m.HandleClose(g.handleClose)
+
 	g.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != g.opts.path {
 			http.NotFound(w, r)
@@ -217,178 +212,6 @@ func (g *Gate) listenAndEndpoint() error {
 	return nil
 }
 
-// 连接建立时调用
-func (g *Gate) onConnect(s *melody.Session) {
-
-	req, addr := s.Request, s.RemoteAddr()
-
-	uid := g.opts.userIdExtractor(req)
-	if uid <= 0 {
-		_ = s.Write([]byte("uid is required"))
-		_ = s.Close()
-		return
-	}
-	// 注册会话
-	session, ok := g.sessions.get(uid)
-	if ok {
-		log.Warnf("[websocket] connection exists: uid: %v, close old connection", uid)
-		_ = session.Close()
-	}
-	s.Set("uid", uid)
-	g.sessions.register(uid, s)
-
-	log.Infof("[websocket] new connection success, uid: %v, %s", uid, addr.String())
-
-	loc := g.opts.locator
-
-	// 绑定网关
-	if err := loc.Bind(g.ctx, uid, g.appName, g.appID); err != nil {
-		log.Errorf("[websocket] new connection success, bind gate error, uid: %v, err: %v", uid, err)
-		return
-	}
-
-	// 广播 上线、重连 事件到上游服务
-	event := cluster.Event_Online
-	if ok {
-		event = cluster.Event_Reconnect
-	}
-	g.broadcastEvent(uid, event)
-}
-
-// 连接断开时调用
-func (g *Gate) onDisconnect(s *melody.Session) {
-
-	uids, ok := s.Get("uid")
-	if !ok {
-		log.Error("[websocket] connection disconnect error, session not contains uid key")
-		return
-	}
-	uid := uids.(int64)
-
-	// 注销会话
-	curSession, yes := g.sessions.get(uid)
-	if !yes {
-		log.Errorf("[websocket] connection disconnect error, uid: %v not found", uid)
-		return
-	}
-	if curSession != s {
-		log.Warnf("[websocket] connection disconnect error, uid: %v session not match", uid)
-		return
-	}
-	g.sessions.unregister(uid)
-
-	log.Infof("[websocket] connection disconnect success, uid: %v", uid)
-
-	// 解绑网关
-	if err := g.opts.locator.UnBind(g.ctx, uid, g.appName, g.appID); err != nil {
-		log.Errorf("[websocket] connection disconnect success, unbind gate error, uid: %v, err: %v", uid, err)
-	}
-
-	// 广播掉线事件到上游服务
-	g.broadcastEvent(uid, cluster.Event_Offline)
-}
-
-// 接收到文本消息时调用
-func (g *Gate) onTextMessage(s *melody.Session, msg []byte) {
-	// todo
-}
-
-// 接收到二进制消息时调用
-func (g *Gate) onBinaryMessage(s *melody.Session, msg []byte) {
-
-	meta := &envelope.IMessage{}
-	if err := proto.Unmarshal(msg, meta); err != nil {
-		log.Errorf("[websocket] unmarshal envelope error: %v", err)
-		return
-	}
-	uids, ok := s.Get("uid")
-	if !ok {
-		log.Error("[websocket] onBinaryMessage get uid error, session not contains uid key")
-		return
-	}
-	uid := uids.(int64)
-
-	// 业务消息分发
-	g.dispatch(uid, meta)
-}
-
-// 业务消息分发至 mesh
-func (g *Gate) dispatch(uid int64, e *envelope.IMessage) {
-
-	if e == nil {
-		log.Errorf("[websocket] dispatch error, envelope is nil")
-		return
-	}
-	var (
-		toService      = e.GetService()
-		loc, bro, disc = g.opts.locator, g.opts.broker, g.opts.discovery
-	)
-
-	curNode, err := loc.Node(g.ctx, uid, toService)
-	if err != nil {
-		log.Errorf("[websocket] dispatch | get mesh node error, uid: %v, toService: %v, err: %v", uid, toService, err)
-		return
-	}
-
-	data, err := proto.Marshal(e)
-	if err != nil {
-		log.Errorf("[websocket] dispatch | marshal to mesh data error: %v", err)
-		return
-	}
-	node := curNode
-	if curNode == "" {
-		// todo 确定一个mesh节点(负载均衡算法),暂时使用第一个服务节点
-		services, err := disc.GetService(g.ctx, toService)
-		if err != nil {
-			log.Errorf("[websocket] dispatch | get all services error, uid: %v, app: %v, err: %v", uid, toService, err)
-			return
-		}
-		if len(services) == 0 {
-			log.Errorf("[websocket] dispatch | no services found for app: %v", toService)
-			return
-		}
-		node = services[0].ID
-	}
-	// 构建消息头
-	var (
-		reply  = g.Subject(toService) // 回复主题
-		header = cluster.BuildHeader(uid, cluster.Event_Business, reply, g.appName, toService)
-	)
-	// 发布消息到 Mesh
-	subject := cluster.Subject(g.opts.prefix, g.appName, toService, node)
-	if err = bro.Pub(g.ctx, subject, data, broker.PubHeader(header)); err != nil {
-		log.Errorf("[websocket] dispatch error, uid: %v, subject: %v, err: %v", uid, subject, err)
-		return
-	}
-	log.Debugf("[websocket] dispatch success, uid: %v, subject: %v", uid, subject)
-}
-
-// 广播系统事件
-func (g *Gate) broadcastEvent(uid int64, event cluster.Event) {
-
-	// 获取玩家当前所在所有节点
-	snMap, err := g.opts.locator.AllNodes(g.ctx, uid)
-	if err != nil {
-		log.Errorf("[websocket] broadcast event, get all nodes error, uid: %v, event: %v, err: %v", uid, event, err)
-		return
-	}
-	for service, node := range snMap {
-		if service == g.appName { // 不包括 gate
-			continue
-		}
-		// 发布消息到 Mesh
-		var (
-			header  = cluster.BuildHeader(uid, event, g.Subject(service), g.appName, service)
-			subject = cluster.Subject(g.opts.prefix, g.appName, service, node)
-		)
-		if err = g.opts.broker.Pub(g.ctx, subject, nil, broker.PubHeader(header)); err != nil {
-			log.Errorf("[websocket] broadcast event error, uid: %v, subject: %v, err: %v", uid, subject, err)
-			return
-		}
-		log.Debugf("[websocket] broadcast event success, uid: %v, subject: %v, event: %v", uid, subject, event)
-	}
-}
-
 // 循环处理来自其它服务的消息
 func (g *Gate) loop() error {
 
@@ -435,40 +258,6 @@ func (g *Gate) loop() error {
 	}(g.ctx, sub, msgChan)
 
 	return nil
-}
-
-// handlerRequestReplyMessage 来自其它服务的(request-reply)消息
-func (g *Gate) handleRequestReplyMessage(msg *broker.Message) {
-	// todo
-}
-
-// handlerPubSubMessage 来自Mesh服务的(pub-sub)消息
-func (g *Gate) handlePubSubMessage(msg *broker.Message) {
-	// 2. 直接回复给玩家的消息
-	uid := cluster.GetUidBy(msg.Header)
-	if uid <= 0 {
-		log.Errorf("[websocket] reply2player get uid error, uid: %v", uid)
-		return
-	}
-	session, ok := g.sessions.get(uid)
-	if !ok {
-		log.Errorf("[websocket] reply2player get session error, uid: %v", uid)
-		return
-	}
-	if err := session.WriteBinary(msg.Data); err != nil {
-		log.Errorf("[websocket] reply2player write binary error, uid: %v, err: %v", uid, err)
-		return
-	}
-	log.Debugf("[websocket] reply2player success, uid: %v", uid)
-}
-
-// 处理来自其它服务的消息
-func (g *Gate) handleMessage(msg *broker.Message) {
-	if msg.Reply != "" {
-		g.handleRequestReplyMessage(msg)
-	} else {
-		g.handlePubSubMessage(msg)
-	}
 }
 
 // Subject 获取当前服务主题
