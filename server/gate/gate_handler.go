@@ -5,8 +5,8 @@ import (
 
 	"github.com/byteweap/wukong/component/log"
 	"github.com/byteweap/wukong/encoding/proto"
+	"github.com/byteweap/wukong/envelope"
 	"github.com/byteweap/wukong/internal/cluster"
-	"github.com/byteweap/wukong/internal/envelope"
 )
 
 // 连接建立时调用

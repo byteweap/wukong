@@ -4,12 +4,13 @@ import (
 	"sync"
 	"time"
 
+	"google.golang.org/protobuf/proto"
+
 	"github.com/byteweap/wukong/component/broker"
 	"github.com/byteweap/wukong/component/log"
+	"github.com/byteweap/wukong/envelope"
 	"github.com/byteweap/wukong/internal/cluster"
-	"github.com/byteweap/wukong/internal/envelope"
 	"github.com/byteweap/wukong/pkg/lang"
-	"google.golang.org/protobuf/proto"
 )
 
 // Context 网关消息上下文

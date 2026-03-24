@@ -7,7 +7,7 @@ import (
 
 	"github.com/byteweap/wukong/component/broker"
 	"github.com/byteweap/wukong/encoding/proto"
-	"github.com/byteweap/wukong/internal/envelope"
+	"github.com/byteweap/wukong/envelope"
 )
 
 // TestAdaptRequestAutoWrapPayload 验证自动适配能正确反序列化请求参数

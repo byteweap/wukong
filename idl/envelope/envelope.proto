@@ -1,6 +1,6 @@
 syntax = "proto3";
 package envelope;
-option go_package = "./envelope";
+option go_package = "github.com/byteweap/wukong/envelope";
 
 message Header {
   uint64 seq = 1;           // 序列(用户维度有序且唯一)

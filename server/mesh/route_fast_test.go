@@ -6,7 +6,7 @@ import (
 
 	"github.com/byteweap/wukong/component/broker"
 	"github.com/byteweap/wukong/encoding/proto"
-	"github.com/byteweap/wukong/internal/envelope"
+	"github.com/byteweap/wukong/envelope"
 )
 
 func TestRouteFastWithWrap(t *testing.T) {

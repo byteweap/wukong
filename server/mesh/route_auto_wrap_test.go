@@ -5,8 +5,8 @@ import (
 
 	"github.com/byteweap/wukong/component/broker"
 	"github.com/byteweap/wukong/encoding/proto"
+	"github.com/byteweap/wukong/envelope"
 	"github.com/byteweap/wukong/internal/cluster"
-	"github.com/byteweap/wukong/internal/envelope"
 )
 
 // TestRouteAutoWrapBusinessPayload 验证自动 Wrap 能正确反序列化业务参数

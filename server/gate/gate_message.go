@@ -4,8 +4,8 @@ import (
 	"github.com/byteweap/wukong/component/broker"
 	"github.com/byteweap/wukong/component/log"
 	"github.com/byteweap/wukong/encoding/proto"
+	"github.com/byteweap/wukong/envelope"
 	"github.com/byteweap/wukong/internal/cluster"
-	"github.com/byteweap/wukong/internal/envelope"
 )
 
 // handlerRequestReplyMessage 来自其它服务的(request-reply)消息
