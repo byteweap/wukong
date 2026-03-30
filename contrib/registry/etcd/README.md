@@ -10,7 +10,7 @@
 **安装**
 
 ```bash
-go get github.com/byteweap/wukong/contrib/registry/etcd
+go get github.com/byteweap/meta/contrib/registry/etcd
 ```
 
 **最小用法**
@@ -22,8 +22,8 @@ import (
   "context"
   "time"
 
-  "github.com/byteweap/wukong/component/registry"
-  ereg "github.com/byteweap/wukong/contrib/registry/etcd"
+  "github.com/byteweap/meta/component/registry"
+  ereg "github.com/byteweap/meta/contrib/registry/etcd"
   clientv3 "go.etcd.io/etcd/client/v3"
 )
 

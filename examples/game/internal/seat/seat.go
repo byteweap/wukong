@@ -1,6 +1,6 @@
 package seat
 
-import "github.com/byteweap/wukong/examples/game/internal/player"
+import "github.com/byteweap/meta/examples/game/internal/player"
 
 // Seat 座位
 type Seat struct {

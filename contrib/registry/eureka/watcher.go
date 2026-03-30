@@ -3,7 +3,7 @@ package eureka
 import (
 	"context"
 
-	"github.com/byteweap/wukong/component/registry"
+	"github.com/byteweap/meta/component/registry"
 )
 
 type watcher struct {

@@ -1,8 +1,8 @@
 package mesh
 
 import (
-	"github.com/byteweap/wukong/component/broker"
-	"github.com/byteweap/wukong/component/locator"
+	"github.com/byteweap/meta/component/broker"
+	"github.com/byteweap/meta/component/locator"
 )
 
 const (

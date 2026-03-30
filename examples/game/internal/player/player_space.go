@@ -7,8 +7,8 @@ import (
 
 // Space 玩家空间
 type Space struct {
-	num     atomic.Uint32 // 玩家数量
-	players sync.Map      // 玩家集合 key: 玩家ID value: *Player
+	num     atomic.Int32 // 玩家数量
+	players sync.Map     // 玩家集合 key: 玩家ID value: *Player
 }
 
 func NewSpace() *Space {

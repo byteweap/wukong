@@ -10,7 +10,7 @@
 **安装**
 
 ```bash
-go get github.com/byteweap/wukong/contrib/locator/redis
+go get github.com/byteweap/meta/contrib/locator/redis
 ```
 
 **最小用法**
@@ -21,7 +21,7 @@ package main
 import (
   "context"
 
-  rloc "github.com/byteweap/wukong/contrib/locator/redis"
+  rloc "github.com/byteweap/meta/contrib/locator/redis"
   "github.com/redis/go-redis/v9"
 )
 

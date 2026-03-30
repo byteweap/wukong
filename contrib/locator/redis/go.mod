@@ -1,9 +1,9 @@
-module github.com/byteweap/wukong/contrib/locator/redis
+module github.com/byteweap/meta/contrib/locator/redis
 
 go 1.26.1
 
 require (
-	github.com/byteweap/wukong v0.0.1
+	github.com/byteweap/meta v0.0.1
 	github.com/redis/go-redis/v9 v9.17.2
 )
 
@@ -12,4 +12,4 @@ require (
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 )
 
-replace github.com/byteweap/wukong => ../../..
+replace github.com/byteweap/meta => ../../..

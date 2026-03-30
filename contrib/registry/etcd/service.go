@@ -3,7 +3,7 @@ package etcd
 import (
 	"encoding/json"
 
-	"github.com/byteweap/wukong/component/registry"
+	"github.com/byteweap/meta/component/registry"
 )
 
 // marshal 将服务实例编码为 JSON 字符串

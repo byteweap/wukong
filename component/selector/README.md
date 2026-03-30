@@ -28,8 +28,8 @@ package main
 import (
   "fmt"
 
-  "github.com/byteweap/wukong/component/selector"
-  "github.com/byteweap/wukong/contrib/selector/random"
+  "github.com/byteweap/meta/component/selector"
+  "github.com/byteweap/meta/contrib/selector/random"
 )
 
 func main() {
@@ -46,6 +46,6 @@ func main() {
 
 ## 实现（contrib）
 
-- random: `github.com/byteweap/wukong/contrib/selector/random`
-- roundrobin: `github.com/byteweap/wukong/contrib/selector/roundrobin`
-- wrr: `github.com/byteweap/wukong/contrib/selector/wrr`
+- random: `github.com/byteweap/meta/contrib/selector/random`
+- roundrobin: `github.com/byteweap/meta/contrib/selector/roundrobin`
+- wrr: `github.com/byteweap/meta/contrib/selector/wrr`

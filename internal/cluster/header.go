@@ -1,8 +1,8 @@
 package cluster
 
 import (
-	"github.com/byteweap/wukong/component/broker"
-	"github.com/byteweap/wukong/pkg/conv"
+	"github.com/byteweap/meta/component/broker"
+	"github.com/byteweap/meta/pkg/conv"
 )
 
 const (

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/byteweap/wukong/component/registry"
+	"github.com/byteweap/meta/component/registry"
 )
 
 type Registry struct {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/byteweap/wukong/component/log"
+	"github.com/byteweap/meta/component/log"
 )
 
 // testWriteSyncer 测试写入器

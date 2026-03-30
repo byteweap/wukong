@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/byteweap/wukong/component/broker"
-	"github.com/byteweap/wukong/component/log"
-	"github.com/byteweap/wukong/encoding/proto"
-	"github.com/byteweap/wukong/envelope"
+	"github.com/byteweap/meta/component/broker"
+	"github.com/byteweap/meta/component/log"
+	"github.com/byteweap/meta/encoding/proto"
+	"github.com/byteweap/meta/envelope"
 )
 
 type MessageHandler func(*Mesh, *broker.Message, *envelope.IMessage)

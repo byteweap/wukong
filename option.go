@@ -7,9 +7,9 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/byteweap/wukong/component/log"
-	"github.com/byteweap/wukong/component/registry"
-	"github.com/byteweap/wukong/server"
+	"github.com/byteweap/meta/component/log"
+	"github.com/byteweap/meta/component/registry"
+	"github.com/byteweap/meta/server"
 	"github.com/google/uuid"
 )
 

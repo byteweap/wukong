@@ -1,9 +1,9 @@
-module github.com/byteweap/wukong/contrib/log/tencent
+module github.com/byteweap/meta/contrib/log/tencent
 
 go 1.26.1
 
 require (
-	github.com/byteweap/wukong v0.0.1
+	github.com/byteweap/meta v0.0.1
 	github.com/tencentcloud/tencentcloud-cls-sdk-go v1.0.14
 	google.golang.org/protobuf v1.36.11
 )
@@ -15,4 +15,4 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 )
 
-replace github.com/byteweap/wukong => ../../..
+replace github.com/byteweap/meta => ../../..

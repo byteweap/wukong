@@ -8,7 +8,7 @@ import (
 
 	clientv3 "go.etcd.io/etcd/client/v3"
 
-	"github.com/byteweap/wukong/component/registry"
+	"github.com/byteweap/meta/component/registry"
 )
 
 // Registry 是 etcd 注册中心实现

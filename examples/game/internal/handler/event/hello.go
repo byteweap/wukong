@@ -1,8 +1,8 @@
 package event
 
 import (
-	"github.com/byteweap/wukong/examples/game/internal/pb"
-	"github.com/byteweap/wukong/server/mesh"
+	"github.com/byteweap/meta/examples/game/internal/pb"
+	"github.com/byteweap/meta/server/mesh"
 )
 
 // Hello event 示例接口

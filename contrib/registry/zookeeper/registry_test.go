@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/byteweap/wukong/component/registry"
+	"github.com/byteweap/meta/component/registry"
 	"github.com/go-zookeeper/zk"
 )
 

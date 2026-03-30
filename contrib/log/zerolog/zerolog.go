@@ -3,7 +3,7 @@ package zerolog
 import (
 	"github.com/rs/zerolog"
 
-	"github.com/byteweap/wukong/component/log"
+	"github.com/byteweap/meta/component/log"
 )
 
 // Logger 日志记录器

@@ -1,7 +1,7 @@
 package msgpack
 
 import (
-	"github.com/byteweap/wukong/encoding"
+	"github.com/byteweap/meta/encoding"
 	"github.com/vmihailenco/msgpack/v5"
 )
 

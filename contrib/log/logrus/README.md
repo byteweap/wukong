@@ -10,7 +10,7 @@
 **安装**
 
 ```bash
-go get github.com/byteweap/wukong/contrib/log/logrus
+go get github.com/byteweap/meta/contrib/log/logrus
 ```
 
 **最小用法**
@@ -19,8 +19,8 @@ go get github.com/byteweap/wukong/contrib/log/logrus
 package main
 
 import (
-  lgrs "github.com/byteweap/wukong/contrib/log/logrus"
-  "github.com/byteweap/wukong/component/log"
+  lgrs "github.com/byteweap/meta/contrib/log/logrus"
+  "github.com/byteweap/meta/component/log"
   "github.com/sirupsen/logrus"
 )
 

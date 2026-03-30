@@ -36,13 +36,13 @@ foreach ($gomod in $goMods) {
       $inRequireBlock = $false
       continue
     }
-    if ($line -match "^\s*require\s+github.com/byteweap/wukong\s+\S+") {
-      $content[$i] = $line -replace "github.com/byteweap/wukong\s+\S+", "github.com/byteweap/wukong $expected"
+    if ($line -match "^\s*require\s+github.com/byteweap/meta\s+\S+") {
+      $content[$i] = $line -replace "github.com/byteweap/meta\s+\S+", "github.com/byteweap/meta $expected"
       $updated = $true
       continue
     }
-    if ($inRequireBlock -and $line -match "^\s*github.com/byteweap/wukong\s+\S+") {
-      $content[$i] = $line -replace "github.com/byteweap/wukong\s+\S+", "github.com/byteweap/wukong $expected"
+    if ($inRequireBlock -and $line -match "^\s*github.com/byteweap/meta\s+\S+") {
+      $content[$i] = $line -replace "github.com/byteweap/meta\s+\S+", "github.com/byteweap/meta $expected"
       $updated = $true
       continue
     }
@@ -65,14 +65,14 @@ foreach ($gomod in $goMods) {
       $inRequireBlock = $false
       continue
     }
-    if ($line -match "^\s*require\s+github.com/byteweap/wukong\s+(\S+)") {
+    if ($line -match "^\s*require\s+github.com/byteweap/meta\s+(\S+)") {
       $ver = $Matches[1]
       if ($ver -ne $expected) {
         $badDeps.Add("$($gomod.FullName): $ver") | Out-Null
       }
       continue
     }
-    if ($inRequireBlock -and $line -match "^\s*github.com/byteweap/wukong\s+(\S+)") {
+    if ($inRequireBlock -and $line -match "^\s*github.com/byteweap/meta\s+(\S+)") {
       $ver = $Matches[1]
       if ($ver -ne $expected) {
         $badDeps.Add("$($gomod.FullName): $ver") | Out-Null

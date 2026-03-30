@@ -1,4 +1,4 @@
-module github.com/byteweap/wukong
+module github.com/byteweap/meta
 
 go 1.26.1
 

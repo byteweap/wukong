@@ -10,7 +10,7 @@
 **安装**
 
 ```bash
-go get github.com/byteweap/wukong/contrib/log/aliyun
+go get github.com/byteweap/meta/contrib/log/aliyun
 ```
 
 **最小用法**
@@ -19,8 +19,8 @@ go get github.com/byteweap/wukong/contrib/log/aliyun
 package main
 
 import (
-  "github.com/byteweap/wukong/component/log"
-  alog "github.com/byteweap/wukong/contrib/log/aliyun"
+  "github.com/byteweap/meta/component/log"
+  alog "github.com/byteweap/meta/contrib/log/aliyun"
 )
 
 func main() {

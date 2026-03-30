@@ -10,7 +10,7 @@
 **安装**
 
 ```bash
-go get github.com/byteweap/wukong/contrib/registry/eureka
+go get github.com/byteweap/meta/contrib/registry/eureka
 ```
 
 **最小用法**
@@ -21,8 +21,8 @@ package main
 import (
   "context"
 
-  "github.com/byteweap/wukong/component/registry"
-  ereg "github.com/byteweap/wukong/contrib/registry/eureka"
+  "github.com/byteweap/meta/component/registry"
+  ereg "github.com/byteweap/meta/contrib/registry/eureka"
 )
 
 func main() {

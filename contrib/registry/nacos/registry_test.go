@@ -11,7 +11,7 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/vo"
 	"gopkg.in/natefinch/lumberjack.v2"
 
-	"github.com/byteweap/wukong/component/registry"
+	"github.com/byteweap/meta/component/registry"
 )
 
 var testServerConfig = []constant.ServerConfig{

@@ -3,8 +3,8 @@ package rpc
 import (
 	"net/http"
 
-	"github.com/byteweap/wukong/examples/game/internal/pb"
-	"github.com/byteweap/wukong/server/mesh"
+	"github.com/byteweap/meta/examples/game/internal/pb"
+	"github.com/byteweap/meta/server/mesh"
 )
 
 // Hello RPC示例接口

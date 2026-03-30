@@ -10,7 +10,7 @@
 **安装**
 
 ```bash
-go get github.com/byteweap/wukong/contrib/log/zap
+go get github.com/byteweap/meta/contrib/log/zap
 ```
 
 **最小用法**
@@ -19,8 +19,8 @@ go get github.com/byteweap/wukong/contrib/log/zap
 package main
 
 import (
-  "github.com/byteweap/wukong/component/log"
-  wzap "github.com/byteweap/wukong/contrib/log/zap"
+  "github.com/byteweap/meta/component/log"
+  wzap "github.com/byteweap/meta/contrib/log/zap"
   "go.uber.org/zap"
 )
 

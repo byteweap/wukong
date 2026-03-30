@@ -6,11 +6,11 @@ import (
 
 	"google.golang.org/protobuf/proto"
 
-	"github.com/byteweap/wukong/component/broker"
-	"github.com/byteweap/wukong/component/log"
-	"github.com/byteweap/wukong/envelope"
-	"github.com/byteweap/wukong/internal/cluster"
-	"github.com/byteweap/wukong/pkg/lang"
+	"github.com/byteweap/meta/component/broker"
+	"github.com/byteweap/meta/component/log"
+	"github.com/byteweap/meta/envelope"
+	"github.com/byteweap/meta/internal/cluster"
+	"github.com/byteweap/meta/pkg/lang"
 )
 
 // Context 网关消息上下文

@@ -29,7 +29,7 @@ package main
 import (
   "context"
 
-  "github.com/byteweap/wukong/component/registry"
+  "github.com/byteweap/meta/component/registry"
 )
 
 func main() {
@@ -47,10 +47,10 @@ func main() {
 
 ## 实现（contrib）
 
-- etcd: `github.com/byteweap/wukong/contrib/registry/etcd`
-- consul: `github.com/byteweap/wukong/contrib/registry/consul`
-- nacos: `github.com/byteweap/wukong/contrib/registry/nacos`
-- zookeeper: `github.com/byteweap/wukong/contrib/registry/zookeeper`
-- polaris: `github.com/byteweap/wukong/contrib/registry/polaris`
-- servicecomb: `github.com/byteweap/wukong/contrib/registry/servicecomb`
-- eureka: `github.com/byteweap/wukong/contrib/registry/eureka`
+- etcd: `github.com/byteweap/meta/contrib/registry/etcd`
+- consul: `github.com/byteweap/meta/contrib/registry/consul`
+- nacos: `github.com/byteweap/meta/contrib/registry/nacos`
+- zookeeper: `github.com/byteweap/meta/contrib/registry/zookeeper`
+- polaris: `github.com/byteweap/meta/contrib/registry/polaris`
+- servicecomb: `github.com/byteweap/meta/contrib/registry/servicecomb`
+- eureka: `github.com/byteweap/meta/contrib/registry/eureka`

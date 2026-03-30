@@ -5,7 +5,7 @@ import (
 
 	"github.com/nats-io/nats.go"
 
-	"github.com/byteweap/wukong/component/broker"
+	"github.com/byteweap/meta/component/broker"
 )
 
 // ID 是 NATS broker 实现标识符

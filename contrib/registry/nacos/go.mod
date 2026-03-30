@@ -1,9 +1,9 @@
-module github.com/byteweap/wukong/contrib/registry/nacos
+module github.com/byteweap/meta/contrib/registry/nacos
 
 go 1.26.1
 
 require (
-	github.com/byteweap/wukong v0.0.1
+	github.com/byteweap/meta v0.0.1
 	github.com/nacos-group/nacos-sdk-go v1.1.6
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
@@ -24,4 +24,4 @@ require (
 	gopkg.in/ini.v1 v1.42.0 // indirect
 )
 
-replace github.com/byteweap/wukong => ../../..
+replace github.com/byteweap/meta => ../../..

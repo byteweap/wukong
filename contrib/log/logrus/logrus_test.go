@@ -7,7 +7,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/byteweap/wukong/component/log"
+	"github.com/byteweap/meta/component/log"
 )
 
 // TestLoggerLog 测试日志输出

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/byteweap/wukong/component/broker"
-	"github.com/byteweap/wukong/encoding/proto"
+	"github.com/byteweap/meta/component/broker"
+	"github.com/byteweap/meta/encoding/proto"
 )
 
 type RpcMessageHandler func(*Mesh, *broker.Message) ([]byte, string, int)

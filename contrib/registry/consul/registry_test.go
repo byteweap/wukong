@@ -16,7 +16,7 @@ import (
 
 	"github.com/hashicorp/consul/api"
 
-	"github.com/byteweap/wukong/component/registry"
+	"github.com/byteweap/meta/component/registry"
 )
 
 func tcpServer(lis net.Listener) {

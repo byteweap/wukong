@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"reflect"
 
-	"github.com/byteweap/wukong/encoding"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/byteweap/meta/encoding"
 )
 
 // Name 是 JSON 编解码器注册的名称

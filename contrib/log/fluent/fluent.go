@@ -8,7 +8,7 @@ import (
 
 	"github.com/fluent/fluent-logger-golang/fluent"
 
-	"github.com/byteweap/wukong/component/log"
+	"github.com/byteweap/meta/component/log"
 )
 
 // Logger 是 fluent 日志记录器

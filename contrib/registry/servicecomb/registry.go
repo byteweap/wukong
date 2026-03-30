@@ -11,8 +11,8 @@ import (
 	"github.com/go-chassis/sc-client"
 	"github.com/gofrs/uuid"
 
-	"github.com/byteweap/wukong/component/log"
-	"github.com/byteweap/wukong/component/registry"
+	"github.com/byteweap/meta/component/log"
+	"github.com/byteweap/meta/component/registry"
 )
 
 func init() {

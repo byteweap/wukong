@@ -12,8 +12,8 @@ import (
 	"github.com/polarismesh/polaris-go/pkg/config"
 	"github.com/polarismesh/polaris-go/pkg/model"
 
-	"github.com/byteweap/wukong/component/log"
-	"github.com/byteweap/wukong/component/registry"
+	"github.com/byteweap/meta/component/log"
+	"github.com/byteweap/meta/component/registry"
 )
 
 // _instanceIDSeparator 用于拼接实例 ID

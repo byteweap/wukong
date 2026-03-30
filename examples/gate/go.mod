@@ -1,13 +1,13 @@
-module github.com/byteweap/wukong/examples/gate
+module github.com/byteweap/meta/examples/gate
 
 go 1.26.1
 
 require (
-	github.com/byteweap/wukong v0.0.1
-	github.com/byteweap/wukong/contrib/broker/nats v0.0.0-00010101000000-000000000000
-	github.com/byteweap/wukong/contrib/locator/redis v0.0.0-00010101000000-000000000000
-	github.com/byteweap/wukong/contrib/registry/nacos v0.0.0-00010101000000-000000000000
-	github.com/byteweap/wukong/contrib/selector v0.0.0-00010101000000-000000000000
+	github.com/byteweap/meta v0.0.1
+	github.com/byteweap/meta/contrib/broker/nats v0.0.0-00010101000000-000000000000
+	github.com/byteweap/meta/contrib/locator/redis v0.0.0-00010101000000-000000000000
+	github.com/byteweap/meta/contrib/registry/nacos v0.0.0-00010101000000-000000000000
+	github.com/byteweap/meta/contrib/selector v0.0.0-00010101000000-000000000000
 	github.com/nacos-group/nacos-sdk-go v1.1.6
 	github.com/redis/go-redis/v9 v9.18.0
 )
@@ -41,12 +41,12 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 )
 
-replace github.com/byteweap/wukong => ../..
+replace github.com/byteweap/meta => ../..
 
-replace github.com/byteweap/wukong/contrib/broker/nats => ../../contrib/broker/nats
+replace github.com/byteweap/meta/contrib/broker/nats => ../../contrib/broker/nats
 
-replace github.com/byteweap/wukong/contrib/locator/redis => ../../contrib/locator/redis
+replace github.com/byteweap/meta/contrib/locator/redis => ../../contrib/locator/redis
 
-replace github.com/byteweap/wukong/contrib/registry/nacos => ../../contrib/registry/nacos
+replace github.com/byteweap/meta/contrib/registry/nacos => ../../contrib/registry/nacos
 
-replace github.com/byteweap/wukong/contrib/selector => ../../contrib/selector
+replace github.com/byteweap/meta/contrib/selector => ../../contrib/selector

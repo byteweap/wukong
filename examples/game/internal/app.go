@@ -3,12 +3,12 @@ package internal
 import (
 	goredis "github.com/redis/go-redis/v9"
 
-	"github.com/byteweap/wukong/contrib/broker/nats"
-	"github.com/byteweap/wukong/contrib/locator/redis"
-	"github.com/byteweap/wukong/examples/game/internal/handler/event"
-	"github.com/byteweap/wukong/examples/game/internal/handler/rpc"
-	"github.com/byteweap/wukong/examples/game/internal/server"
-	"github.com/byteweap/wukong/server/mesh"
+	"github.com/byteweap/meta/contrib/broker/nats"
+	"github.com/byteweap/meta/contrib/locator/redis"
+	"github.com/byteweap/meta/examples/game/internal/handler/event"
+	"github.com/byteweap/meta/examples/game/internal/handler/rpc"
+	"github.com/byteweap/meta/examples/game/internal/server"
+	"github.com/byteweap/meta/server/mesh"
 )
 
 func New() (*server.Server, func(), error) {

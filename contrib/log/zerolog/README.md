@@ -10,7 +10,7 @@
 **安装**
 
 ```bash
-go get github.com/byteweap/wukong/contrib/log/zerolog
+go get github.com/byteweap/meta/contrib/log/zerolog
 ```
 
 **最小用法**
@@ -21,8 +21,8 @@ package main
 import (
   "os"
 
-  "github.com/byteweap/wukong/component/log"
-  zlog "github.com/byteweap/wukong/contrib/log/zerolog"
+  "github.com/byteweap/meta/component/log"
+  zlog "github.com/byteweap/meta/contrib/log/zerolog"
   "github.com/rs/zerolog"
 )
 

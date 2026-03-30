@@ -3,7 +3,7 @@ package xml
 import (
 	"encoding/xml"
 
-	"github.com/byteweap/wukong/encoding"
+	"github.com/byteweap/meta/encoding"
 )
 
 // Name 是 XML 编解码器注册的名称

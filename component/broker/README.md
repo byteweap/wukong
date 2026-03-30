@@ -32,8 +32,8 @@ package main
 import (
   "context"
 
-  "github.com/byteweap/wukong/component/broker"
-  nb "github.com/byteweap/wukong/contrib/broker/nats"
+  "github.com/byteweap/meta/component/broker"
+  nb "github.com/byteweap/meta/contrib/broker/nats"
 )
 
 func main() {
@@ -53,4 +53,4 @@ func main() {
 
 ## 实现（contrib）
 
-- NATS Core: `github.com/byteweap/wukong/contrib/broker/nats`
+- NATS Core: `github.com/byteweap/meta/contrib/broker/nats`

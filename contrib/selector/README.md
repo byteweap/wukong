@@ -1,6 +1,6 @@
 # Selector Contrib
 
-本模块提供三种常用的节点选择器实现，基于 `github.com/byteweap/wukong/component/selector` 的接口规范：
+本模块提供三种常用的节点选择器实现，基于 `github.com/byteweap/meta/component/selector` 的接口规范：
 
 - `random`：按权重加权随机
 - `roundrobin`：轮询
@@ -13,14 +13,14 @@
 ## 安装
 
 ```bash
-go get github.com/byteweap/wukong/contrib/selector
+go get github.com/byteweap/meta/contrib/selector
 ```
 
 分别引用具体实现包即可：
 
-- `github.com/byteweap/wukong/contrib/selector/random`
-- `github.com/byteweap/wukong/contrib/selector/roundrobin`
-- `github.com/byteweap/wukong/contrib/selector/wrr`
+- `github.com/byteweap/meta/contrib/selector/random`
+- `github.com/byteweap/meta/contrib/selector/roundrobin`
+- `github.com/byteweap/meta/contrib/selector/wrr`
 
 ---
 
@@ -63,8 +63,8 @@ package main
 
 import (
   "fmt"
-  "github.com/byteweap/wukong/component/selector"
-  "github.com/byteweap/wukong/contrib/selector/random"
+  "github.com/byteweap/meta/component/selector"
+  "github.com/byteweap/meta/contrib/selector/random"
 )
 
 type node struct {
@@ -135,7 +135,7 @@ n, err := sel.Select("ignored", onlySH)
 示例：
 
 ```go
-import "github.com/byteweap/wukong/contrib/selector/random"
+import "github.com/byteweap/meta/contrib/selector/random"
 
 sel := random.NewRandomSelector()
 ```
@@ -157,7 +157,7 @@ sel := random.NewRandomSelector()
 示例：
 
 ```go
-import "github.com/byteweap/wukong/contrib/selector/roundrobin"
+import "github.com/byteweap/meta/contrib/selector/roundrobin"
 
 sel := roundrobin.NewRoundRobinSelector()
 ```
@@ -180,7 +180,7 @@ sel := roundrobin.NewRoundRobinSelector()
 示例：
 
 ```go
-import "github.com/byteweap/wukong/contrib/selector/wrr"
+import "github.com/byteweap/meta/contrib/selector/wrr"
 
 sel := wrr.NewWRRSelector()
 ```

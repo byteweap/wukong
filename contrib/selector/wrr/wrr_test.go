@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/byteweap/wukong/component/selector"
+	"github.com/byteweap/meta/component/selector"
 )
 
 func TestWRRSelector_Select_EmptyNodes(t *testing.T) {

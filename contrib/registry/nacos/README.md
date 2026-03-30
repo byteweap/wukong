@@ -10,7 +10,7 @@
 **安装**
 
 ```bash
-go get github.com/byteweap/wukong/contrib/registry/nacos
+go get github.com/byteweap/meta/contrib/registry/nacos
 ```
 
 **最小用法**
@@ -21,8 +21,8 @@ package main
 import (
   "context"
 
-  "github.com/byteweap/wukong/component/registry"
-  nreg "github.com/byteweap/wukong/contrib/registry/nacos"
+  "github.com/byteweap/meta/component/registry"
+  nreg "github.com/byteweap/meta/contrib/registry/nacos"
   "github.com/nacos-group/nacos-sdk-go/clients/naming_client"
 )
 

@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/byteweap/wukong/component/log"
+	"github.com/byteweap/meta/component/log"
 )
 
 // TestMain 启动测试监听器

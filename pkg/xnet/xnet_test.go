@@ -3,7 +3,7 @@ package xnet_test
 import (
 	"testing"
 
-	"github.com/byteweap/wukong/pkg/xnet"
+	"github.com/byteweap/meta/pkg/xnet"
 )
 
 func TestIP2Long(t *testing.T) {

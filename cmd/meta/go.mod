@@ -1,4 +1,4 @@
-module github.com/byteweap/wukong/cmd/wukong
+module github.com/byteweap/meta/cmd/meta
 
 go 1.25.5
 
@@ -9,4 +9,4 @@ require (
 	github.com/spf13/pflag v1.0.9 // indirect
 )
 
-replace github.com/byteweap/wukong => ../../
+replace github.com/byteweap/meta => ../../

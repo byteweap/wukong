@@ -3,7 +3,7 @@ package wrr
 import (
 	"sync"
 
-	"github.com/byteweap/wukong/component/selector"
+	"github.com/byteweap/meta/component/selector"
 )
 
 // Selector Weighted Round Robin 加权轮询选择器

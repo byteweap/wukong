@@ -10,7 +10,7 @@
 **安装**
 
 ```bash
-go get github.com/byteweap/wukong/contrib/log/fluent
+go get github.com/byteweap/meta/contrib/log/fluent
 ```
 
 **最小用法**
@@ -19,8 +19,8 @@ go get github.com/byteweap/wukong/contrib/log/fluent
 package main
 
 import (
-  "github.com/byteweap/wukong/component/log"
-  flog "github.com/byteweap/wukong/contrib/log/fluent"
+  "github.com/byteweap/meta/component/log"
+  flog "github.com/byteweap/meta/contrib/log/fluent"
 )
 
 func main() {

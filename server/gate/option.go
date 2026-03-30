@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/byteweap/wukong/component/broker"
-	"github.com/byteweap/wukong/component/locator"
-	"github.com/byteweap/wukong/component/registry"
-	"github.com/byteweap/wukong/component/selector"
-	"github.com/byteweap/wukong/pkg/conv"
+	"github.com/byteweap/meta/component/broker"
+	"github.com/byteweap/meta/component/locator"
+	"github.com/byteweap/meta/component/registry"
+	"github.com/byteweap/meta/component/selector"
+	"github.com/byteweap/meta/pkg/conv"
 )
 
 const (

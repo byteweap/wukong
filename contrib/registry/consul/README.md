@@ -10,7 +10,7 @@
 **安装**
 
 ```bash
-go get github.com/byteweap/wukong/contrib/registry/consul
+go get github.com/byteweap/meta/contrib/registry/consul
 ```
 
 **最小用法**
@@ -21,8 +21,8 @@ package main
 import (
   "context"
 
-  "github.com/byteweap/wukong/component/registry"
-  creg "github.com/byteweap/wukong/contrib/registry/consul"
+  "github.com/byteweap/meta/component/registry"
+  creg "github.com/byteweap/meta/contrib/registry/consul"
   "github.com/hashicorp/consul/api"
 )
 

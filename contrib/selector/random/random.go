@@ -4,8 +4,8 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/byteweap/wukong/component/selector"
-	"github.com/byteweap/wukong/pkg/xrand"
+	"github.com/byteweap/meta/component/selector"
+	"github.com/byteweap/meta/pkg/xrand"
 )
 
 // Selector 随机选择器（按权重加权随机）

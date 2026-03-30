@@ -9,10 +9,10 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/vo"
 
-	"github.com/byteweap/wukong"
-	"github.com/byteweap/wukong/component/log"
-	"github.com/byteweap/wukong/contrib/registry/nacos"
-	"github.com/byteweap/wukong/examples/game/internal"
+	"github.com/byteweap/meta"
+	"github.com/byteweap/meta/component/log"
+	"github.com/byteweap/meta/contrib/registry/nacos"
+	"github.com/byteweap/meta/examples/game/internal"
 )
 
 func newNamingClient() naming_client.INamingClient {

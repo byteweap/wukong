@@ -2,7 +2,7 @@ package toml
 
 import (
 	"github.com/BurntSushi/toml"
-	"github.com/byteweap/wukong/encoding"
+	"github.com/byteweap/meta/encoding"
 )
 
 const Name = "toml"

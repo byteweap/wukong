@@ -1,9 +1,9 @@
 package server
 
 import (
-	"github.com/byteweap/wukong/examples/game/internal/player"
-	"github.com/byteweap/wukong/examples/game/internal/room"
-	"github.com/byteweap/wukong/server/mesh"
+	"github.com/byteweap/meta/examples/game/internal/player"
+	"github.com/byteweap/meta/examples/game/internal/room"
+	"github.com/byteweap/meta/server/mesh"
 )
 
 // Server 核心服务

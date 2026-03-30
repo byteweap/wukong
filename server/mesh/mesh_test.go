@@ -3,7 +3,7 @@ package mesh_test
 import (
 	"testing"
 
-	"github.com/byteweap/wukong/server/mesh"
+	"github.com/byteweap/meta/server/mesh"
 )
 
 type Params struct {

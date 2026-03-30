@@ -11,17 +11,17 @@ import (
 
 	"github.com/olahol/melody"
 
-	"github.com/byteweap/wukong"
-	"github.com/byteweap/wukong/component/broker"
-	"github.com/byteweap/wukong/component/log"
-	"github.com/byteweap/wukong/component/registry"
-	"github.com/byteweap/wukong/component/selector"
-	es "github.com/byteweap/wukong/errors"
-	"github.com/byteweap/wukong/internal/cluster"
-	"github.com/byteweap/wukong/pkg/async"
-	"github.com/byteweap/wukong/pkg/endpoint"
-	"github.com/byteweap/wukong/pkg/host"
-	"github.com/byteweap/wukong/server"
+	"github.com/byteweap/meta"
+	"github.com/byteweap/meta/component/broker"
+	"github.com/byteweap/meta/component/log"
+	"github.com/byteweap/meta/component/registry"
+	"github.com/byteweap/meta/component/selector"
+	es "github.com/byteweap/meta/errors"
+	"github.com/byteweap/meta/internal/cluster"
+	"github.com/byteweap/meta/pkg/async"
+	"github.com/byteweap/meta/pkg/endpoint"
+	"github.com/byteweap/meta/pkg/host"
+	"github.com/byteweap/meta/server"
 )
 
 type Gate struct {

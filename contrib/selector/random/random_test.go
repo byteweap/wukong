@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/byteweap/wukong/component/selector"
+	"github.com/byteweap/meta/component/selector"
 )
 
 func TestRandomSelector_Select_EmptyNodes(t *testing.T) {

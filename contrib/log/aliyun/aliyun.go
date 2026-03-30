@@ -10,7 +10,7 @@ import (
 	"github.com/aliyun/aliyun-log-go-sdk/producer"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/byteweap/wukong/component/log"
+	"github.com/byteweap/meta/component/log"
 )
 
 // Logger 阿里云日志记录器接口

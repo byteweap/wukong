@@ -1,6 +1,6 @@
 package server
 
-import "github.com/byteweap/wukong/examples/game/internal/service"
+import "github.com/byteweap/meta/examples/game/internal/service"
 
 var _ service.IRoomService = (*Server)(nil)
 

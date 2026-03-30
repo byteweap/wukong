@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/byteweap/wukong/component/log"
+	"github.com/byteweap/meta/component/log"
 )
 
 // TestWithEndpoint 测试设置服务地址

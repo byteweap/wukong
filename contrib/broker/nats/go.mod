@@ -1,9 +1,9 @@
-module github.com/byteweap/wukong/contrib/broker/nats
+module github.com/byteweap/meta/contrib/broker/nats
 
 go 1.26.1
 
 require (
-	github.com/byteweap/wukong v0.0.1
+	github.com/byteweap/meta v0.0.1
 	github.com/nats-io/nats-server/v2 v2.12.4
 	github.com/nats-io/nats.go v1.48.0
 	github.com/stretchr/testify v1.11.1
@@ -26,4 +26,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/byteweap/wukong => ../../..
+replace github.com/byteweap/meta => ../../..

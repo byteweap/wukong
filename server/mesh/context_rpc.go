@@ -3,7 +3,7 @@ package mesh
 import (
 	"sync"
 
-	"github.com/byteweap/wukong/component/broker"
+	"github.com/byteweap/meta/component/broker"
 )
 
 type RpcContext struct {

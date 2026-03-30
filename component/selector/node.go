@@ -1,6 +1,6 @@
 package selector
 
-import "github.com/byteweap/wukong/pkg/conv"
+import "github.com/byteweap/meta/pkg/conv"
 
 type Node interface {
 	ID() string

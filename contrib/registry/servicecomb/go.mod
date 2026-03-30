@@ -1,9 +1,9 @@
-module github.com/byteweap/wukong/contrib/registry/servicecomb
+module github.com/byteweap/meta/contrib/registry/servicecomb
 
 go 1.26.1
 
 require (
-	github.com/byteweap/wukong v0.0.1
+	github.com/byteweap/meta v0.0.1
 	github.com/go-chassis/cari v0.9.0
 	github.com/go-chassis/sc-client v0.7.0
 	github.com/gofrs/uuid v4.4.0+incompatible
@@ -20,4 +20,4 @@ require (
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 )
 
-replace github.com/byteweap/wukong => ../../..
+replace github.com/byteweap/meta => ../../..

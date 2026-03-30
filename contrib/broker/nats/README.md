@@ -11,8 +11,8 @@
 import (
   "context"
   "time"
-  nb "github.com/byteweap/wukong/contrib/broker/nats"
-  "github.com/byteweap/wukong/plugin/broker"
+  nb "github.com/byteweap/meta/contrib/broker/nats"
+  "github.com/byteweap/meta/plugin/broker"
 )
 
 func example() error {

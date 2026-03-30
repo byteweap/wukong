@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/byteweap/wukong/component/registry"
+	"github.com/byteweap/meta/component/registry"
 )
 
 func TestRegistry(_ *testing.T) {

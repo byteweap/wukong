@@ -1,7 +1,7 @@
 package yaml
 
 import (
-	"github.com/byteweap/wukong/encoding"
+	"github.com/byteweap/meta/encoding"
 	"gopkg.in/yaml.v3"
 )
 

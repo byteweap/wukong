@@ -5,7 +5,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/byteweap/wukong/cmd/wukong/internal/group"
+	"github.com/byteweap/meta/cmd/meta/internal/group"
 )
 
 const release = "v1.0.0"

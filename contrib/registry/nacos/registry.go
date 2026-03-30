@@ -14,7 +14,7 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/common/constant"
 	"github.com/nacos-group/nacos-sdk-go/vo"
 
-	"github.com/byteweap/wukong/component/registry"
+	"github.com/byteweap/meta/component/registry"
 )
 
 var ErrServiceInstanceNameEmpty = errors.New("wukong/nacos: ServiceInstance.Name can not be empty")

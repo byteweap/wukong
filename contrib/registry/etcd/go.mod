@@ -1,9 +1,9 @@
-module github.com/byteweap/wukong/contrib/registry/etcd
+module github.com/byteweap/meta/contrib/registry/etcd
 
 go 1.26.1
 
 require (
-	github.com/byteweap/wukong v0.0.1
+	github.com/byteweap/meta v0.0.1
 	go.etcd.io/etcd/client/v3 v3.6.7
 	google.golang.org/grpc v1.78.0
 )
@@ -26,4 +26,4 @@ require (
 	google.golang.org/protobuf v1.36.11 // indirect
 )
 
-replace github.com/byteweap/wukong => ../../..
+replace github.com/byteweap/meta => ../../..

@@ -1,10 +1,10 @@
-module github.com/byteweap/wukong/contrib/log/aliyun
+module github.com/byteweap/meta/contrib/log/aliyun
 
 go 1.26.1
 
 require (
 	github.com/aliyun/aliyun-log-go-sdk v0.1.115
-	github.com/byteweap/wukong v0.0.1
+	github.com/byteweap/meta v0.0.1
 	google.golang.org/protobuf v1.36.11
 )
 
@@ -40,4 +40,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/byteweap/wukong => ../../..
+replace github.com/byteweap/meta => ../../..

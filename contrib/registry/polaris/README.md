@@ -10,7 +10,7 @@
 **安装**
 
 ```bash
-go get github.com/byteweap/wukong/contrib/registry/polaris
+go get github.com/byteweap/meta/contrib/registry/polaris
 ```
 
 **最小用法**
@@ -21,8 +21,8 @@ package main
 import (
   "context"
 
-  "github.com/byteweap/wukong/component/registry"
-  preg "github.com/byteweap/wukong/contrib/registry/polaris"
+  "github.com/byteweap/meta/component/registry"
+  preg "github.com/byteweap/meta/contrib/registry/polaris"
   "github.com/polarismesh/polaris-go/pkg/config"
 )
 

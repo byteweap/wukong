@@ -3,7 +3,7 @@ package roundrobin
 import (
 	"sync/atomic"
 
-	"github.com/byteweap/wukong/component/selector"
+	"github.com/byteweap/meta/component/selector"
 )
 
 // Selector 轮询选择器

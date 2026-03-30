@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/byteweap/wukong/component/registry"
+	"github.com/byteweap/meta/component/registry"
 	"google.golang.org/grpc"
 
 	clientv3 "go.etcd.io/etcd/client/v3"

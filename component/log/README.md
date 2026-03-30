@@ -44,35 +44,35 @@ log.Error("warn log")
 ### zap
 
 ```shell
-go get -u github.com/byteweap/wukong/contrib/log/zap
+go get -u github.com/byteweap/meta/contrib/log/zap
 ```
 
 ### logrus
 
 ```shell
-go get -u github.com/byteweap/wukong/contrib/log/logrus
+go get -u github.com/byteweap/meta/contrib/log/logrus
 ```
 
 ### zerolog
 
 ```shell
-go get -u github.com/byteweap/wukong/contrib/log/zerolog
+go get -u github.com/byteweap/meta/contrib/log/zerolog
 ```
 
 ### fluent
 
 ```shell
-go get -u github.com/byteweap/wukong/contrib/log/fluent
+go get -u github.com/byteweap/meta/contrib/log/fluent
 ```
 
 ### aliyun
 
 ```shell
-go get -u github.com/byteweap/wukong/contrib/log/aliyun
+go get -u github.com/byteweap/meta/contrib/log/aliyun
 ```
 
 ### tencent
 
 ```shell
-go get -u github.com/byteweap/wukong/contrib/log/tencent
+go get -u github.com/byteweap/meta/contrib/log/tencent
 ```

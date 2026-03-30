@@ -3,10 +3,10 @@ package gate
 import (
 	"github.com/olahol/melody"
 
-	"github.com/byteweap/wukong/component/log"
-	"github.com/byteweap/wukong/encoding/proto"
-	"github.com/byteweap/wukong/envelope"
-	"github.com/byteweap/wukong/internal/cluster"
+	"github.com/byteweap/meta/component/log"
+	"github.com/byteweap/meta/encoding/proto"
+	"github.com/byteweap/meta/envelope"
+	"github.com/byteweap/meta/internal/cluster"
 )
 
 // 连接建立时调用

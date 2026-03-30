@@ -25,12 +25,12 @@ update_go_mod() {
     /^[[:space:]]*require[[:space:]]*\([[:space:]]*$/ { in_require=1; print; next }
     in_require && /^[[:space:]]*\)[[:space:]]*$/ { in_require=0; print; next }
     /^[[:space:]]*require[[:space:]]+github.com\/byteweap\/wukong[[:space:]]+\S+/ {
-      sub(/github.com\/byteweap\/wukong[[:space:]]+\S+/, "github.com/byteweap/wukong " expected)
+      sub(/github.com\/byteweap\/wukong[[:space:]]+\S+/, "github.com/byteweap/meta " expected)
       print
       next
     }
     in_require && /^[[:space:]]*github.com\/byteweap\/wukong[[:space:]]+\S+/ {
-      sub(/github.com\/byteweap\/wukong[[:space:]]+\S+/, "github.com/byteweap/wukong " expected)
+      sub(/github.com\/byteweap\/wukong[[:space:]]+\S+/, "github.com/byteweap/meta " expected)
       print
       next
     }
@@ -59,14 +59,14 @@ for gomod in "${go_mods[@]}"; do
       in_require=0
       continue
     fi
-    if [[ "$line" =~ ^[[:space:]]*require[[:space:]]+github.com/byteweap/wukong[[:space:]]+([^[:space:]]+) ]]; then
+    if [[ "$line" =~ ^[[:space:]]*require[[:space:]]+github.com/byteweap/meta[[:space:]]+([^[:space:]]+) ]]; then
       ver="${BASH_REMATCH[1]}"
       if [[ "$ver" != "$expected" ]]; then
         bad_deps+=("${gomod}: ${ver}")
       fi
       continue
     fi
-    if [[ $in_require -eq 1 && "$line" =~ ^[[:space:]]*github.com/byteweap/wukong[[:space:]]+([^[:space:]]+) ]]; then
+    if [[ $in_require -eq 1 && "$line" =~ ^[[:space:]]*github.com/byteweap/meta[[:space:]]+([^[:space:]]+) ]]; then
       ver="${BASH_REMATCH[1]}"
       if [[ "$ver" != "$expected" ]]; then
         bad_deps+=("${gomod}: ${ver}")

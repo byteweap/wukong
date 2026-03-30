@@ -10,7 +10,7 @@
 **安装**
 
 ```bash
-go get github.com/byteweap/wukong/contrib/registry/servicecomb
+go get github.com/byteweap/meta/contrib/registry/servicecomb
 ```
 
 **最小用法**
@@ -21,8 +21,8 @@ package main
 import (
   "context"
 
-  "github.com/byteweap/wukong/component/registry"
-  sreg "github.com/byteweap/wukong/contrib/registry/servicecomb"
+  "github.com/byteweap/meta/component/registry"
+  sreg "github.com/byteweap/meta/contrib/registry/servicecomb"
 )
 
 func main() {

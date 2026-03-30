@@ -10,14 +10,14 @@ import (
 	"github.com/nacos-group/nacos-sdk-go/vo"
 	goredis "github.com/redis/go-redis/v9"
 
-	"github.com/byteweap/wukong"
-	"github.com/byteweap/wukong/component/log"
-	"github.com/byteweap/wukong/component/selector"
-	"github.com/byteweap/wukong/contrib/broker/nats"
-	"github.com/byteweap/wukong/contrib/locator/redis"
-	"github.com/byteweap/wukong/contrib/registry/nacos"
-	"github.com/byteweap/wukong/contrib/selector/wrr"
-	"github.com/byteweap/wukong/server/gate"
+	"github.com/byteweap/meta"
+	"github.com/byteweap/meta/component/log"
+	"github.com/byteweap/meta/component/selector"
+	"github.com/byteweap/meta/contrib/broker/nats"
+	"github.com/byteweap/meta/contrib/locator/redis"
+	"github.com/byteweap/meta/contrib/registry/nacos"
+	"github.com/byteweap/meta/contrib/selector/wrr"
+	"github.com/byteweap/meta/server/gate"
 )
 
 func newNamingClient() naming_client.INamingClient {

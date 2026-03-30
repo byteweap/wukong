@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/byteweap/wukong/component/broker"
-	"github.com/byteweap/wukong/encoding/proto"
-	"github.com/byteweap/wukong/envelope"
+	"github.com/byteweap/meta/component/broker"
+	"github.com/byteweap/meta/encoding/proto"
+	"github.com/byteweap/meta/envelope"
 )
 
 // TestAdaptRequestAutoWrapPayload 验证自动适配能正确反序列化请求参数

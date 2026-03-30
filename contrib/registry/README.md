@@ -4,18 +4,18 @@
 
 ## 实现列表
 
-- etcd: `github.com/byteweap/wukong/contrib/registry/etcd`
-- consul: `github.com/byteweap/wukong/contrib/registry/consul`
-- nacos: `github.com/byteweap/wukong/contrib/registry/nacos`
-- zookeeper: `github.com/byteweap/wukong/contrib/registry/zookeeper`
-- polaris: `github.com/byteweap/wukong/contrib/registry/polaris`
-- servicecomb: `github.com/byteweap/wukong/contrib/registry/servicecomb`
-- eureka: `github.com/byteweap/wukong/contrib/registry/eureka`
+- etcd: `github.com/byteweap/meta/contrib/registry/etcd`
+- consul: `github.com/byteweap/meta/contrib/registry/consul`
+- nacos: `github.com/byteweap/meta/contrib/registry/nacos`
+- zookeeper: `github.com/byteweap/meta/contrib/registry/zookeeper`
+- polaris: `github.com/byteweap/meta/contrib/registry/polaris`
+- servicecomb: `github.com/byteweap/meta/contrib/registry/servicecomb`
+- eureka: `github.com/byteweap/meta/contrib/registry/eureka`
 
 ## 安装
 
 ```bash
-go get github.com/byteweap/wukong/contrib/registry/etcd
+go get github.com/byteweap/meta/contrib/registry/etcd
 ```
 
 替换为你需要的具体实现路径即可。

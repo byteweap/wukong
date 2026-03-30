@@ -1,9 +1,9 @@
-module github.com/byteweap/wukong/contrib/log/zerolog
+module github.com/byteweap/meta/contrib/log/zerolog
 
 go 1.26.1
 
 require (
-	github.com/byteweap/wukong v0.0.1
+	github.com/byteweap/meta v0.0.1
 	github.com/rs/zerolog v1.34.0
 )
 
@@ -13,4 +13,4 @@ require (
 	golang.org/x/sys v0.26.0 // indirect
 )
 
-replace github.com/byteweap/wukong => ../../..
+replace github.com/byteweap/meta => ../../..

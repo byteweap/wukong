@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-chassis/sc-client"
 
-	"github.com/byteweap/wukong/component/registry"
+	"github.com/byteweap/meta/component/registry"
 )
 
 type Watcher struct {

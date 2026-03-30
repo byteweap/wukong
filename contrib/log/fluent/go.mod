@@ -1,9 +1,9 @@
-module github.com/byteweap/wukong/contrib/log/fluent
+module github.com/byteweap/meta/contrib/log/fluent
 
 go 1.26.1
 
 require (
-	github.com/byteweap/wukong v0.0.1
+	github.com/byteweap/meta v0.0.1
 	github.com/fluent/fluent-logger-golang v1.10.1
 )
 
@@ -12,4 +12,4 @@ require (
 	github.com/tinylib/msgp v1.3.0 // indirect
 )
 
-replace github.com/byteweap/wukong => ../../..
+replace github.com/byteweap/meta => ../../..

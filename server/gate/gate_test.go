@@ -7,8 +7,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/byteweap/wukong"
-	"github.com/byteweap/wukong/server/gate"
+	"github.com/byteweap/meta"
+	"github.com/byteweap/meta/server/gate"
 )
 
 func TestGate(t *testing.T) {

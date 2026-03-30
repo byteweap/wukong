@@ -10,7 +10,7 @@
 **安装**
 
 ```bash
-go get github.com/byteweap/wukong/contrib/log/tencent
+go get github.com/byteweap/meta/contrib/log/tencent
 ```
 
 **最小用法**
@@ -19,8 +19,8 @@ go get github.com/byteweap/wukong/contrib/log/tencent
 package main
 
 import (
-  "github.com/byteweap/wukong/component/log"
-  tlog "github.com/byteweap/wukong/contrib/log/tencent"
+  "github.com/byteweap/meta/component/log"
+  tlog "github.com/byteweap/meta/contrib/log/tencent"
 )
 
 func main() {

@@ -1,7 +1,7 @@
 syntax = "proto3";
 package game;
 
-option go_package = "github.com/byteweap/wukong/examples/game/internal/pb;pb";
+option go_package = "github.com/byteweap/meta/examples/game/internal/pb;pb";
 
 // FindRoomRequest 查找房间请求
 message FindRoomRequest {

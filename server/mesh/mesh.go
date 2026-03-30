@@ -8,16 +8,16 @@ import (
 	"net/url"
 	"sync"
 
-	"github.com/byteweap/wukong"
-	"github.com/byteweap/wukong/component/broker"
-	"github.com/byteweap/wukong/component/log"
-	"github.com/byteweap/wukong/encoding/proto"
-	"github.com/byteweap/wukong/envelope"
-	es "github.com/byteweap/wukong/errors"
-	"github.com/byteweap/wukong/internal/cluster"
-	"github.com/byteweap/wukong/pkg/async"
-	"github.com/byteweap/wukong/pkg/conv"
-	"github.com/byteweap/wukong/server"
+	"github.com/byteweap/meta"
+	"github.com/byteweap/meta/component/broker"
+	"github.com/byteweap/meta/component/log"
+	"github.com/byteweap/meta/encoding/proto"
+	"github.com/byteweap/meta/envelope"
+	es "github.com/byteweap/meta/errors"
+	"github.com/byteweap/meta/internal/cluster"
+	"github.com/byteweap/meta/pkg/async"
+	"github.com/byteweap/meta/pkg/conv"
+	"github.com/byteweap/meta/server"
 )
 
 type Mesh struct {

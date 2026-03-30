@@ -7,8 +7,8 @@ import (
 
 // Space 房间空间
 type Space struct {
-	num   atomic.Uint32 // 房间数量
-	rooms sync.Map      // 房间集合 key: 房间ID value: *Room
+	num   atomic.Int32 // 房间数量
+	rooms sync.Map     // 房间集合 key: 房间ID value: *Room
 }
 
 func NewSpace() *Space {

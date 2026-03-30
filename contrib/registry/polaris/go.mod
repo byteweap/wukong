@@ -1,9 +1,9 @@
-module github.com/byteweap/wukong/contrib/registry/polaris
+module github.com/byteweap/meta/contrib/registry/polaris
 
 go 1.26.1
 
 require (
-	github.com/byteweap/wukong v0.0.1
+	github.com/byteweap/meta v0.0.1
 	github.com/polarismesh/polaris-go v1.6.1
 )
 
@@ -38,4 +38,4 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
-replace github.com/byteweap/wukong => ../../..
+replace github.com/byteweap/meta => ../../..

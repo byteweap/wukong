@@ -25,7 +25,7 @@ package main
 import (
   "context"
 
-  rloc "github.com/byteweap/wukong/contrib/locator/redis"
+  rloc "github.com/byteweap/meta/contrib/locator/redis"
   "github.com/redis/go-redis/v9"
 )
 
@@ -43,4 +43,4 @@ func main() {
 
 ## 实现（contrib）
 
-- Redis: `github.com/byteweap/wukong/contrib/locator/redis`
+- Redis: `github.com/byteweap/meta/contrib/locator/redis`

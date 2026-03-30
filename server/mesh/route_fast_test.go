@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/byteweap/wukong/component/broker"
-	"github.com/byteweap/wukong/encoding/proto"
-	"github.com/byteweap/wukong/envelope"
+	"github.com/byteweap/meta/component/broker"
+	"github.com/byteweap/meta/encoding/proto"
+	"github.com/byteweap/meta/envelope"
 )
 
 func TestRouteFastWithWrap(t *testing.T) {

@@ -1,9 +1,9 @@
-module github.com/byteweap/wukong/contrib/registry/consul
+module github.com/byteweap/meta/contrib/registry/consul
 
 go 1.26.1
 
 require (
-	github.com/byteweap/wukong v0.0.1
+	github.com/byteweap/meta v0.0.1
 	github.com/hashicorp/consul/api v1.33.2
 )
 
@@ -26,4 +26,4 @@ require (
 	golang.org/x/sys v0.35.0 // indirect
 )
 
-replace github.com/byteweap/wukong => ../../..
+replace github.com/byteweap/meta => ../../..

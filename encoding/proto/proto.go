@@ -5,7 +5,7 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/byteweap/wukong/encoding"
+	"github.com/byteweap/meta/encoding"
 	"google.golang.org/protobuf/proto"
 )
 

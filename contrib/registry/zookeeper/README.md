@@ -10,7 +10,7 @@
 **安装**
 
 ```bash
-go get github.com/byteweap/wukong/contrib/registry/zookeeper
+go get github.com/byteweap/meta/contrib/registry/zookeeper
 ```
 
 **最小用法**
@@ -22,8 +22,8 @@ import (
   "context"
   "time"
 
-  "github.com/byteweap/wukong/component/registry"
-  zreg "github.com/byteweap/wukong/contrib/registry/zookeeper"
+  "github.com/byteweap/meta/component/registry"
+  zreg "github.com/byteweap/meta/contrib/registry/zookeeper"
   "github.com/go-zookeeper/zk"
 )
 

@@ -17,14 +17,14 @@ func TestNewEndpoint(t *testing.T) {
 		want *url.URL
 	}{
 		{
-			name: "https://github.com/go-kratos/kratos/",
-			args: args{"https", "github.com/go-kratos/kratos/"},
-			want: &url.URL{Scheme: "https", Host: "github.com/go-kratos/kratos/"},
+			name: "https://github.com/byteweap/meta/",
+			args: args{"https", "github.com/byteweap/meta/"},
+			want: &url.URL{Scheme: "https", Host: "github.com/byteweap/meta/"},
 		},
 		{
-			name: "https://go-kratos.dev/",
-			args: args{"https", "go-kratos.dev/"},
-			want: &url.URL{Scheme: "https", Host: "go-kratos.dev/"},
+			name: "https://byteweap.cn/",
+			args: args{"https", "byteweap.cn/"},
+			want: &url.URL{Scheme: "https", Host: "byteweap.cn/"},
 		},
 		{
 			name: "https://www.google.com/",
@@ -53,14 +53,14 @@ func TestParseEndpoint(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "kratos",
-			args:    args{endpoints: []string{"https://github.com/go-kratos/kratos"}, scheme: "https"},
+			name:    "meta",
+			args:    args{endpoints: []string{"https://github.com/byteweap/meta"}, scheme: "https"},
 			want:    "github.com",
 			wantErr: false,
 		},
 		{
 			name:    "test",
-			args:    args{endpoints: []string{"http://go-kratos.dev/"}, scheme: "https"},
+			args:    args{endpoints: []string{"http://byteweap.cn/"}, scheme: "https"},
 			want:    "",
 			wantErr: false,
 		},
