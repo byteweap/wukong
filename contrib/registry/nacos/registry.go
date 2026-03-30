@@ -17,7 +17,7 @@ import (
 	"github.com/byteweap/meta/component/registry"
 )
 
-var ErrServiceInstanceNameEmpty = errors.New("wukong/nacos: ServiceInstance.Name can not be empty")
+var ErrServiceInstanceNameEmpty = errors.New("meta/nacos: ServiceInstance.Name can not be empty")
 
 // Registry 是 nacos 注册中心实现
 type Registry struct {

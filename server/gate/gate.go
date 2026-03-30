@@ -127,7 +127,7 @@ func (g *Gate) setup(name, appID string, ctx context.Context) error {
 // Start 启动网关
 func (g *Gate) Start(ctx context.Context) error {
 
-	app, ok := wukong.FromContext(ctx)
+	app, ok := meta.FromContext(ctx)
 	if !ok {
 		return es.ErrAppNotFound
 	}

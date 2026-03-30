@@ -11,9 +11,9 @@ import (
 const release = "v1.0.0"
 
 var root = &cobra.Command{
-	Use:     "wukong",
-	Short:   "WuKong: An elegant toolkit For wukong game framework.",
-	Long:    "WuKong: An elegant toolkit For wukong game framework.",
+	Use:     "meta",
+	Short:   "meta: An elegant toolkit For meta game framework.",
+	Long:    "meta: An elegant toolkit For meta game framework.",
 	Version: release,
 }
 

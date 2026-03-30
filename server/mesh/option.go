@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	defaultPrefix            = "wukong"
+	defaultPrefix            = "meta"
 	defaultMessageBufferSize = 256
 )
 
@@ -29,7 +29,7 @@ func defaultOptions() *options {
 	}
 }
 
-// Prefix 设置 broker subject 前缀, 默认: wukong
+// Prefix 设置 broker subject 前缀, 默认: meta
 func Prefix(prefix string) Option {
 	return func(o *options) {
 		if prefix != "" {

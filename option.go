@@ -1,4 +1,4 @@
-package wukong
+package meta
 
 import (
 	"context"
@@ -7,10 +7,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/byteweap/meta/component/log"
 	"github.com/byteweap/meta/component/registry"
 	"github.com/byteweap/meta/server"
-	"github.com/google/uuid"
 )
 
 type (
@@ -49,7 +50,7 @@ type (
 func defaultOptions() *options {
 	return &options{
 		id:              uuid.New().String(),
-		name:            "wukong",
+		name:            "meta",
 		version:         "v1.0.0",
 		metadata:        map[string]string{},
 		endpoints:       []*url.URL{},

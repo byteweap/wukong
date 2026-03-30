@@ -34,7 +34,7 @@ const (
 	envKey           = "environment"
 	envVar           = "CAS_ENVIRONMENT_ID"
 	appIDVar         = "CAS_APPLICATION_NAME"
-	frameWorkName    = "wukong"
+	frameWorkName    = "meta"
 	frameWorkVersion = "v1"
 )
 

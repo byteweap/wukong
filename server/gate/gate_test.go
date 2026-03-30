@@ -26,7 +26,7 @@ func TestGate(t *testing.T) {
 		//gate.Broker(broker.Broker("")),
 		//gate.Discovery(discovery.Discovery("")),
 	)
-	ctx := wukong.NewContext(context.Background(), wukong.New())
+	ctx := meta.NewContext(context.Background(), meta.New())
 
 	require.Nil(t, g.Start(ctx))
 

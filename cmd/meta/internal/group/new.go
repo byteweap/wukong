@@ -6,7 +6,7 @@ import "github.com/spf13/cobra"
 var CmdNew = &cobra.Command{
 	Use:     "new",
 	Short:   "create a service project by the default template.",
-	Example: "wukong new gate",
+	Example: "meta new gate",
 	Run:     coreNew,
 }
 

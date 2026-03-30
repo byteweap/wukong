@@ -1,4 +1,4 @@
-package wukong
+package meta
 
 import (
 	"context"
@@ -7,9 +7,10 @@ import (
 	"os/signal"
 	"sync"
 
+	"golang.org/x/sync/errgroup"
+
 	"github.com/byteweap/meta/component/log"
 	"github.com/byteweap/meta/component/registry"
-	"golang.org/x/sync/errgroup"
 )
 
 type AppInfo interface {

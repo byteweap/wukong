@@ -51,7 +51,7 @@ func main() {
 	// 2. 定位器
 	loc := redis.New(goredis.UniversalOptions{
 		Addrs: []string{"127.0.0.1:6379"},
-	}, "wukong")
+	}, "meta")
 	defer loc.Close()
 
 	// 3. broker
@@ -61,12 +61,12 @@ func main() {
 	}
 	defer broker.Close()
 
-	err = wukong.New(
-		wukong.ID(fmt.Sprintf("gate-%d", rand.IntN(100))),
-		wukong.Name("gate"),
-		wukong.Version("v1.0.0"),
-		wukong.Metadata(map[string]string{"author": "Leo"}),
-		wukong.Server(gate.New(
+	err = meta.New(
+		meta.ID(fmt.Sprintf("gate-%d", rand.IntN(100))),
+		meta.Name("gate"),
+		meta.Version("v1.0.0"),
+		meta.Metadata(map[string]string{"author": "Leo"}),
+		meta.Server(gate.New(
 			gate.Addr(fmt.Sprintf(":%d", rand.IntN(1000)+8000)),
 			gate.Locator(loc),
 			gate.Discovery(reg),
@@ -75,7 +75,7 @@ func main() {
 				return wrr.New()
 			}),
 		)),
-		wukong.Registry(reg),
+		meta.Registry(reg),
 	).Run()
 	if err != nil {
 		log.Errorf("app run error: %v", err)

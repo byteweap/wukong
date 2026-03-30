@@ -57,7 +57,7 @@ func (*Mesh) Kind() server.Kind {
 
 // Start 启动 Mesh 服务
 func (m *Mesh) Start(ctx context.Context) error {
-	app, ok := wukong.FromContext(ctx)
+	app, ok := meta.FromContext(ctx)
 	if !ok {
 		return es.ErrAppNotFound
 	}
@@ -126,7 +126,7 @@ func (m *Mesh) Stop(ctx context.Context) error {
 
 // Endpoint 返回服务监听地址
 func (m *Mesh) Endpoint(ctx context.Context) (*url.URL, error) {
-	app, ok := wukong.FromContext(ctx)
+	app, ok := meta.FromContext(ctx)
 	if !ok {
 		return nil, es.ErrAppNotFound
 	}

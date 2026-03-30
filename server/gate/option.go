@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	defaultPrefix            = "wukong"
+	defaultPrefix            = "meta"
 	defaultPath              = "/"
 	defaultAddr              = ":9000"
 	defaultWriteTimeout      = 5 * time.Second
@@ -67,7 +67,7 @@ func defaultOptions() *options {
 	}
 }
 
-// Prefix 设置前缀(subject、redis key), 默认: wukong
+// Prefix 设置前缀(subject、redis key), 默认: meta
 func Prefix(prefix string) Option {
 	return func(o *options) {
 		if o.prefix != "" {

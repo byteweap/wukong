@@ -24,13 +24,13 @@ update_go_mod() {
     BEGIN { in_require=0 }
     /^[[:space:]]*require[[:space:]]*\([[:space:]]*$/ { in_require=1; print; next }
     in_require && /^[[:space:]]*\)[[:space:]]*$/ { in_require=0; print; next }
-    /^[[:space:]]*require[[:space:]]+github.com\/byteweap\/wukong[[:space:]]+\S+/ {
-      sub(/github.com\/byteweap\/wukong[[:space:]]+\S+/, "github.com/byteweap/meta " expected)
+    /^[[:space:]]*require[[:space:]]+github.com\/byteweap\/meta[[:space:]]+\S+/ {
+      sub(/github.com\/byteweap\/meta[[:space:]]+\S+/, "github.com/byteweap/meta " expected)
       print
       next
     }
-    in_require && /^[[:space:]]*github.com\/byteweap\/wukong[[:space:]]+\S+/ {
-      sub(/github.com\/byteweap\/wukong[[:space:]]+\S+/, "github.com/byteweap/meta " expected)
+    in_require && /^[[:space:]]*github.com\/byteweap\/meta[[:space:]]+\S+/ {
+      sub(/github.com\/byteweap\/meta[[:space:]]+\S+/, "github.com/byteweap/meta " expected)
       print
       next
     }
