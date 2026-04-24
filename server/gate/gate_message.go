@@ -1,16 +1,25 @@
 package gate
 
 import (
+	"errors"
+	"net/http"
+
 	"github.com/byteweap/meta/component/broker"
 	"github.com/byteweap/meta/component/log"
 	"github.com/byteweap/meta/encoding/proto"
 	"github.com/byteweap/meta/envelope"
 	"github.com/byteweap/meta/internal/cluster"
+	"github.com/byteweap/meta/pkg/conv"
 )
 
 // handlerRequestReplyMessage 来自其它服务的(request-reply)消息
 func (g *Gate) handleRequestReplyMessage(msg *broker.Message) {
-	// todo
+	if msg == nil {
+		return
+	}
+	if err := g.replyError(msg, http.StatusNotImplemented, "gate request-reply is not implemented"); err != nil {
+		log.Errorf("[websocket] request-reply unsupported, reply error: %v", err)
+	}
 }
 
 // handlerPubSubMessage 来自Mesh服务的(pub-sub)消息
@@ -40,6 +49,22 @@ func (g *Gate) handleMessage(msg *broker.Message) {
 	} else {
 		g.handlePubSubMessage(msg)
 	}
+}
+
+func (g *Gate) replyError(reqMsg *broker.Message, code int, tip string) error {
+	if reqMsg == nil {
+		return errors.New("request message is nil")
+	}
+	if reqMsg.Reply == "" {
+		return errors.New("reply subject is empty")
+	}
+	header := reqMsg.Header
+	if header == nil {
+		header = broker.Header{}
+	}
+	header.Set("code", conv.String(code))
+	header.Set("tip", tip)
+	return g.opts.broker.Reply(g.ctx, reqMsg, nil, broker.ReplyHeader(header))
 }
 
 // 业务消息分发至 mesh

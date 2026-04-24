@@ -1,6 +1,9 @@
 package gate
 
 import (
+	"net/http"
+
+	"github.com/gorilla/websocket"
 	"github.com/olahol/melody"
 
 	"github.com/byteweap/meta/component/log"
@@ -12,7 +15,7 @@ import (
 // 连接建立时调用
 func (g *Gate) handleConnect(s *melody.Session) {
 
-	req, addr := s.Request, s.RemoteAddr()
+	req := s.Request
 
 	uid := g.opts.userIdExtractor(req)
 	if uid <= 0 {
@@ -29,13 +32,16 @@ func (g *Gate) handleConnect(s *melody.Session) {
 	s.Set("uid", uid)
 	g.sessions.register(uid, s)
 
-	log.Infof("[websocket] new connection success, uid: %v, %s", uid, addr.String())
+	log.Infof("[websocket] new connection success, uid: %v, %s", uid, sessionRemoteAddr(s))
 
 	loc := g.opts.locator
 
 	// 绑定网关
 	if err := loc.Bind(g.ctx, uid, g.appName, g.appID); err != nil {
 		log.Errorf("[websocket] new connection success, bind gate error, uid: %v, err: %v", uid, err)
+		g.sessions.unregister(uid)
+		_ = s.Write([]byte(http.StatusText(http.StatusInternalServerError)))
+		_ = s.CloseWithMsg(websocket.FormatCloseMessage(melody.CloseInternalServerErr, "bind gate error"))
 		return
 	}
 
@@ -112,4 +118,15 @@ func (g *Gate) handleError(s *melody.Session, err error) {
 func (g *Gate) handleClose(s *melody.Session, code int, reason string) error {
 	log.Infof("[websocket] connection closed, code: %v, reason: %v", code, reason)
 	return nil
+}
+
+func sessionRemoteAddr(s *melody.Session) string {
+	if s == nil {
+		return ""
+	}
+	conn := s.WebsocketConnection()
+	if conn == nil || conn.RemoteAddr() == nil {
+		return ""
+	}
+	return conn.RemoteAddr().String()
 }

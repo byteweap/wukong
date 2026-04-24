@@ -283,13 +283,13 @@ func (g *Gate) ensure(service string) (selector.Selector, error) {
 	}
 
 	sel = g.opts.selectorFunc()
-	g.selectors[service] = sel
 
 	w, err := g.opts.discovery.Watch(g.ctx, service)
 	if err != nil {
 		log.Errorf("[websocket] ensure watch service error, service: %v, err: %v", service, err)
 		return nil, err
 	}
+	g.selectors[service] = sel
 	g.watchers[service] = w
 
 	go func() {
