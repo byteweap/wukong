@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/olahol/melody"
+	"golang.org/x/sync/singleflight"
 
 	"github.com/byteweap/meta"
 	"github.com/byteweap/meta/component/broker"
@@ -40,6 +41,7 @@ type Gate struct {
 	mu        sync.RWMutex
 	selectors map[string]selector.Selector // 服务节点选择器 key: 服务名
 	watchers  map[string]registry.Watcher  // 服务节点监听器 key: 服务名
+	sfg       singleflight.Group
 }
 
 var _ server.Server = (*Gate)(nil)
@@ -267,55 +269,71 @@ func (g *Gate) Subject(fromApp string) string {
 
 // 确保选择器
 func (g *Gate) ensure(service string) (selector.Selector, error) {
-
 	g.mu.RLock()
 	sel := g.selectors[service]
 	g.mu.RUnlock()
 	if sel != nil {
 		return sel, nil
 	}
-	g.mu.Lock()
-	defer g.mu.Unlock()
 
-	// double check
-	if sel = g.selectors[service]; sel != nil {
-		return sel, nil
-	}
+	v, err, _ := g.sfg.Do(service, func() (any, error) {
+		g.mu.RLock()
+		if existing := g.selectors[service]; existing != nil {
+			g.mu.RUnlock()
+			return existing, nil
+		}
+		g.mu.RUnlock()
 
-	sel = g.opts.selectorFunc()
+		created := g.opts.selectorFunc()
+		w, err := g.opts.discovery.Watch(g.ctx, service)
+		if err != nil {
+			log.Errorf("[websocket] ensure watch service error, service: %v, err: %v", service, err)
+			return nil, err
+		}
 
-	w, err := g.opts.discovery.Watch(g.ctx, service)
+		g.mu.Lock()
+		if existing := g.selectors[service]; existing != nil {
+			g.mu.Unlock()
+			if stopErr := w.Stop(); stopErr != nil {
+				log.Errorf("[websocket] ensure stop redundant watcher error, service: %v, err: %v", service, stopErr)
+			}
+			return existing, nil
+		}
+		g.selectors[service] = created
+		g.watchers[service] = w
+		g.mu.Unlock()
+
+		go g.watchSelector(created, w)
+		return created, nil
+	})
 	if err != nil {
-		log.Errorf("[websocket] ensure watch service error, service: %v, err: %v", service, err)
 		return nil, err
 	}
-	g.selectors[service] = sel
-	g.watchers[service] = w
+	return v.(selector.Selector), nil
+}
 
-	go func() {
-		for {
-			select {
-			case <-g.ctx.Done():
+func (g *Gate) watchSelector(sel selector.Selector, w registry.Watcher) {
+	for {
+		select {
+		case <-g.ctx.Done():
+			return
+		default:
+			instances, err := w.Next()
+			if err != nil {
 				return
-			default:
-				instances, err := w.Next()
-				if err != nil {
-					return
-				}
-				nodes := make([]selector.Node, 0, len(instances))
-				for _, instance := range instances {
-					nodes = append(nodes,
-						selector.NewNode(
-							instance.ID,
-							instance.Name,
-							instance.Version,
-							instance.Metadata,
-						),
-					)
-				}
-				sel.Update(nodes) // 更新节点
 			}
+			nodes := make([]selector.Node, 0, len(instances))
+			for _, instance := range instances {
+				nodes = append(nodes,
+					selector.NewNode(
+						instance.ID,
+						instance.Name,
+						instance.Version,
+						instance.Metadata,
+					),
+				)
+			}
+			sel.Update(nodes) // 更新节点
 		}
-	}()
-	return sel, nil
+	}
 }

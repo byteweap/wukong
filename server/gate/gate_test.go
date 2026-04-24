@@ -129,6 +129,7 @@ type testRegistry struct {
 	watchCalls int
 	watchErrs  []error
 	watcher    registry.Watcher
+	watchWait  chan struct{}
 }
 
 var _ registry.Registry = (*testRegistry)(nil)
@@ -144,6 +145,9 @@ func (r *testRegistry) GetService(context.Context, string) ([]*registry.ServiceI
 }
 
 func (r *testRegistry) Watch(context.Context, string) (registry.Watcher, error) {
+	if r.watchWait != nil {
+		<-r.watchWait
+	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.watchCalls++
@@ -217,6 +221,42 @@ func TestEnsureRetriesAfterWatchFailure(t *testing.T) {
 	require.NotNil(t, g.selectors["match"])
 	require.NotNil(t, g.watchers["match"])
 	require.Equal(t, 2, discovery.watchCalls)
+}
+
+func TestEnsureSingleflightDeduplicatesConcurrentWatch(t *testing.T) {
+	discovery := &testRegistry{
+		watcher:   &testWatcher{nextErr: errors.New("stop")},
+		watchWait: make(chan struct{}),
+	}
+	g := New(
+		Discovery(discovery),
+		SelectorFunc(func() selector.Selector { return &testSelector{} }),
+	)
+	g.ctx = context.Background()
+
+	const callers = 8
+	results := make(chan error, callers)
+	var wg sync.WaitGroup
+	wg.Add(callers)
+	for range callers {
+		go func() {
+			defer wg.Done()
+			_, err := g.ensure("match")
+			results <- err
+		}()
+	}
+
+	time.Sleep(50 * time.Millisecond)
+	close(discovery.watchWait)
+	wg.Wait()
+	close(results)
+
+	for err := range results {
+		require.NoError(t, err)
+	}
+	require.Equal(t, 1, discovery.watchCalls)
+	require.NotNil(t, g.selectors["match"])
+	require.NotNil(t, g.watchers["match"])
 }
 
 func TestHandleConnectRollsBackSessionWhenBindFails(t *testing.T) {
