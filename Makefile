@@ -6,13 +6,19 @@ test:
 	go test -v ./...
 
 lint:
+	@if ! command -v golangci-lint &> /dev/null; then \
+		echo "golangci-lint not found, installing..."; \
+		go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest; \
+	fi
 	golangci-lint run ./...
 
 help:
 	@printf '%s\n' \
+		'make test                   Run all tests' \
+		'make lint                   Run golangci-lint (auto-install if missing)' \
 		'make tidy                   Run go mod tidy for all modules' \
 		'make release VERSION=<ver>  Tag and release all modules' \
-		'make envelope                Regenerate envelope protobuf bindings'
+		'make envelope              Regenerate envelope protobuf bindings'
 
 tidy:
 	@set -euo pipefail; \
