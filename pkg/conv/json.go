@@ -6,50 +6,54 @@ import (
 )
 
 func Json(data any) string {
-	isJson := func(s string) bool {
-		l := len(s)
-		return l >= 2 && ((s[0] == '{' && s[l-1] == '}') || (s[0] == '[' && s[l-1] == ']'))
-	}
-
 	switch v := data.(type) {
 	case string:
-		if isJson(v) {
+		if isRawJSON(v) {
 			return v
 		}
+		return ""
 	case *string:
-		if isJson(*v) {
+		if v != nil && isRawJSON(*v) {
 			return *v
 		}
+		return ""
 	case []byte:
-		if s := BytesToString(v); isJson(s) {
+		if s := BytesToString(v); isRawJSON(s) {
 			return s
 		}
+		return ""
 	case *[]byte:
-		if s := BytesToString(*v); isJson(s) {
-			return s
-		}
-	default:
-		var (
-			rv   = reflect.ValueOf(data)
-			kind = rv.Kind()
-		)
-
-		for kind == reflect.Ptr {
-			rv = rv.Elem()
-			kind = rv.Kind()
-		}
-
-		switch kind {
-		case reflect.String:
-			if s := rv.String(); isJson(s) {
+		if v != nil {
+			s := BytesToString(*v)
+			if isRawJSON(s) {
 				return s
 			}
-		case reflect.Map, reflect.Array, reflect.Slice, reflect.Struct:
-			if b, err := json.Marshal(v); err == nil {
-				return BytesToString(b)
-			}
 		}
+		return ""
+	}
+
+	rv := indirectValue(data)
+	if !rv.IsValid() {
+		return ""
+	}
+
+	switch rv.Kind() {
+	case reflect.String:
+		if s := rv.String(); isRawJSON(s) {
+			return s
+		}
+	case reflect.Map, reflect.Array, reflect.Slice, reflect.Struct:
+		if b, err := json.Marshal(data); err == nil {
+			return BytesToString(b)
+		}
+	default:
+		return ""
 	}
 
 	return ""
+}
+
+func isRawJSON(s string) bool {
+	l := len(s)
+	return l >= 2 && ((s[0] == '{' && s[l-1] == '}') || (s[0] == '[' && s[l-1] == ']'))
 }

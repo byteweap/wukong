@@ -81,55 +81,69 @@ func InternalIP() (string, error) {
 		return "", err
 	}
 
-	var (
-		addrs []net.Addr
-		ipnet net.IP
-		ip    string
-	)
+	var ip string
 	for _, iface := range ifaces {
-		if iface.Flags&net.FlagUp == 0 {
+		if !isInternalIface(iface) {
 			continue
 		}
 
-		if iface.Flags&net.FlagLoopback != 0 {
-			continue
-		}
-
-		if addrs, err = iface.Addrs(); err != nil {
+		next, preferred, err := ifaceInternalIP(iface)
+		if err != nil {
 			return "", err
 		}
-
-		for _, addr := range addrs {
-			switch v := addr.(type) {
-			case *net.IPNet:
-				ipnet = v.IP
-			case *net.IPAddr:
-				ipnet = v.IP
-			default:
-				err = errors.New("invalid addr interface")
-				continue
-			}
-
-			if ipnet == nil || ipnet.IsLoopback() {
-				continue
-			}
-
-			if ipv4 := ipnet.To4(); ipv4 != nil && ipv4.IsPrivate() {
-				if ipv4[0] == 192 && ipv4[1] == 168 {
-					return ipv4.String(), nil
-				}
-
-				if ip == "" {
-					ip = ipv4.String()
-				}
-			}
+		if preferred {
+			return next, nil
+		}
+		if ip == "" {
+			ip = next
 		}
 	}
 
 	if ip != "" {
 		return ip, nil
-	} else {
-		return "", errors.New("not found ip address")
+	}
+	return "", errors.New("not found ip address")
+}
+
+func isInternalIface(iface net.Interface) bool {
+	return iface.Flags&net.FlagUp != 0 && iface.Flags&net.FlagLoopback == 0
+}
+
+func ifaceInternalIP(iface net.Interface) (ip string, preferred bool, err error) {
+	addrs, err := iface.Addrs()
+	if err != nil {
+		return "", false, err
+	}
+
+	for _, addr := range addrs {
+		ipnet, ok := addrIP(addr)
+		if !ok {
+			continue
+		}
+
+		ipv4 := ipnet.To4()
+		if ipnet.IsLoopback() || ipv4 == nil || !ipv4.IsPrivate() {
+			continue
+		}
+		if ipv4[0] == 192 && ipv4[1] == 168 {
+			return ipv4.String(), true, nil
+		}
+		if ip == "" {
+			ip = ipv4.String()
+		}
+	}
+
+	return ip, false, err
+}
+
+func addrIP(addr net.Addr) (net.IP, bool) {
+	switch v := addr.(type) {
+	case *net.IPNet:
+		return v.IP, v.IP != nil
+	case *net.IPAddr:
+		return v.IP, v.IP != nil
+	default:
+		return nil, false
 	}
 }
 
