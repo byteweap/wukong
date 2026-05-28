@@ -5,8 +5,9 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/byteweap/meta/encoding"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/byteweap/meta/encoding"
 )
 
 // Name 是 proto 编解码器注册的名称

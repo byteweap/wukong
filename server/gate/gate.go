@@ -47,7 +47,6 @@ type Gate struct {
 var _ server.Server = (*Gate)(nil)
 
 func New(opts ...Option) *Gate {
-
 	o := defaultOptions()
 	for _, opt := range opts {
 		opt(o)
@@ -87,7 +86,6 @@ func (g *Gate) validate() error {
 }
 
 func (g *Gate) setup(name, appID string, ctx context.Context) error {
-
 	// base
 	g.appID = appID
 	g.appName = name
@@ -128,7 +126,6 @@ func (g *Gate) setup(name, appID string, ctx context.Context) error {
 
 // Start 启动网关
 func (g *Gate) Start(ctx context.Context) error {
-
 	app, ok := meta.FromContext(ctx)
 	if !ok {
 		return es.ErrAppNotFound
@@ -155,7 +152,6 @@ func (g *Gate) Start(ctx context.Context) error {
 
 // Stop 停止网关
 func (g *Gate) Stop(ctx context.Context) error {
-
 	// 1. Shutdown http server
 	e1 := g.Shutdown(ctx)
 	if e1 != nil && ctx.Err() != nil {
@@ -216,7 +212,6 @@ func (g *Gate) listenAndEndpoint() error {
 
 // 循环处理来自其它服务的消息
 func (g *Gate) loop() error {
-
 	var (
 		o       = g.opts
 		bro     = g.opts.broker

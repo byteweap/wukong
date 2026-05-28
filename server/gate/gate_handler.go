@@ -14,7 +14,6 @@ import (
 
 // 连接建立时调用
 func (g *Gate) handleConnect(s *melody.Session) {
-
 	req := s.Request
 
 	uid := g.opts.userIdExtractor(req)
@@ -55,7 +54,6 @@ func (g *Gate) handleConnect(s *melody.Session) {
 
 // 连接断开时调用
 func (g *Gate) handleDisconnect(s *melody.Session) {
-
 	uids, ok := s.Get("uid")
 	if !ok {
 		log.Error("[websocket] connection disconnect error, session not contains uid key")
@@ -93,7 +91,6 @@ func (g *Gate) handleTextMessage(s *melody.Session, msg []byte) {
 
 // 接收到二进制消息时调用
 func (g *Gate) handleBinaryMessage(s *melody.Session, msg []byte) {
-
 	meta := &envelope.IMessage{}
 	if err := proto.Unmarshal(msg, meta); err != nil {
 		log.Errorf("[websocket] unmarshal envelope error: %v", err)

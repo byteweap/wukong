@@ -69,7 +69,6 @@ func (g *Gate) replyError(reqMsg *broker.Message, code int, tip string) error {
 
 // 业务消息分发至 mesh
 func (g *Gate) dispatch(uid int64, e *envelope.IMessage) {
-
 	if e == nil {
 		log.Errorf("[websocket] dispatch error, envelope is nil")
 		return
@@ -120,7 +119,6 @@ func (g *Gate) dispatch(uid int64, e *envelope.IMessage) {
 
 // 广播系统事件
 func (g *Gate) broadcastEvent(uid int64, event cluster.Event) {
-
 	// 获取玩家当前所在所有节点
 	snMap, err := g.opts.locator.AllNodes(g.ctx, uid)
 	if err != nil {

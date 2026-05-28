@@ -16,7 +16,6 @@ type MessageHandler func(*Mesh, *broker.Message, *envelope.IMessage)
 // 统一处理网关消息,处理系统事件,自动解析业务参数 payload
 func Wrap[T any](handler func(*Context, *T)) MessageHandler {
 	return func(m *Mesh, msg *broker.Message, e *envelope.IMessage) {
-
 		ctx := newContext(m, msg, e)
 		defer ctx.release()
 

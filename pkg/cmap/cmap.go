@@ -67,7 +67,7 @@ func (m *ConcurrentMap[K, V]) Set(key K, value V) {
 }
 
 // UpsertCb 回调：锁内调用，禁止访问同 map 的其他键，避免死锁
-type UpsertCb[V any] func(exist bool, valueInMap V, newValue V) V
+type UpsertCb[V any] func(exist bool, valueInMap, newValue V) V
 
 // Upsert 插入或更新：通过回调计算新值
 func (m *ConcurrentMap[K, V]) Upsert(key K, value V, cb UpsertCb[V]) (res V) {

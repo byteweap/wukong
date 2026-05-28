@@ -240,7 +240,6 @@ func (m *Mesh) RpcRoute(cmd, version string, handler RpcMessageHandler) {
 
 // loop 循环
 func (m *Mesh) loop() error {
-
 	var (
 		o       = m.opts
 		subject = cluster.Subject(o.prefix, "*", m.appName, m.appID)
@@ -397,7 +396,6 @@ func (m *Mesh) replyRequestResult(msg *broker.Message, data []byte, tip string, 
 
 // handlerPubSubMessage 来自Gate的(pub-sub)消息
 func (m *Mesh) handlerPubSubMessage(msg *broker.Message) {
-
 	var (
 		uid   = cluster.GetUidBy(msg.Header)
 		event = cluster.GetEventBy(msg.Header)

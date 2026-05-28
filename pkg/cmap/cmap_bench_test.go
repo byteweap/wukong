@@ -37,6 +37,7 @@ func BenchmarkItemsInteger(b *testing.B) {
 		m.Items()
 	}
 }
+
 func directSharding(key uint32) uint32 {
 	return key
 }
@@ -325,7 +326,7 @@ func BenchmarkMultiGetSetBlock(b *testing.B) {
 	})
 }
 
-func GetSet[K comparable, V any](m *ConcurrentMap[K, V], finished chan struct{}) (set func(key K, value V), get func(key K, value V)) {
+func GetSet[K comparable, V any](m *ConcurrentMap[K, V], finished chan struct{}) (set, get func(key K, value V)) {
 	return func(key K, value V) {
 			for i := 0; i < 10; i++ {
 				m.Get(key)
@@ -339,7 +340,7 @@ func GetSet[K comparable, V any](m *ConcurrentMap[K, V], finished chan struct{})
 		}
 }
 
-func GetSetSyncMap[K comparable, V any](m *sync.Map, finished chan struct{}) (get func(key K, value V), set func(key K, value V)) {
+func GetSetSyncMap[K comparable, V any](m *sync.Map, finished chan struct{}) (get, set func(key K, value V)) {
 	get = func(key K, value V) {
 		for i := 0; i < 10; i++ {
 			m.Load(key)

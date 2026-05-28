@@ -28,7 +28,6 @@ type IdExtractor func(r *http.Request) int64
 
 // options 选项
 type options struct {
-
 	// app
 	prefix          string      // subject / redis key 前缀
 	userIdExtractor IdExtractor // 用户 id 提取器

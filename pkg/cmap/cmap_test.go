@@ -485,7 +485,7 @@ func TestUpsert(t *testing.T) {
 	tiger := Animal{"tiger"}
 	lion := Animal{"lion"}
 
-	cb := func(exists bool, valueInMap Animal, newValue Animal) Animal {
+	cb := func(exists bool, valueInMap, newValue Animal) Animal {
 		if !exists {
 			return newValue
 		}

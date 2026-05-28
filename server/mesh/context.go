@@ -15,7 +15,6 @@ import (
 
 // Context 网关消息上下文
 type Context struct {
-
 	// broker message
 	subject string
 	reply   string // 回复的subject(由发送方传入)

@@ -18,7 +18,6 @@ type RpcMessageHandler func(*Mesh, *broker.Message) ([]byte, string, int)
 //   - int: 业务状态码(200表示成功, 其它表示失败)
 func WrapRpc[T any](handler func(*RpcContext, *T) ([]byte, string, int)) RpcMessageHandler {
 	return func(m *Mesh, msg *broker.Message) ([]byte, string, int) {
-
 		ctx := newRpcContext(m, msg)
 		defer ctx.release()
 
