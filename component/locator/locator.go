@@ -4,7 +4,6 @@ import "context"
 
 // Locator 跟踪玩家会话在各节点间的位置
 type Locator interface {
-
 	// ID 返回定位器实现标识符
 	ID() string
 
