@@ -80,6 +80,8 @@ func TestGlobalLog(t *testing.T) {
 			expected = append(expected, fmt.Sprintf("%s msg=%s", "ERROR", msg))
 			Errorw("log", msg)
 			expected = append(expected, fmt.Sprintf("%s log=%s", "ERROR", msg))
+		case LevelFatal:
+			continue
 		}
 	}
 	Log(LevelInfo, DefaultMessageKey, "test log")

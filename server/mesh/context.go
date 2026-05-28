@@ -67,7 +67,6 @@ func (c *Context) release() {
 
 // reset 按当前消息重置上下文字段
 func (c *Context) reset(mesh *Mesh, msg *broker.Message, e *envelope.IMessage) {
-
 	c.mesh = mesh
 
 	// broker
@@ -155,7 +154,6 @@ func (c *Context) Copy() *Context {
 
 // OkResp 返回成功响应
 func (c *Context) OkResp(args ...proto.Message) {
-
 	out := &envelope.OMessage{
 		Header: &envelope.Header{
 			Seq:       c.Seq(),
@@ -193,7 +191,6 @@ func (c *Context) OkResp(args ...proto.Message) {
 
 // ErrResp 返回错误响应
 func (c *Context) ErrResp(code int, args ...string) {
-
 	tip := lang.If(len(args) > 0, args[0], "mesh internal error")
 
 	out := &envelope.OMessage{

@@ -2,6 +2,7 @@ package toml
 
 import (
 	"github.com/BurntSushi/toml"
+
 	"github.com/byteweap/meta/encoding"
 )
 

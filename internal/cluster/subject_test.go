@@ -3,7 +3,6 @@ package cluster
 import "testing"
 
 func BenchmarkSubject(b *testing.B) {
-
 	b.ResetTimer()
 	b.ReportAllocs()
 

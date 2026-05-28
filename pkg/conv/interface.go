@@ -24,6 +24,8 @@ func Interfaces(data any) (slice []any) {
 		for i := 0; i < count; i++ {
 			slice[i] = Int(rv.Index(i).Interface())
 		}
+	default:
+		return
 	}
 
 	return

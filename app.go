@@ -69,7 +69,6 @@ func (a *App) Endpoint() []string {
 
 // Run 运行应用生命周期
 func (a *App) Run() error {
-
 	if err := a.buildInstance(); err != nil {
 		return err
 	}
@@ -127,18 +126,21 @@ func (a *App) Run() error {
 	if err := eg.Wait(); err != nil && !errors.Is(err, context.Canceled) {
 		return err
 	}
-	var err error
-	for _, fn := range a.opts.postStopHooks {
-		err = fn(sctx)
+	for i, fn := range a.opts.postStopHooks {
+		if i == len(a.opts.postStopHooks)-1 {
+			return fn(sctx)
+		}
+		_ = fn(sctx)
 	}
-	return err
+	return nil
 }
 
 // Stop 优雅停止应用
 func (a *App) Stop() (err error) {
 	sctx := NewContext(a.ctx, a)
+	var stopErr error
 	for _, fn := range a.opts.preStopHooks {
-		err = fn(sctx)
+		stopErr = fn(sctx)
 	}
 
 	if err = a.deregister(NewContext(a.ctx, a)); err != nil {
@@ -148,12 +150,11 @@ func (a *App) Stop() (err error) {
 	if a.cancel != nil {
 		a.cancel()
 	}
-	return err
+	return stopErr
 }
 
 // buildInstance 构建服务实例
 func (a *App) buildInstance() error {
-
 	endpoints := make([]string, 0, len(a.opts.endpoints))
 	for _, e := range a.opts.endpoints {
 		endpoints = append(endpoints, e.String())
@@ -184,7 +185,6 @@ func (a *App) buildInstance() error {
 
 // register 向注册中心注册服务
 func (a *App) register(ctx context.Context) error {
-
 	a.mu.Lock()
 	instance := a.instance
 	a.mu.Unlock()
@@ -201,7 +201,6 @@ func (a *App) register(ctx context.Context) error {
 
 // deregister 从注册中心注销服务
 func (a *App) deregister(ctx context.Context) error {
-
 	a.mu.Lock()
 	instance := a.instance
 	a.mu.Unlock()

@@ -6,7 +6,6 @@ import (
 )
 
 func TestFNV1a(t *testing.T) {
-
 	countMap := make(map[uint32]int)
 
 	var num uint64
@@ -22,7 +21,6 @@ func TestFNV1a(t *testing.T) {
 
 // TestMix64 测试Mix64函数hash后是否均匀分布
 func TestMix64(t *testing.T) {
-
 	countMap := make(map[uint32]int)
 
 	var num uint64

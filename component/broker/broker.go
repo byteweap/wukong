@@ -7,7 +7,6 @@ import "context"
 // 设计目标：薄、快、稳定。它只提供“通信原语”，不内置业务级限流/分级/合并等策略
 // 这些策略应由 gate/game/match 等上层服务实现
 type Broker interface {
-
 	// ID 返回实现标识 (例如 "nats(core)")
 	ID() string
 

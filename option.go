@@ -51,7 +51,7 @@ func defaultOptions() *options {
 	return &options{
 		id:              uuid.New().String(),
 		name:            "meta",
-		version:         "v1.0.0",
+		version:         release,
 		metadata:        map[string]string{},
 		endpoints:       []*url.URL{},
 		ctx:             context.Background(),

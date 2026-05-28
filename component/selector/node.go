@@ -29,9 +29,11 @@ func NewNode(id, service, version string, meta map[string]string) Node {
 func (n *node) ID() string {
 	return n.id
 }
+
 func (n *node) Service() string {
 	return n.service
 }
+
 func (n *node) Weight() float64 {
 	return conv.Float64(n.meta["weight"])
 }

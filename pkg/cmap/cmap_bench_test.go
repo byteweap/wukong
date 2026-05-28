@@ -121,6 +121,8 @@ func BenchmarkSingleInsertPresent(b *testing.B) {
 }
 
 func benchmarkMultiInsertDifferent(b *testing.B) {
+	b.Helper()
+
 	m := New[string, string](FNV1a)
 	finished := make(chan struct{}, b.N)
 	_, set := GetSet(m, finished)
@@ -149,19 +151,19 @@ func BenchmarkMultiInsertDifferentSyncMap(b *testing.B) {
 
 func BenchmarkMultiInsertDifferent(b *testing.B) {
 	b.Run("shards_1", func(b *testing.B) {
-		runWithShards(benchmarkMultiInsertDifferent, b, 1)
+		runWithShards(b, benchmarkMultiInsertDifferent, 1)
 	})
 	b.Run("shards_16", func(b *testing.B) {
-		runWithShards(benchmarkMultiInsertDifferent, b, 16)
+		runWithShards(b, benchmarkMultiInsertDifferent, 16)
 	})
 	b.Run("shards_32", func(b *testing.B) {
-		runWithShards(benchmarkMultiInsertDifferent, b, 32)
+		runWithShards(b, benchmarkMultiInsertDifferent, 32)
 	})
 	b.Run("shards_64", func(b *testing.B) {
-		runWithShards(benchmarkMultiInsertDifferent, b, 64)
+		runWithShards(b, benchmarkMultiInsertDifferent, 64)
 	})
 	b.Run("shards_256", func(b *testing.B) {
-		runWithShards(benchmarkMultiInsertDifferent, b, 256)
+		runWithShards(b, benchmarkMultiInsertDifferent, 256)
 	})
 }
 
@@ -226,6 +228,8 @@ func BenchmarkMultiGetSame(b *testing.B) {
 }
 
 func benchmarkMultiGetSetDifferent(b *testing.B) {
+	b.Helper()
+
 	m := New[string, string](FNV1a)
 	finished := make(chan struct{}, 2*b.N)
 	get, set := GetSet(m, finished)
@@ -242,16 +246,16 @@ func benchmarkMultiGetSetDifferent(b *testing.B) {
 
 func BenchmarkMultiGetSetDifferent(b *testing.B) {
 	b.Run("cmap_shards_1", func(b *testing.B) {
-		runWithShards(benchmarkMultiGetSetDifferent, b, 1)
+		runWithShards(b, benchmarkMultiGetSetDifferent, 1)
 	})
 	b.Run("cmap_shards_16", func(b *testing.B) {
-		runWithShards(benchmarkMultiGetSetDifferent, b, 16)
+		runWithShards(b, benchmarkMultiGetSetDifferent, 16)
 	})
 	b.Run("cmap_shards_32", func(b *testing.B) {
-		runWithShards(benchmarkMultiGetSetDifferent, b, 32)
+		runWithShards(b, benchmarkMultiGetSetDifferent, 32)
 	})
 	b.Run("cmap_shards_256", func(b *testing.B) {
-		runWithShards(benchmarkMultiGetSetDifferent, b, 256)
+		runWithShards(b, benchmarkMultiGetSetDifferent, 256)
 	})
 
 	b.Run("syncmap", func(b *testing.B) {
@@ -271,6 +275,8 @@ func BenchmarkMultiGetSetDifferent(b *testing.B) {
 }
 
 func benchmarkMultiGetSetBlock(b *testing.B) {
+	b.Helper()
+
 	m := New[string, string](FNV1a)
 	finished := make(chan struct{}, 2*b.N)
 	get, set := GetSet(m, finished)
@@ -289,16 +295,16 @@ func benchmarkMultiGetSetBlock(b *testing.B) {
 
 func BenchmarkMultiGetSetBlock(b *testing.B) {
 	b.Run("cmap_shards_1", func(b *testing.B) {
-		runWithShards(benchmarkMultiGetSetBlock, b, 1)
+		runWithShards(b, benchmarkMultiGetSetBlock, 1)
 	})
 	b.Run("cmap_shards_16", func(b *testing.B) {
-		runWithShards(benchmarkMultiGetSetBlock, b, 16)
+		runWithShards(b, benchmarkMultiGetSetBlock, 16)
 	})
 	b.Run("cmap_shards_32", func(b *testing.B) {
-		runWithShards(benchmarkMultiGetSetBlock, b, 32)
+		runWithShards(b, benchmarkMultiGetSetBlock, 32)
 	})
 	b.Run("cmap_shards_256", func(b *testing.B) {
-		runWithShards(benchmarkMultiGetSetBlock, b, 256)
+		runWithShards(b, benchmarkMultiGetSetBlock, 256)
 	})
 
 	b.Run("syncmap", func(b *testing.B) {
@@ -349,7 +355,9 @@ func GetSetSyncMap[K comparable, V any](m *sync.Map, finished chan struct{}) (ge
 	return
 }
 
-func runWithShards(bench func(b *testing.B), b *testing.B, shardsCount int) {
+func runWithShards(b *testing.B, bench func(b *testing.B), shardsCount int) {
+	b.Helper()
+
 	oldShardsCount := SHARD_COUNT
 	SHARD_COUNT = shardsCount
 	bench(b)

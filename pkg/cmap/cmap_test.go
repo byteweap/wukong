@@ -24,7 +24,6 @@ func TestMapCreation(t *testing.T) {
 }
 
 func TestInsert(t *testing.T) {
-
 	m := New[string, Animal](FNV1a)
 
 	elephant := Animal{"elephant"}
@@ -478,7 +477,6 @@ func TestFnv32(t *testing.T) {
 	if FNV1a(string(key)) != hasher.Sum32() {
 		t.Errorf("Bundled FNV1a produced %d, expected result from hash/FNV1a is %d", FNV1a(string(key)), hasher.Sum32())
 	}
-
 }
 
 func TestUpsert(t *testing.T) {
