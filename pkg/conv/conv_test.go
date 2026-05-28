@@ -154,14 +154,8 @@ func TestBytes(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := Bytes(tt.input)
-			if tt.expected == nil {
-				if result != nil {
-					// Some types produce non-nil bytes
-				}
-			} else {
-				if string(result) != string(tt.expected) {
-					t.Errorf("Bytes(%v) = %v, want %v", tt.input, result, tt.expected)
-				}
+			if tt.expected != nil && string(result) != string(tt.expected) {
+				t.Errorf("Bytes(%v) = %v, want %v", tt.input, result, tt.expected)
 			}
 		})
 	}
@@ -754,463 +748,332 @@ func TestUnsafe(t *testing.T) {
 	}
 }
 
-func TestSliceFunctions(t *testing.T) {
-	// 测试各种 Slice 函数
-	t.Run("Ints", func(t *testing.T) {
-		input := []any{1, 2, 3}
-		result := Ints(input)
-		if len(result) != 3 {
-			t.Errorf("Ints() length = %d, want 3", len(result))
-		}
-	})
+func TestSliceInts(t *testing.T) {
+	if len(Ints([]any{1, 2, 3})) != 3 {
+		t.Error("Ints() failed")
+	}
+}
 
-	t.Run("Int8s", func(t *testing.T) {
-		input := []any{int8(1), int8(2), int8(3)}
-		result := Int8s(input)
-		if len(result) != 3 {
-			t.Errorf("Int8s() length = %d, want 3", len(result))
-		}
-	})
+func TestSliceInt8s(t *testing.T) {
+	if len(Int8s([]any{int8(1), int8(2), int8(3)})) != 3 {
+		t.Error("Int8s() failed")
+	}
+}
 
-	t.Run("Int16s", func(t *testing.T) {
-		input := []any{int16(1), int16(2), int16(3)}
-		result := Int16s(input)
-		if len(result) != 3 {
-			t.Errorf("Int16s() length = %d, want 3", len(result))
-		}
-	})
+func TestSliceInt16s(t *testing.T) {
+	if len(Int16s([]any{int16(1), int16(2), int16(3)})) != 3 {
+		t.Error("Int16s() failed")
+	}
+}
 
-	t.Run("Int32s", func(t *testing.T) {
-		input := []any{int32(1), int32(2), int32(3)}
-		result := Int32s(input)
-		if len(result) != 3 {
-			t.Errorf("Int32s() length = %d, want 3", len(result))
-		}
-	})
+func TestSliceInt32s(t *testing.T) {
+	if len(Int32s([]any{int32(1), int32(2), int32(3)})) != 3 {
+		t.Error("Int32s() failed")
+	}
+}
 
-	t.Run("Int64s", func(t *testing.T) {
-		input := []any{int64(1), int64(2), int64(3)}
-		result := Int64s(input)
-		if len(result) != 3 {
-			t.Errorf("Int64s() length = %d, want 3", len(result))
-		}
-	})
+func TestSliceInt64s(t *testing.T) {
+	if len(Int64s([]any{int64(1), int64(2), int64(3)})) != 3 {
+		t.Error("Int64s() failed")
+	}
+}
 
-	t.Run("Uints", func(t *testing.T) {
-		input := []any{uint(1), uint(2), uint(3)}
-		result := Uints(input)
-		if len(result) != 3 {
-			t.Errorf("Uints() length = %d, want 3", len(result))
-		}
-	})
+func TestSliceUints(t *testing.T) {
+	if len(Uints([]any{uint(1), uint(2), uint(3)})) != 3 {
+		t.Error("Uints() failed")
+	}
+}
 
-	t.Run("Uint8s", func(t *testing.T) {
-		input := []any{uint8(1), uint8(2), uint8(3)}
-		result := Uint8s(input)
-		if len(result) != 3 {
-			t.Errorf("Uint8s() length = %d, want 3", len(result))
-		}
-	})
+func TestSliceUint8s(t *testing.T) {
+	if len(Uint8s([]any{uint8(1), uint8(2), uint8(3)})) != 3 {
+		t.Error("Uint8s() failed")
+	}
+}
 
-	t.Run("Uint16s", func(t *testing.T) {
-		input := []any{uint16(1), uint16(2), uint16(3)}
-		result := Uint16s(input)
-		if len(result) != 3 {
-			t.Errorf("Uint16s() length = %d, want 3", len(result))
-		}
-	})
+func TestSliceUint16s(t *testing.T) {
+	if len(Uint16s([]any{uint16(1), uint16(2), uint16(3)})) != 3 {
+		t.Error("Uint16s() failed")
+	}
+}
 
-	t.Run("Uint32s", func(t *testing.T) {
-		input := []any{uint32(1), uint32(2), uint32(3)}
-		result := Uint32s(input)
-		if len(result) != 3 {
-			t.Errorf("Uint32s() length = %d, want 3", len(result))
-		}
-	})
+func TestSliceUint32s(t *testing.T) {
+	if len(Uint32s([]any{uint32(1), uint32(2), uint32(3)})) != 3 {
+		t.Error("Uint32s() failed")
+	}
+}
 
-	t.Run("Uint64s", func(t *testing.T) {
-		input := []any{uint64(1), uint64(2), uint64(3)}
-		result := Uint64s(input)
-		if len(result) != 3 {
-			t.Errorf("Uint64s() length = %d, want 3", len(result))
-		}
-	})
+func TestSliceUint64s(t *testing.T) {
+	if len(Uint64s([]any{uint64(1), uint64(2), uint64(3)})) != 3 {
+		t.Error("Uint64s() failed")
+	}
+}
 
-	t.Run("Float32s", func(t *testing.T) {
-		input := []any{float32(1.1), float32(2.2), float32(3.3)}
-		result := Float32s(input)
-		if len(result) != 3 {
-			t.Errorf("Float32s() length = %d, want 3", len(result))
-		}
-	})
+func TestSliceFloat32s(t *testing.T) {
+	if len(Float32s([]any{float32(1.1), float32(2.2), float32(3.3)})) != 3 {
+		t.Error("Float32s() failed")
+	}
+}
 
-	t.Run("Float64s", func(t *testing.T) {
-		input := []any{float64(1.1), float64(2.2), float64(3.3)}
-		result := Float64s(input)
-		if len(result) != 3 {
-			t.Errorf("Float64s() length = %d, want 3", len(result))
-		}
-	})
+func TestSliceFloat64s(t *testing.T) {
+	if len(Float64s([]any{float64(1.1), float64(2.2), float64(3.3)})) != 3 {
+		t.Error("Float64s() failed")
+	}
+}
 
-	t.Run("Bools", func(t *testing.T) {
-		input := []any{true, false, true}
-		result := Bools(input)
-		if len(result) != 3 {
-			t.Errorf("Bools() length = %d, want 3", len(result))
-		}
-	})
+func TestSliceBools(t *testing.T) {
+	if len(Bools([]any{true, false, true})) != 3 {
+		t.Error("Bools() failed")
+	}
+}
 
-	t.Run("Strings", func(t *testing.T) {
-		input := []any{"a", "b", "c"}
-		result := Strings(input)
-		if len(result) != 3 {
-			t.Errorf("Strings() length = %d, want 3", len(result))
-		}
-	})
+func TestSliceStrings(t *testing.T) {
+	if len(Strings([]any{"a", "b", "c"})) != 3 {
+		t.Error("Strings() failed")
+	}
+}
 
-	t.Run("Durations", func(t *testing.T) {
-		input := []any{time.Second, time.Minute, time.Hour}
-		result := Durations(input)
-		if len(result) != 3 {
-			t.Errorf("Durations() length = %d, want 3", len(result))
-		}
-	})
+func TestSliceDurations(t *testing.T) {
+	if len(Durations([]any{time.Second, time.Minute, time.Hour})) != 3 {
+		t.Error("Durations() failed")
+	}
 }
 
 func TestPointerFunctions(t *testing.T) {
-	// 测试各种 Pointer 函数
-	t.Run("IntPointer", func(t *testing.T) {
-		result := IntPointer(42)
-		if *result != 42 {
-			t.Errorf("IntPointer(42) = %v, want 42", *result)
+	testPointerFunc := func(t *testing.T, name string, input, expected any) {
+		t.Helper()
+		var result any
+		switch name {
+		case "IntPointer":
+			result = *IntPointer(input)
+		case "Int8Pointer":
+			result = *Int8Pointer(input)
+		case "Int16Pointer":
+			result = *Int16Pointer(input)
+		case "Int32Pointer":
+			result = *Int32Pointer(input)
+		case "Int64Pointer":
+			result = *Int64Pointer(input)
+		case "UintPointer":
+			result = *UintPointer(input)
+		case "Uint8Pointer":
+			result = *Uint8Pointer(input)
+		case "Uint16Pointer":
+			result = *Uint16Pointer(input)
+		case "Uint32Pointer":
+			result = *Uint32Pointer(input)
+		case "Uint64Pointer":
+			result = *Uint64Pointer(input)
+		case "Float32Pointer":
+			result = *Float32Pointer(input)
+		case "Float64Pointer":
+			result = *Float64Pointer(input)
+		case "BoolPointer":
+			result = *BoolPointer(input)
+		case "StringPointer":
+			result = *StringPointer(input)
+		case "DurationPointer":
+			result = *DurationPointer(input)
+		case "BytePointer":
+			result = *BytePointer(input)
 		}
-	})
+		if result != expected {
+			t.Errorf("%s(%v) = %v, want %v", name, input, result, expected)
+		}
+	}
 
-	t.Run("Int8Pointer", func(t *testing.T) {
-		result := Int8Pointer(42)
-		if *result != 42 {
-			t.Errorf("Int8Pointer(42) = %v, want 42", *result)
-		}
-	})
+	tests := []struct {
+		name     string
+		input    any
+		expected any
+	}{
+		{"IntPointer", 42, 42},
+		{"Int8Pointer", 42, int8(42)},
+		{"Int16Pointer", 42, int16(42)},
+		{"Int32Pointer", 42, int32(42)},
+		{"Int64Pointer", 42, int64(42)},
+		{"UintPointer", 42, uint(42)},
+		{"Uint8Pointer", 42, uint8(42)},
+		{"Uint16Pointer", 42, uint16(42)},
+		{"Uint32Pointer", 42, uint32(42)},
+		{"Uint64Pointer", 42, uint64(42)},
+		{"Float32Pointer", 42.5, float32(42.5)},
+		{"Float64Pointer", 42.5, float64(42.5)},
+		{"BoolPointer", true, true},
+		{"StringPointer", "hello", "hello"},
+		{"DurationPointer", time.Second, time.Duration(time.Second)},
+		{"BytePointer", 42, byte(42)},
+	}
 
-	t.Run("Int16Pointer", func(t *testing.T) {
-		result := Int16Pointer(42)
-		if *result != 42 {
-			t.Errorf("Int16Pointer(42) = %v, want 42", *result)
-		}
-	})
-
-	t.Run("Int32Pointer", func(t *testing.T) {
-		result := Int32Pointer(42)
-		if *result != 42 {
-			t.Errorf("Int32Pointer(42) = %v, want 42", *result)
-		}
-	})
-
-	t.Run("Int64Pointer", func(t *testing.T) {
-		result := Int64Pointer(42)
-		if *result != 42 {
-			t.Errorf("Int64Pointer(42) = %v, want 42", *result)
-		}
-	})
-
-	t.Run("UintPointer", func(t *testing.T) {
-		result := UintPointer(42)
-		if *result != 42 {
-			t.Errorf("UintPointer(42) = %v, want 42", *result)
-		}
-	})
-
-	t.Run("Uint8Pointer", func(t *testing.T) {
-		result := Uint8Pointer(42)
-		if *result != 42 {
-			t.Errorf("Uint8Pointer(42) = %v, want 42", *result)
-		}
-	})
-
-	t.Run("Uint16Pointer", func(t *testing.T) {
-		result := Uint16Pointer(42)
-		if *result != 42 {
-			t.Errorf("Uint16Pointer(42) = %v, want 42", *result)
-		}
-	})
-
-	t.Run("Uint32Pointer", func(t *testing.T) {
-		result := Uint32Pointer(42)
-		if *result != 42 {
-			t.Errorf("Uint32Pointer(42) = %v, want 42", *result)
-		}
-	})
-
-	t.Run("Uint64Pointer", func(t *testing.T) {
-		result := Uint64Pointer(42)
-		if *result != 42 {
-			t.Errorf("Uint64Pointer(42) = %v, want 42", *result)
-		}
-	})
-
-	t.Run("Float32Pointer", func(t *testing.T) {
-		result := Float32Pointer(42.5)
-		if *result != 42.5 {
-			t.Errorf("Float32Pointer(42.5) = %v, want 42.5", *result)
-		}
-	})
-
-	t.Run("Float64Pointer", func(t *testing.T) {
-		result := Float64Pointer(42.5)
-		if *result != 42.5 {
-			t.Errorf("Float64Pointer(42.5) = %v, want 42.5", *result)
-		}
-	})
-
-	t.Run("BoolPointer", func(t *testing.T) {
-		result := BoolPointer(true)
-		if *result != true {
-			t.Errorf("BoolPointer(true) = %v, want true", *result)
-		}
-	})
-
-	t.Run("StringPointer", func(t *testing.T) {
-		result := StringPointer("hello")
-		if *result != "hello" {
-			t.Errorf("StringPointer(hello) = %v, want hello", *result)
-		}
-	})
-
-	t.Run("DurationPointer", func(t *testing.T) {
-		result := DurationPointer(time.Second)
-		if *result != time.Second {
-			t.Errorf("DurationPointer(1s) = %v, want 1s", *result)
-		}
-	})
-
-	t.Run("BytePointer", func(t *testing.T) {
-		result := BytePointer(42)
-		if *result != 42 {
-			t.Errorf("BytePointer(42) = %v, want 42", *result)
-		}
-	})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			testPointerFunc(t, tt.name, tt.input, tt.expected)
+		})
+	}
 }
 
 func TestSlicePointerFunctions(t *testing.T) {
-	// 测试各种 SlicePointer 函数
-	t.Run("IntsPointer", func(t *testing.T) {
-		input := []any{1, 2, 3}
-		result := IntsPointer(input)
-		if len(*result) != 3 {
-			t.Errorf("IntsPointer() length = %d, want 3", len(*result))
+	testSlicePointerFunc := func(t *testing.T, name string, input any, expectedLen int) {
+		t.Helper()
+		var length int
+		switch name {
+		case "IntsPointer":
+			length = len(*IntsPointer(input))
+		case "Int8sPointer":
+			length = len(*Int8sPointer(input))
+		case "Int16sPointer":
+			length = len(*Int16sPointer(input))
+		case "Int32sPointer":
+			length = len(*Int32sPointer(input))
+		case "Int64sPointer":
+			length = len(*Int64sPointer(input))
+		case "UintsPointer":
+			length = len(*UintsPointer(input))
+		case "Uint8sPointer":
+			length = len(*Uint8sPointer(input))
+		case "Uint16sPointer":
+			length = len(*Uint16sPointer(input))
+		case "Uint32sPointer":
+			length = len(*Uint32sPointer(input))
+		case "Uint64sPointer":
+			length = len(*Uint64sPointer(input))
+		case "Float32sPointer":
+			length = len(*Float32sPointer(input))
+		case "Float64sPointer":
+			length = len(*Float64sPointer(input))
+		case "BoolsPointer":
+			length = len(*BoolsPointer(input))
+		case "StringsPointer":
+			length = len(*StringsPointer(input))
+		case "DurationsPointer":
+			length = len(*DurationsPointer(input))
+		case "BytesPointer":
+			length = len(*BytesPointer(input))
 		}
-	})
+		if length != expectedLen {
+			t.Errorf("%s() length = %d, want %d", name, length, expectedLen)
+		}
+	}
 
-	t.Run("Int8sPointer", func(t *testing.T) {
-		input := []any{int8(1), int8(2), int8(3)}
-		result := Int8sPointer(input)
-		if len(*result) != 3 {
-			t.Errorf("Int8sPointer() length = %d, want 3", len(*result))
-		}
-	})
+	tests := []struct {
+		name  string
+		input any
+	}{
+		{"IntsPointer", []any{1, 2, 3}},
+		{"Int8sPointer", []any{int8(1), int8(2), int8(3)}},
+		{"Int16sPointer", []any{int16(1), int16(2), int16(3)}},
+		{"Int32sPointer", []any{int32(1), int32(2), int32(3)}},
+		{"Int64sPointer", []any{int64(1), int64(2), int64(3)}},
+		{"UintsPointer", []any{uint(1), uint(2), uint(3)}},
+		{"Uint8sPointer", []any{uint8(1), uint8(2), uint8(3)}},
+		{"Uint16sPointer", []any{uint16(1), uint16(2), uint16(3)}},
+		{"Uint32sPointer", []any{uint32(1), uint32(2), uint32(3)}},
+		{"Uint64sPointer", []any{uint64(1), uint64(2), uint64(3)}},
+		{"Float32sPointer", []any{float32(1.1), float32(2.2), float32(3.3)}},
+		{"Float64sPointer", []any{float64(1.1), float64(2.2), float64(3.3)}},
+		{"BoolsPointer", []any{true, false, true}},
+		{"StringsPointer", []any{"a", "b", "c"}},
+		{"DurationsPointer", []any{time.Second, time.Minute, time.Hour}},
+		{"BytesPointer", []byte("hello")},
+	}
 
-	t.Run("Int16sPointer", func(t *testing.T) {
-		input := []any{int16(1), int16(2), int16(3)}
-		result := Int16sPointer(input)
-		if len(*result) != 3 {
-			t.Errorf("Int16sPointer() length = %d, want 3", len(*result))
-		}
-	})
-
-	t.Run("Int32sPointer", func(t *testing.T) {
-		input := []any{int32(1), int32(2), int32(3)}
-		result := Int32sPointer(input)
-		if len(*result) != 3 {
-			t.Errorf("Int32sPointer() length = %d, want 3", len(*result))
-		}
-	})
-
-	t.Run("Int64sPointer", func(t *testing.T) {
-		input := []any{int64(1), int64(2), int64(3)}
-		result := Int64sPointer(input)
-		if len(*result) != 3 {
-			t.Errorf("Int64sPointer() length = %d, want 3", len(*result))
-		}
-	})
-
-	t.Run("UintsPointer", func(t *testing.T) {
-		input := []any{uint(1), uint(2), uint(3)}
-		result := UintsPointer(input)
-		if len(*result) != 3 {
-			t.Errorf("UintsPointer() length = %d, want 3", len(*result))
-		}
-	})
-
-	t.Run("Uint8sPointer", func(t *testing.T) {
-		input := []any{uint8(1), uint8(2), uint8(3)}
-		result := Uint8sPointer(input)
-		if len(*result) != 3 {
-			t.Errorf("Uint8sPointer() length = %d, want 3", len(*result))
-		}
-	})
-
-	t.Run("Uint16sPointer", func(t *testing.T) {
-		input := []any{uint16(1), uint16(2), uint16(3)}
-		result := Uint16sPointer(input)
-		if len(*result) != 3 {
-			t.Errorf("Uint16sPointer() length = %d, want 3", len(*result))
-		}
-	})
-
-	t.Run("Uint32sPointer", func(t *testing.T) {
-		input := []any{uint32(1), uint32(2), uint32(3)}
-		result := Uint32sPointer(input)
-		if len(*result) != 3 {
-			t.Errorf("Uint32sPointer() length = %d, want 3", len(*result))
-		}
-	})
-
-	t.Run("Uint64sPointer", func(t *testing.T) {
-		input := []any{uint64(1), uint64(2), uint64(3)}
-		result := Uint64sPointer(input)
-		if len(*result) != 3 {
-			t.Errorf("Uint64sPointer() length = %d, want 3", len(*result))
-		}
-	})
-
-	t.Run("Float32sPointer", func(t *testing.T) {
-		input := []any{float32(1.1), float32(2.2), float32(3.3)}
-		result := Float32sPointer(input)
-		if len(*result) != 3 {
-			t.Errorf("Float32sPointer() length = %d, want 3", len(*result))
-		}
-	})
-
-	t.Run("Float64sPointer", func(t *testing.T) {
-		input := []any{float64(1.1), float64(2.2), float64(3.3)}
-		result := Float64sPointer(input)
-		if len(*result) != 3 {
-			t.Errorf("Float64sPointer() length = %d, want 3", len(*result))
-		}
-	})
-
-	t.Run("BoolsPointer", func(t *testing.T) {
-		input := []any{true, false, true}
-		result := BoolsPointer(input)
-		if len(*result) != 3 {
-			t.Errorf("BoolsPointer() length = %d, want 3", len(*result))
-		}
-	})
-
-	t.Run("StringsPointer", func(t *testing.T) {
-		input := []any{"a", "b", "c"}
-		result := StringsPointer(input)
-		if len(*result) != 3 {
-			t.Errorf("StringsPointer() length = %d, want 3", len(*result))
-		}
-	})
-
-	t.Run("DurationsPointer", func(t *testing.T) {
-		input := []any{time.Second, time.Minute, time.Hour}
-		result := DurationsPointer(input)
-		if len(*result) != 3 {
-			t.Errorf("DurationsPointer() length = %d, want 3", len(*result))
-		}
-	})
-
-	t.Run("BytesPointer", func(t *testing.T) {
-		input := []byte("hello")
-		result := BytesPointer(input)
-		if string(*result) != "hello" {
-			t.Errorf("BytesPointer() = %v, want hello", *result)
-		}
-	})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			expectedLen := 3
+			if tt.name == "BytesPointer" {
+				expectedLen = 5
+			}
+			testSlicePointerFunc(t, tt.name, tt.input, expectedLen)
+		})
+	}
 }
 
-func TestJson(t *testing.T) {
+func TestJsonStruct(t *testing.T) {
 	type TestStruct struct {
 		Name string `json:"name"`
 		Age  int    `json:"age"`
 	}
+	input := TestStruct{Name: "test", Age: 25}
+	result := Json(input)
+	if result == "" {
+		t.Error("Json() returned empty string")
+	}
+}
 
-	t.Run("struct", func(t *testing.T) {
-		input := TestStruct{Name: "test", Age: 25}
-		result := Json(input)
-		if result == "" {
-			t.Error("Json() returned empty string")
-		}
-	})
+func TestJsonInvalid(t *testing.T) {
+	result := Json(func() {})
+	if result != "" {
+		t.Errorf("Json() should return empty string for invalid input, got %q", result)
+	}
+}
 
-	t.Run("invalid", func(t *testing.T) {
-		result := Json(func() {})
-		if result != "" {
-			t.Errorf("Json() should return empty string for invalid input, got %q", result)
-		}
-	})
-
-	t.Run("string valid", func(t *testing.T) {
+func TestJsonString(t *testing.T) {
+	t.Run("valid", func(t *testing.T) {
 		result := Json(`{"name":"test"}`)
 		if result != `{"name":"test"}` {
 			t.Errorf("Json() = %q, want %q", result, `{"name":"test"}`)
 		}
 	})
-
-	t.Run("string invalid", func(t *testing.T) {
+	t.Run("invalid", func(t *testing.T) {
 		result := Json("not json")
 		if result != "" {
 			t.Errorf("Json() should return empty string for non-json, got %q", result)
 		}
 	})
+}
 
-	t.Run("bytes valid", func(t *testing.T) {
+func TestJsonBytes(t *testing.T) {
+	t.Run("valid", func(t *testing.T) {
 		result := Json([]byte(`{"name":"test"}`))
 		if result != `{"name":"test"}` {
 			t.Errorf("Json() = %q, want %q", result, `{"name":"test"}`)
 		}
 	})
-
-	t.Run("bytes invalid", func(t *testing.T) {
+	t.Run("invalid", func(t *testing.T) {
 		result := Json([]byte("not json"))
 		if result != "" {
 			t.Errorf("Json() should return empty string for non-json bytes, got %q", result)
 		}
 	})
+}
 
-	t.Run("*string valid", func(t *testing.T) {
+func TestJsonPointers(t *testing.T) {
+	t.Run("string valid", func(t *testing.T) {
 		s := `{"name":"test"}`
 		result := Json(&s)
 		if result != `{"name":"test"}` {
 			t.Errorf("Json() = %q, want %q", result, `{"name":"test"}`)
 		}
 	})
-
-	t.Run("*string nil", func(t *testing.T) {
+	t.Run("string nil", func(t *testing.T) {
 		var s *string
 		result := Json(s)
 		if result != "" {
 			t.Errorf("Json() should return empty string for nil *string, got %q", result)
 		}
 	})
-
-	t.Run("*bytes valid", func(t *testing.T) {
+	t.Run("bytes valid", func(t *testing.T) {
 		b := []byte(`{"name":"test"}`)
 		result := Json(&b)
 		if result != `{"name":"test"}` {
 			t.Errorf("Json() = %q, want %q", result, `{"name":"test"}`)
 		}
 	})
-
-	t.Run("*bytes nil", func(t *testing.T) {
+	t.Run("bytes nil", func(t *testing.T) {
 		var b *[]byte
 		result := Json(b)
 		if result != "" {
 			t.Errorf("Json() should return empty string for nil *[]byte, got %q", result)
 		}
 	})
+}
 
+func TestJsonNilAndMap(t *testing.T) {
 	t.Run("nil", func(t *testing.T) {
 		result := Json(nil)
 		if result != "" {
 			t.Errorf("Json() should return empty string for nil, got %q", result)
 		}
 	})
-
 	t.Run("map", func(t *testing.T) {
 		m := map[string]int{"a": 1}
 		result := Json(m)

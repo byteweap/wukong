@@ -45,8 +45,13 @@ func TestWaitSignal(t *testing.T) {
 
 	// Send a signal to ourselves
 	time.Sleep(100 * time.Millisecond)
-	p, _ := os.FindProcess(os.Getpid())
-	p.Signal(syscall.SIGINT)
+	p, err := os.FindProcess(os.Getpid())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := p.Signal(syscall.SIGINT); err != nil {
+		t.Fatal(err)
+	}
 
 	select {
 	case <-done:
