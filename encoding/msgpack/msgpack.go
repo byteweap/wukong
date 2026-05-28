@@ -2,6 +2,7 @@ package msgpack
 
 import (
 	"github.com/byteweap/meta/encoding"
+
 	"github.com/vmihailenco/msgpack/v5"
 )
 
