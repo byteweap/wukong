@@ -147,3 +147,52 @@ func TestIpIsUp(t *testing.T) {
 		println(interfaces[i].Name, interfaces[i].Flags&net.FlagUp)
 	}
 }
+
+func TestRawAddrIP(t *testing.T) {
+	// Test with IPAddr
+	ipAddr := &net.IPAddr{IP: net.ParseIP("192.168.1.1")}
+	result := rawAddrIP(ipAddr)
+	if result == nil || result.String() != "192.168.1.1" {
+		t.Errorf("rawAddrIP(IPAddr) = %v, want 192.168.1.1", result)
+	}
+
+	// Test with IPNet
+	_, ipNet, _ := net.ParseCIDR("192.168.1.0/24")
+	result = rawAddrIP(ipNet)
+	if result == nil {
+		t.Error("rawAddrIP(IPNet) returned nil")
+	}
+
+	// Test with unknown type
+	result = rawAddrIP(nil)
+	if result != nil {
+		t.Error("rawAddrIP(nil) should return nil")
+	}
+}
+
+func TestPortNonTCP(t *testing.T) {
+	// Test Port with non-TCP listener
+	lis, err := net.Listen("unix", "/tmp/test.sock")
+	if err != nil {
+		t.Skip("Cannot create unix socket")
+	}
+	defer lis.Close()
+	port, ok := Port(lis)
+	if ok {
+		t.Errorf("Port() should return false for non-TCP listener, got %d", port)
+	}
+}
+
+func TestExtractErrors(t *testing.T) {
+	// Test Extract with invalid address
+	_, err := Extract("invalid", nil)
+	if err == nil {
+		t.Error("Extract() should return error for invalid address")
+	}
+
+	// Test Extract with nil listener and empty address
+	_, err = Extract("", nil)
+	if err == nil {
+		t.Error("Extract() should return error for empty address with nil listener")
+	}
+}

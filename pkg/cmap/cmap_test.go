@@ -641,3 +641,65 @@ func TestUnDrainedIterBuffered(t *testing.T) {
 		t.Error("We should have counted 200 elements.")
 	}
 }
+
+// testStringer 用于测试 FNV1aStr
+type testStringer struct {
+	s string
+}
+
+func (s testStringer) String() string {
+	return s.s
+}
+
+func TestFNV1aStr(t *testing.T) {
+	key := testStringer{"ABC"}
+	expected := FNV1a("ABC")
+	result := FNV1aStr(key)
+	if result != expected {
+		t.Errorf("FNV1aStr produced %d, expected %d", result, expected)
+	}
+}
+
+func TestUnmarshalJSON(t *testing.T) {
+	m := New[string, int](FNV1a)
+	data := []byte(`{"a":1,"b":2,"c":3}`)
+	err := m.UnmarshalJSON(data)
+	if err != nil {
+		t.Error(err)
+	}
+	if m.Count() != 3 {
+		t.Errorf("Expected 3 elements, got %d", m.Count())
+	}
+	val, ok := m.Get("a")
+	if !ok || val != 1 {
+		t.Error("Expected a=1")
+	}
+	val, ok = m.Get("b")
+	if !ok || val != 2 {
+		t.Error("Expected b=2")
+	}
+	val, ok = m.Get("c")
+	if !ok || val != 3 {
+		t.Error("Expected c=3")
+	}
+}
+
+func TestUnmarshalJSON_Invalid(t *testing.T) {
+	m := New[string, int](FNV1a)
+	data := []byte(`invalid json`)
+	err := m.UnmarshalJSON(data)
+	if err == nil {
+		t.Error("Expected error for invalid JSON")
+	}
+}
+
+func TestSnapshot_Panic(t *testing.T) {
+	// 测试未初始化的 map 是否会 panic
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("Expected panic for uninitialized map")
+		}
+	}()
+	m := &ConcurrentMap[string, string]{}
+	snapshot(m)
+}

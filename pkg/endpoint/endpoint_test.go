@@ -76,6 +76,18 @@ func TestParseEndpoint(t *testing.T) {
 			want:    "",
 			wantErr: false,
 		},
+		{
+			name:    "invalid url",
+			args:    args{endpoints: []string{"://invalid"}, scheme: "https"},
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name:    "empty endpoints",
+			args:    args{endpoints: []string{}, scheme: "https"},
+			want:    "",
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -1,6 +1,9 @@
 SHELL := /usr/bin/env bash
 
-.PHONY: lint tidy envelope help
+.PHONY: test lint tidy envelope help
+
+test:
+	go test -v ./...
 
 lint:
 	golangci-lint run ./...
