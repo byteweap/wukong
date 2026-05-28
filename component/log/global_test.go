@@ -139,3 +139,10 @@ func TestContextWithGlobalLog(t *testing.T) {
 		t.Errorf("Expected:%s, got:%s", "INFO trace-id=test-trace-id", buffer.String())
 	}
 }
+
+func TestGetLogger(t *testing.T) {
+	logger := GetLogger()
+	if logger == nil {
+		t.Error("expected non-nil logger")
+	}
+}
