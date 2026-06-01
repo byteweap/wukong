@@ -11,7 +11,7 @@ import (
 const (
 	// default values (偏稳定与低延迟的折中)
 	defaultURLs           = nats.DefaultURL //
-	defaultName           = "wk-nats-broker"
+	defaultName           = "meta-nats-broker"
 	defaultConnectTimeout = 2 * time.Second
 	defaultReconnectWait  = nats.DefaultReconnectWait
 	defaultMaxReconnects  = nats.DefaultMaxReconnect
