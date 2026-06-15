@@ -1,35 +1,73 @@
+version: "2"
 run:
-  timeout: 5m
-  go: '1.26'
-
+  modules-download-mode: readonly
 linters:
+  default: none
   enable:
-    - govet
+    - bodyclose
+    - dogsled
+    - durationcheck
     - errcheck
-    - staticcheck
-    - gosimple
+    - goconst
+    - gocyclo
+    - govet
     - ineffassign
+    - lll
+    - misspell
+    - mnd
+    - prealloc
+    - revive
+    - staticcheck
+    - unconvert
     - unused
+    - wastedassign
+    - whitespace
+  settings:
+    gocyclo:
+      min-complexity: 50
+    govet:
+      enable:
+        - shadow
+    lll:
+      line-length: 160
+    misspell:
+      locale: US
+    mnd:
+      checks:
+        - case
+        - condition
+        - return
+    whitespace:
+      multi-func: false
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - goconst
+        path: (.+)_test\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
     - gofumpt
     - goimports
-    - misspell
-    - whitespace
-    - gocyclo
-    - gocognit
-    - exhaustive
-    - prealloc
-    - thelper
-
-linters-settings:
-  gofumpt:
-    extra-rules: true
-  gocyclo:
-    min-complexity: 50
-  gocognit:
-    min-complexity: 20
-  exhaustive:
-    default-signifies-exhaustive: true
-  misspell:
-    locale: US
-  goimports:
-    local-prefixes: github.com/byteweap/meta
+  settings:
+    gofumpt:
+      module-path: github.com/byteweap/meta
+    goimports:
+      local-prefixes:
+        - github.com/byteweap/meta
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
