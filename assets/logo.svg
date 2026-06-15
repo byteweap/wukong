@@ -1,0 +1,36 @@
+<svg width="610" height="160" viewBox="0 0 610 160" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Meta logo</title>
+  <desc id="desc">A refined Meta wordmark with subtle distributed mesh accents.</desc>
+  <defs>
+    <linearGradient id="accent" x1="38" y1="153" x2="410" y2="153" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2563EB"/>
+      <stop offset="0.52" stop-color="#06B6D4"/>
+      <stop offset="1" stop-color="#14B8A6"/>
+    </linearGradient>
+    <linearGradient id="node" x1="447" y1="62" x2="595" y2="126" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#38BDF8"/>
+      <stop offset="1" stop-color="#2DD4BF"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="1.5" y="1.5" width="607" height="157" rx="34" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="3"/>
+
+  <g transform="translate(-295 -50)">
+  <g aria-label="Meta">
+    <path d="M331 173V80H360L397 139L434 80H463V173H438V117L407 166H387L356 117V173H331Z" fill="#111827"/>
+    <path d="M522.784 175C501.856 175 486.424 160.16 486.424 139.824C486.424 119.552 501.264 104.392 521.6 104.392C541.424 104.392 555.56 118.976 555.56 139.12C555.56 141.36 555.368 143.792 555.048 145.648H510.2C512.376 152.752 517.808 156.4 525.296 156.4C531.112 156.4 536.032 154.288 539.872 150.192L552.664 163.048C545.752 170.784 536.032 175 522.784 175ZM510.008 132.08H532.552C531.144 126.008 527.048 122.168 521.472 122.168C515.656 122.168 511.496 125.944 510.008 132.08Z" fill="#111827"/>
+    <path d="M604.486 174.296C589.454 174.296 580.566 165.536 580.566 150.76V125.24H569.43V106.312H580.566V87.128H604.294V106.312H621.046V125.24H604.294V146.984C604.294 152.048 606.598 154.416 611.47 154.416C614.542 154.416 617.358 153.84 620.11 152.624V171.36C615.814 173.272 610.366 174.296 604.486 174.296Z" fill="#111827"/>
+    <path d="M661.952 175C643.216 175 629.016 159.968 629.016 139.696C629.016 119.424 643.216 104.392 661.952 104.392C670.848 104.392 678.208 107.464 683.08 112.976V106.312H706.808V173H683.08V166.352C678.208 171.928 670.848 175 661.952 175ZM668.144 154.48C676.656 154.48 683.4 148.056 683.4 139.696C683.4 131.336 676.656 124.912 668.144 124.912C659.568 124.912 652.824 131.336 652.824 139.696C652.824 148.056 659.568 154.48 668.144 154.48Z" fill="#111827"/>
+  </g>
+
+  <path d="M333 203H704" stroke="url(#accent)" stroke-width="6" stroke-linecap="round"/>
+
+  <path d="M742 112H856" stroke="#D8E2EF" stroke-width="5" stroke-linecap="round"/>
+  <path d="M742 144H890" stroke="#D8E2EF" stroke-width="5" stroke-linecap="round"/>
+  <path d="M742 176H824" stroke="#D8E2EF" stroke-width="5" stroke-linecap="round"/>
+  <path d="M742 112L810 144L856 112" stroke="url(#node)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="742" cy="112" r="7" fill="#38BDF8"/>
+  <circle cx="810" cy="144" r="7" fill="#06B6D4"/>
+  <circle cx="856" cy="112" r="7" fill="#2DD4BF"/>
+  </g>
+</svg>

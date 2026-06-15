@@ -27,10 +27,10 @@ func TestInsert(t *testing.T) {
 	m := New[string, Animal](FNV1a)
 
 	elephant := Animal{"elephant"}
-	monkey := Animal{"monkey"}
+	sample := Animal{"sample"}
 
 	m.Set("elephant", elephant)
-	m.Set("monkey", monkey)
+	m.Set("sample", sample)
 
 	if m.Count() != 2 {
 		t.Error("map should contain exactly two elements.")
@@ -40,10 +40,10 @@ func TestInsert(t *testing.T) {
 func TestInsertAbsent(t *testing.T) {
 	m := New[string, Animal](FNV1a)
 	elephant := Animal{"elephant"}
-	monkey := Animal{"monkey"}
+	sample := Animal{"sample"}
 
 	m.SetIfAbsent("elephant", elephant)
-	if ok := m.SetIfAbsent("elephant", monkey); ok {
+	if ok := m.SetIfAbsent("elephant", sample); ok {
 		t.Error("map set a new value even the entry is already present")
 	}
 }
@@ -95,16 +95,16 @@ func TestHas(t *testing.T) {
 func TestRemove(t *testing.T) {
 	m := New[string, Animal](FNV1a)
 
-	monkey := Animal{"monkey"}
-	m.Set("monkey", monkey)
+	sample := Animal{"sample"}
+	m.Set("sample", sample)
 
-	m.Remove("monkey")
+	m.Remove("sample")
 
 	if m.Count() != 0 {
 		t.Error("Expecting count to be zero once item was removed.")
 	}
 
-	temp, ok := m.Get("monkey")
+	temp, ok := m.Get("sample")
 
 	if ok != false {
 		t.Error("Expecting ok to be false for missing items.")
@@ -121,8 +121,8 @@ func TestRemove(t *testing.T) {
 func TestRemoveCb(t *testing.T) {
 	m := New[string, Animal](FNV1a)
 
-	monkey := Animal{"monkey"}
-	m.Set("monkey", monkey)
+	sample := Animal{"sample"}
+	m.Set("sample", sample)
 	elephant := Animal{"elephant"}
 	m.Set("elephant", elephant)
 
@@ -136,20 +136,20 @@ func TestRemoveCb(t *testing.T) {
 		mapVal = val
 		wasFound = exists
 
-		return val.name == "monkey"
+		return val.name == "sample"
 	}
 
-	// Monkey should be removed
-	result := m.RemoveCb("monkey", cb)
+	// Sample should be removed
+	result := m.RemoveCb("sample", cb)
 	if !result {
 		t.Errorf("Result was not true")
 	}
 
-	if mapKey != "monkey" {
+	if mapKey != "sample" {
 		t.Error("Wrong key was provided to the callback")
 	}
 
-	if mapVal != monkey {
+	if mapVal != sample {
 		t.Errorf("Wrong value was provided to the value")
 	}
 
@@ -157,7 +157,7 @@ func TestRemoveCb(t *testing.T) {
 		t.Errorf("Key was not found")
 	}
 
-	if m.Has("monkey") {
+	if m.Has("sample") {
 		t.Errorf("Key was not removed")
 	}
 
@@ -209,26 +209,26 @@ func TestRemoveCb(t *testing.T) {
 func TestPop(t *testing.T) {
 	m := New[string, Animal](FNV1a)
 
-	monkey := Animal{"monkey"}
-	m.Set("monkey", monkey)
+	sample := Animal{"sample"}
+	m.Set("sample", sample)
 
-	v, exists := m.Pop("monkey")
+	v, exists := m.Pop("sample")
 
-	if !exists || v != monkey {
-		t.Error("Pop didn't find a monkey.")
+	if !exists || v != sample {
+		t.Error("Pop didn't find a sample.")
 	}
 
-	v2, exists2 := m.Pop("monkey")
+	v2, exists2 := m.Pop("sample")
 
-	if exists2 || v2 == monkey {
-		t.Error("Pop keeps finding monkey")
+	if exists2 || v2 == sample {
+		t.Error("Pop keeps finding sample")
 	}
 
 	if m.Count() != 0 {
 		t.Error("Expecting count to be zero once item was Pop'ed.")
 	}
 
-	temp, ok := m.Get("monkey")
+	temp, ok := m.Get("sample")
 
 	if ok != false {
 		t.Error("Expecting ok to be false for missing items.")
@@ -456,7 +456,7 @@ func TestKeys(t *testing.T) {
 func TestMInsert(t *testing.T) {
 	animals := map[string]Animal{
 		"elephant": {"elephant"},
-		"monkey":   {"monkey"},
+		"sample":   {"sample"},
 	}
 	m := New[string, Animal](FNV1a)
 	m.MSet(animals)

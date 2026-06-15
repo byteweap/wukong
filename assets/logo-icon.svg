@@ -1,0 +1,24 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Meta icon</title>
+  <desc id="desc">A clean Meta mesh icon without an enclosing frame.</desc>
+  <defs>
+    <linearGradient id="stroke" x1="126" y1="151" x2="386" y2="359" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2563EB"/>
+      <stop offset="0.52" stop-color="#06B6D4"/>
+      <stop offset="1" stop-color="#14B8A6"/>
+    </linearGradient>
+    <filter id="shadow" x="70" y="82" width="372" height="354" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#0F172A" flood-opacity="0.16"/>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="#F8FAFC"/>
+  <g filter="url(#shadow)">
+    <path d="M128 350V162C128 147.918 144.932 140.824 154.967 150.703L256 250.12L357.033 150.703C367.068 140.824 384 147.918 384 162V350" stroke="#111827" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M128 162L256 288L384 162" stroke="url(#stroke)" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M128 350H384" stroke="#111827" stroke-width="30" stroke-linecap="round"/>
+  </g>
+  <circle cx="128" cy="162" r="28" fill="#38BDF8" stroke="#F8FAFC" stroke-width="10"/>
+  <circle cx="256" cy="288" r="28" fill="#06B6D4" stroke="#F8FAFC" stroke-width="10"/>
+  <circle cx="384" cy="162" r="28" fill="#2DD4BF" stroke="#F8FAFC" stroke-width="10"/>
+</svg>
