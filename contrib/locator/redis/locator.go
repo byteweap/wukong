@@ -3,6 +3,7 @@ package redis
 
 import (
 	"context"
+	"errors"
 
 	"github.com/redis/go-redis/v9"
 
@@ -56,7 +57,14 @@ func (l *Locator) AllNodes(ctx context.Context, uid int64) (map[string]string, e
 
 // Node 返回用户ID当前所在的某服务某节点
 func (l *Locator) Node(ctx context.Context, uid int64, service string) (string, error) {
-	return l.rc.HGet(ctx, l.key(uid), service).Result()
+	return normalizeNodeResult(l.rc.HGet(ctx, l.key(uid), service).Result())
+}
+
+func normalizeNodeResult(node string, err error) (string, error) {
+	if errors.Is(err, redis.Nil) {
+		return "", nil
+	}
+	return node, err
 }
 
 // Bind 绑定用户ID到某服务某节点
