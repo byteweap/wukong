@@ -23,13 +23,12 @@ func (g *Gate) handleConnect(s *melody.Session) {
 		return
 	}
 	// 注册会话
-	session, ok := g.sessions.get(uid)
+	session, ok := g.sessions.replace(uid, s)
 	if ok {
 		log.Warnf("[websocket] connection exists: uid: %v, close old connection", uid)
 		_ = session.Close()
 	}
 	s.Set("uid", uid)
-	g.sessions.register(uid, s)
 
 	log.Infof("[websocket] new connection success, uid: %v, %s", uid, sessionRemoteAddr(s))
 
@@ -37,8 +36,8 @@ func (g *Gate) handleConnect(s *melody.Session) {
 
 	// 绑定网关
 	if err := loc.Bind(g.ctx, uid, g.appName, g.appID); err != nil {
-		log.Errorf("[websocket] new connection success, bind gate error, uid: %v, err: %v", uid, err)
-		g.sessions.unregister(uid)
+		log.Errorf("[websocket] new connection bind gate error, uid: %v, err: %v", uid, err)
+		g.sessions.unregisterIfSame(uid, s)
 		_ = s.Write([]byte(http.StatusText(http.StatusInternalServerError)))
 		_ = s.CloseWithMsg(websocket.FormatCloseMessage(melody.CloseInternalServerErr, "bind gate error"))
 		return
@@ -62,16 +61,10 @@ func (g *Gate) handleDisconnect(s *melody.Session) {
 	uid := uids.(int64)
 
 	// 注销会话
-	curSession, yes := g.sessions.get(uid)
-	if !yes {
-		log.Errorf("[websocket] connection disconnect error, uid: %v not found", uid)
-		return
-	}
-	if curSession != s {
+	if !g.sessions.unregisterIfSame(uid, s) {
 		log.Warnf("[websocket] connection disconnect error, uid: %v session not match", uid)
 		return
 	}
-	g.sessions.unregister(uid)
 
 	log.Infof("[websocket] connection disconnect success, uid: %v", uid)
 

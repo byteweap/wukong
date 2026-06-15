@@ -18,6 +18,7 @@ import (
 	"github.com/byteweap/meta/component/locator"
 	"github.com/byteweap/meta/component/registry"
 	"github.com/byteweap/meta/component/selector"
+	"github.com/byteweap/meta/internal/cluster"
 )
 
 type testAppInfo struct {
@@ -41,11 +42,19 @@ type testBroker struct {
 	replyCalls  int
 	replyData   []byte
 	replyHeader broker.Header
+	pubErrs     map[string]error
+	pubSubjects []string
 }
 
 func (b *testBroker) ID() string { return "test-broker" }
 
-func (b *testBroker) Pub(context.Context, string, []byte, ...broker.PublishOption) error {
+func (b *testBroker) Pub(_ context.Context, subject string, _ []byte, _ ...broker.PublishOption) error {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.pubSubjects = append(b.pubSubjects, subject)
+	if b.pubErrs != nil {
+		return b.pubErrs[subject]
+	}
 	return nil
 }
 
@@ -77,6 +86,7 @@ type testLocator struct {
 	bindErr     error
 	bindCalls   int
 	unbindCalls int
+	nodes       map[string]string
 }
 
 var _ locator.Locator = (*testLocator)(nil)
@@ -84,7 +94,13 @@ var _ locator.Locator = (*testLocator)(nil)
 func (l *testLocator) ID() string { return "test-locator" }
 
 func (l *testLocator) AllNodes(context.Context, int64) (map[string]string, error) {
-	return map[string]string{}, nil
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	nodes := make(map[string]string, len(l.nodes))
+	for service, node := range l.nodes {
+		nodes[service] = node
+	}
+	return nodes, nil
 }
 
 func (l *testLocator) Node(context.Context, int64, string) (string, error) {
@@ -108,6 +124,7 @@ func (l *testLocator) UnBind(context.Context, int64, string, string) error {
 func (l *testLocator) Close() error { return nil }
 
 type testWatcher struct {
+	mu        sync.Mutex
 	stopCalls int
 	nextErr   error
 }
@@ -120,6 +137,8 @@ func (w *testWatcher) Next() ([]*registry.ServiceInstance, error) {
 }
 
 func (w *testWatcher) Stop() error {
+	w.mu.Lock()
+	defer w.mu.Unlock()
 	w.stopCalls++
 	return nil
 }
@@ -195,6 +214,50 @@ func TestGateValidate(t *testing.T) {
 		SelectorFunc(func() selector.Selector { return &testSelector{} }),
 	)
 	require.NoError(t, g.validate())
+}
+
+func TestGateOptions(t *testing.T) {
+	g := New(
+		Prefix(""),
+		Addr(""),
+		Path(""),
+		WriteTimeout(0),
+		PongTimeout(0),
+		PingInterval(0),
+		MaxMessageSize(0),
+		MessageBufferSize(0),
+	)
+	require.Equal(t, defaultPrefix, g.opts.prefix)
+	require.Equal(t, defaultAddr, g.opts.addr)
+	require.Equal(t, defaultPath, g.opts.path)
+	require.Equal(t, defaultWriteTimeout, g.opts.writeTimeout)
+	require.Equal(t, defaultPongTimeout, g.opts.pongTimeout)
+	require.Equal(t, defaultPingInterval, g.opts.pingInterval)
+	require.Equal(t, int64(defaultMaxMessageSize), g.opts.maxMessageSize)
+	require.Equal(t, defaultWebsocketMessageBufferSize, g.opts.websocketMessageBufferSize)
+	require.Equal(t, defaultBrokerMessageBufferSize, g.opts.brokerMessageBufferSize)
+
+	g = New(
+		Prefix("custom"),
+		Addr("127.0.0.1:0"),
+		Path("/ws"),
+		WriteTimeout(time.Second),
+		PongTimeout(2*time.Second),
+		PingInterval(3*time.Second),
+		MaxMessageSize(4096),
+		MessageBufferSize(64),
+		WebsocketMessageBufferSize(32),
+		BrokerMessageBufferSize(128),
+	)
+	require.Equal(t, "custom", g.opts.prefix)
+	require.Equal(t, "127.0.0.1:0", g.opts.addr)
+	require.Equal(t, "/ws", g.opts.path)
+	require.Equal(t, time.Second, g.opts.writeTimeout)
+	require.Equal(t, 2*time.Second, g.opts.pongTimeout)
+	require.Equal(t, 3*time.Second, g.opts.pingInterval)
+	require.Equal(t, int64(4096), g.opts.maxMessageSize)
+	require.Equal(t, 32, g.opts.websocketMessageBufferSize)
+	require.Equal(t, 128, g.opts.brokerMessageBufferSize)
 }
 
 func TestEnsureRetriesAfterWatchFailure(t *testing.T) {
@@ -330,6 +393,24 @@ func TestHandleRequestReplyMessageReturnsNotImplemented(t *testing.T) {
 	require.Equal(t, "123", bro.replyHeader.Get("trace"))
 }
 
+func TestReplyErrorClonesHeader(t *testing.T) {
+	bro := &testBroker{}
+	g := New(Broker(bro))
+	g.ctx = context.Background()
+	header := broker.Header{"trace": []string{"123"}}
+
+	err := g.replyError(&broker.Message{Reply: "reply.to.gate", Header: header}, 500, "failed")
+	require.NoError(t, err)
+	require.Empty(t, header.Get("code"))
+	require.Empty(t, header.Get("tip"))
+
+	bro.mu.Lock()
+	defer bro.mu.Unlock()
+	require.Equal(t, "123", bro.replyHeader.Get("trace"))
+	require.Equal(t, "500", bro.replyHeader.Get("code"))
+	require.Equal(t, "failed", bro.replyHeader.Get("tip"))
+}
+
 func TestHandleDisconnectIgnoresStaleSession(t *testing.T) {
 	loc := &testLocator{}
 	g := New(Locator(loc))
@@ -339,7 +420,7 @@ func TestHandleDisconnectIgnoresStaleSession(t *testing.T) {
 
 	current := &melody.Session{Keys: map[string]any{"uid": int64(7)}}
 	stale := &melody.Session{Keys: map[string]any{"uid": int64(7)}}
-	g.sessions.register(7, current)
+	g.sessions.replace(7, current)
 
 	g.handleDisconnect(stale)
 
@@ -350,4 +431,32 @@ func TestHandleDisconnectIgnoresStaleSession(t *testing.T) {
 	loc.mu.Lock()
 	defer loc.mu.Unlock()
 	require.Equal(t, 0, loc.unbindCalls)
+}
+
+func TestBroadcastEventContinuesAfterPublishFailure(t *testing.T) {
+	loc := &testLocator{
+		nodes: map[string]string{
+			"gate":  "gate-1",
+			"game":  "game-1",
+			"match": "match-1",
+		},
+	}
+	bro := &testBroker{
+		pubErrs: map[string]error{
+			"meta.gate.game.game-1": errors.New("publish failed"),
+		},
+	}
+	g := New(Locator(loc), Broker(bro))
+	g.ctx = context.Background()
+	g.appName = "gate"
+	g.appID = "gate-1"
+
+	g.broadcastEvent(7, cluster.EventOffline)
+
+	bro.mu.Lock()
+	defer bro.mu.Unlock()
+	require.ElementsMatch(t, []string{
+		"meta.gate.game.game-1",
+		"meta.gate.match.match-1",
+	}, bro.pubSubjects)
 }

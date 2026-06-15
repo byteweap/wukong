@@ -58,10 +58,7 @@ func (g *Gate) replyError(reqMsg *broker.Message, code int, tip string) error {
 	if reqMsg.Reply == "" {
 		return errors.New("reply subject is empty")
 	}
-	header := reqMsg.Header
-	if header == nil {
-		header = broker.Header{}
-	}
+	header := cloneHeader(reqMsg.Header)
 	header.Set("code", conv.String(code))
 	header.Set("tip", tip)
 	return g.opts.broker.Reply(g.ctx, reqMsg, nil, broker.ReplyHeader(header))
@@ -77,6 +74,10 @@ func (g *Gate) dispatch(uid int64, e *envelope.IMessage) {
 		toService = e.GetService()
 		loc, bro  = g.opts.locator, g.opts.broker
 	)
+	if toService == "" {
+		log.Errorf("[websocket] dispatch error, uid: %v, service is empty", uid)
+		return
+	}
 
 	curNodeID, err := loc.Node(g.ctx, uid, toService)
 	if err != nil {
@@ -96,7 +97,7 @@ func (g *Gate) dispatch(uid int64, e *envelope.IMessage) {
 			log.Errorf("[websocket] dispatch | get mesh node error, uid: %v, toService: %v, err: %v", uid, toService, ensureErr)
 			return
 		}
-		node, selectErr := sel.Select("")
+		node, selectErr := sel.Select(conv.String(uid))
 		if selectErr != nil {
 			log.Errorf("[websocket] dispatch | select mesh node error, uid: %v, toService: %v, err: %v", uid, toService, selectErr)
 			return
@@ -136,8 +137,16 @@ func (g *Gate) broadcastEvent(uid int64, event cluster.Event) {
 		)
 		if err = g.opts.broker.Pub(g.ctx, subject, nil, broker.PubHeader(header)); err != nil {
 			log.Errorf("[websocket] broadcast event error, uid: %v, subject: %v, err: %v", uid, subject, err)
-			return
+			continue
 		}
 		log.Debugf("[websocket] broadcast event success, uid: %v, subject: %v, event: %v", uid, subject, event)
 	}
+}
+
+func cloneHeader(src broker.Header) broker.Header {
+	dst := broker.Header{}
+	for key, values := range src {
+		dst[key] = append([]string(nil), values...)
+	}
+	return dst
 }

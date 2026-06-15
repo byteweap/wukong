@@ -102,7 +102,7 @@ func (g *Gate) setup(ctx context.Context, name, appID string) error {
 	m.Config.PongWait = o.pongTimeout
 	m.Config.PingPeriod = o.pingInterval
 	m.Config.MaxMessageSize = o.maxMessageSize
-	m.Config.MessageBufferSize = o.messageBufferSize
+	m.Config.MessageBufferSize = o.websocketMessageBufferSize
 	m.Config.ConcurrentMessageHandling = false
 
 	m.HandleConnect(g.handleConnect)
@@ -215,7 +215,7 @@ func (g *Gate) loop() error {
 	var (
 		o       = g.opts
 		bro     = g.opts.broker
-		msgChan = make(chan *broker.Message, o.messageBufferSize)
+		msgChan = make(chan *broker.Message, o.brokerMessageBufferSize)
 		subject = cluster.Subject(o.prefix, "*", g.appName, g.appID)
 	)
 

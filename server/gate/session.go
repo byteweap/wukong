@@ -15,14 +15,18 @@ func newSessions() *Sessions {
 	return &Sessions{data: sync.Map{}}
 }
 
-// register 注册会话
-func (ss *Sessions) register(uid int64, s *melody.Session) {
-	ss.data.Store(uid, s)
+// replace 注册新会话并返回旧会话
+func (ss *Sessions) replace(uid int64, s *melody.Session) (*melody.Session, bool) {
+	old, loaded := ss.data.Swap(uid, s)
+	if !loaded {
+		return nil, false
+	}
+	return old.(*melody.Session), true
 }
 
-// unregister 注销会话
-func (ss *Sessions) unregister(uid int64) {
-	ss.data.Delete(uid)
+// unregisterIfSame 仅当当前会话匹配时注销
+func (ss *Sessions) unregisterIfSame(uid int64, s *melody.Session) bool {
+	return ss.data.CompareAndDelete(uid, s)
 }
 
 // get 获取会话

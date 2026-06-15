@@ -12,14 +12,15 @@ import (
 )
 
 const (
-	defaultPrefix            = "meta"
-	defaultPath              = "/"
-	defaultAddr              = ":9000"
-	defaultWriteTimeout      = 5 * time.Second
-	defaultPongTimeout       = 60 * time.Second
-	defaultPingInterval      = 10 * time.Second
-	defaultMaxMessageSize    = 1024 * 2
-	defaultMessageBufferSize = 256
+	defaultPrefix                     = "meta"
+	defaultPath                       = "/"
+	defaultAddr                       = ":9000"
+	defaultWriteTimeout               = 5 * time.Second
+	defaultPongTimeout                = 60 * time.Second
+	defaultPingInterval               = 10 * time.Second
+	defaultMaxMessageSize             = 1024 * 2
+	defaultWebsocketMessageBufferSize = 256
+	defaultBrokerMessageBufferSize    = 256
 )
 
 // IDExtractor 用户id提取器
@@ -33,13 +34,14 @@ type options struct {
 	userIDExtractor IDExtractor // 用户 id 提取器
 
 	// websocket
-	path              string        // ws 路径
-	addr              string        // ws 地址
-	writeTimeout      time.Duration // write 超时时间
-	pongTimeout       time.Duration // Pong 超时时间
-	pingInterval      time.Duration // Ping 间隔时间
-	maxMessageSize    int64         // 最大消息大小
-	messageBufferSize int           // 消息缓冲区大小, websocket 和 broker 都用
+	path                       string        // ws 路径
+	addr                       string        // ws 地址
+	writeTimeout               time.Duration // write 超时时间
+	pongTimeout                time.Duration // Pong 超时时间
+	pingInterval               time.Duration // Ping 间隔时间
+	maxMessageSize             int64         // 最大消息大小
+	websocketMessageBufferSize int           // websocket 消息缓冲区大小
+	brokerMessageBufferSize    int           // broker 消息缓冲区大小
 
 	// component
 	locator      locator.Locator          // 玩家位置定位器
@@ -52,14 +54,15 @@ type Option func(*options)
 
 func defaultOptions() *options {
 	return &options{
-		prefix:            defaultPrefix,
-		path:              defaultPath,
-		addr:              defaultAddr,
-		writeTimeout:      defaultWriteTimeout,
-		pongTimeout:       defaultPongTimeout,
-		pingInterval:      defaultPingInterval,
-		maxMessageSize:    defaultMaxMessageSize, // 2k
-		messageBufferSize: defaultMessageBufferSize,
+		prefix:                     defaultPrefix,
+		path:                       defaultPath,
+		addr:                       defaultAddr,
+		writeTimeout:               defaultWriteTimeout,
+		pongTimeout:                defaultPongTimeout,
+		pingInterval:               defaultPingInterval,
+		maxMessageSize:             defaultMaxMessageSize, // 2k
+		websocketMessageBufferSize: defaultWebsocketMessageBufferSize,
+		brokerMessageBufferSize:    defaultBrokerMessageBufferSize,
 		userIDExtractor: func(r *http.Request) int64 {
 			return conv.Int64(r.FormValue("uid"))
 		},
@@ -69,7 +72,7 @@ func defaultOptions() *options {
 // Prefix 设置前缀(subject、redis key), 默认: meta
 func Prefix(prefix string) Option {
 	return func(o *options) {
-		if o.prefix != "" {
+		if prefix != "" {
 			o.prefix = prefix
 		}
 	}
@@ -78,7 +81,7 @@ func Prefix(prefix string) Option {
 // Addr 设置 websocket 地址
 func Addr(addr string) Option {
 	return func(o *options) {
-		if o.addr != "" {
+		if addr != "" {
 			o.addr = addr
 		}
 	}
@@ -87,7 +90,7 @@ func Addr(addr string) Option {
 // Path 设置 websocket 路径
 func Path(path string) Option {
 	return func(o *options) {
-		if o.path != "" {
+		if path != "" {
 			o.path = path
 		}
 	}
@@ -96,7 +99,7 @@ func Path(path string) Option {
 // WriteTimeout 设置 websocket write 超时时间
 func WriteTimeout(timeout time.Duration) Option {
 	return func(o *options) {
-		if o.writeTimeout != 0 {
+		if timeout > 0 {
 			o.writeTimeout = timeout
 		}
 	}
@@ -105,7 +108,7 @@ func WriteTimeout(timeout time.Duration) Option {
 // PongTimeout 设置 websocket Pong 超时时间
 func PongTimeout(timeout time.Duration) Option {
 	return func(o *options) {
-		if o.pongTimeout != 0 {
+		if timeout > 0 {
 			o.pongTimeout = timeout
 		}
 	}
@@ -114,26 +117,45 @@ func PongTimeout(timeout time.Duration) Option {
 // PingInterval 设置 websocket Ping 间隔时间
 func PingInterval(interval time.Duration) Option {
 	return func(o *options) {
-		if o.pingInterval != 0 {
+		if interval > 0 {
 			o.pingInterval = interval
 		}
 	}
 }
 
-// MaxMessageSize 设置 websocket 最大消息大小, 单位:字节, 默认: 512
+// MaxMessageSize 设置 websocket 最大消息大小, 单位:字节, 默认: 2KB
 func MaxMessageSize(size int64) Option {
 	return func(o *options) {
-		if o.maxMessageSize != 0 {
+		if size > 0 {
 			o.maxMessageSize = size
 		}
 	}
 }
 
-// MessageBufferSize 设置 websocket 消息缓冲区大小,默认: 256
+// MessageBufferSize 设置 websocket 和 broker 消息缓冲区大小, 默认: 256
 func MessageBufferSize(size int) Option {
 	return func(o *options) {
-		if o.messageBufferSize != 0 {
-			o.messageBufferSize = size
+		if size > 0 {
+			o.websocketMessageBufferSize = size
+			o.brokerMessageBufferSize = size
+		}
+	}
+}
+
+// WebsocketMessageBufferSize 设置 websocket 消息缓冲区大小, 默认: 256
+func WebsocketMessageBufferSize(size int) Option {
+	return func(o *options) {
+		if size > 0 {
+			o.websocketMessageBufferSize = size
+		}
+	}
+}
+
+// BrokerMessageBufferSize 设置 broker 消息缓冲区大小, 默认: 256
+func BrokerMessageBufferSize(size int) Option {
+	return func(o *options) {
+		if size > 0 {
+			o.brokerMessageBufferSize = size
 		}
 	}
 }
