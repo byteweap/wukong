@@ -28,15 +28,15 @@ func TestInt_EdgeCases(t *testing.T) {
 }
 
 func TestInt_Range(t *testing.T) {
-	min, max := -10, 10
-	if min >= max {
+	minValue, maxValue := -10, 10
+	if minValue >= maxValue {
 		t.Fatalf("invalid test range")
 	}
 
 	for i := 0; i < 1000; i++ {
-		got := Int(min, max)
-		if got < min || got >= max {
-			t.Fatalf("Int(%d, %d) = %d out of range", min, max, got)
+		got := Int(minValue, maxValue)
+		if got < minValue || got >= maxValue {
+			t.Fatalf("Int(%d, %d) = %d out of range", minValue, maxValue, got)
 		}
 	}
 }
@@ -67,35 +67,35 @@ func TestInt64_EdgeCases(t *testing.T) {
 }
 
 func TestInt64_Range(t *testing.T) {
-	var min int64 = -10
-	var max int64 = 10
-	if min >= max {
+	var minValue int64 = -10
+	var maxValue int64 = 10
+	if minValue >= maxValue {
 		t.Fatalf("invalid test range")
 	}
 
 	for i := 0; i < 1000; i++ {
-		got := Int64(min, max)
-		if got < min || got >= max {
-			t.Fatalf("Int64(%d, %d) = %d out of range", min, max, got)
+		got := Int64(minValue, maxValue)
+		if got < minValue || got >= maxValue {
+			t.Fatalf("Int64(%d, %d) = %d out of range", minValue, maxValue, got)
 		}
 	}
 }
 
 func BenchmarkInt(b *testing.B) {
-	min, max := 0, 1_000_000
+	minValue, maxValue := 0, 1_000_000
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		_ = Int(min, max)
+		_ = Int(minValue, maxValue)
 	}
 }
 
 func BenchmarkInt64(b *testing.B) {
-	var min int64 = 0
-	var max int64 = 1_000_000
+	var minValue int64
+	var maxValue int64 = 1_000_000
 	b.ResetTimer()
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		_ = Int64(min, max)
+		_ = Int64(minValue, maxValue)
 	}
 }

@@ -91,9 +91,8 @@ func Int64(data any) int64 {
 		var i int64
 		if err := binary.Read(bytes.NewReader(buf), binary.BigEndian, &i); err == nil {
 			return i
-		} else {
-			return 0
 		}
+		return 0
 	case *[]byte:
 		return Int64(*v)
 	default:
@@ -102,7 +101,7 @@ func Int64(data any) int64 {
 			kind = rv.Kind()
 		)
 
-		for kind == reflect.Ptr {
+		for kind == reflect.Pointer {
 			rv = rv.Elem()
 			kind = rv.Kind()
 		}
@@ -135,12 +134,12 @@ func Int64s(data any) []int64 {
 	return convertSlice(data, Int64)
 }
 
-func Int64Pointer(any any) *int64 {
-	v := Int64(any)
+func Int64Pointer(data any) *int64 {
+	v := Int64(data)
 	return &v
 }
 
-func Int64sPointer(any any) *[]int64 {
-	v := Int64s(any)
+func Int64sPointer(data any) *[]int64 {
+	v := Int64s(data)
 	return &v
 }

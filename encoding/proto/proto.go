@@ -43,7 +43,7 @@ func getProtoMessage(v any) (proto.Message, error) {
 		return msg, nil
 	}
 	val := reflect.ValueOf(v)
-	if val.Kind() != reflect.Ptr {
+	if val.Kind() != reflect.Pointer {
 		return nil, errors.New("not proto message")
 	}
 

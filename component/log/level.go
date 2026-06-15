@@ -9,6 +9,14 @@ type Level int8
 const LevelKey = "level"
 
 const (
+	levelDebugString = "DEBUG"
+	levelInfoString  = "INFO"
+	levelWarnString  = "WARN"
+	levelErrorString = "ERROR"
+	levelFatalString = "FATAL"
+)
+
+const (
 	// LevelDebug 表示 debug 级别
 	LevelDebug Level = iota - 1
 	// LevelInfo 表示 info 级别
@@ -30,15 +38,15 @@ func (l Level) Key() string {
 func (l Level) String() string {
 	switch l {
 	case LevelDebug:
-		return "DEBUG"
+		return levelDebugString
 	case LevelInfo:
-		return "INFO"
+		return levelInfoString
 	case LevelWarn:
-		return "WARN"
+		return levelWarnString
 	case LevelError:
-		return "ERROR"
+		return levelErrorString
 	case LevelFatal:
-		return "FATAL"
+		return levelFatalString
 	default:
 		return ""
 	}
@@ -47,15 +55,15 @@ func (l Level) String() string {
 // ParseLevel 将字符串解析为日志级别
 func ParseLevel(s string) Level {
 	switch strings.ToUpper(s) {
-	case "DEBUG":
+	case levelDebugString:
 		return LevelDebug
-	case "INFO":
+	case levelInfoString:
 		return LevelInfo
-	case "WARN":
+	case levelWarnString:
 		return LevelWarn
-	case "ERROR":
+	case levelErrorString:
 		return LevelError
-	case "FATAL":
+	case levelFatalString:
 		return LevelFatal
 	}
 	return LevelInfo

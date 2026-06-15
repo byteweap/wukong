@@ -30,7 +30,9 @@ func Bytes(data any) []byte {
 		err = binary.Write(buf, binary.BigEndian, uint64(v))
 	case *uint:
 		err = binary.Write(buf, binary.BigEndian, uint64(*v))
-	case bool, *bool, int8, *int8, int16, *int16, int32, *int32, int64, *int64, uint8, *uint8, uint16, *uint16, uint32, *uint32, uint64, *uint64, float32, *float32, float64, *float64:
+	case bool, *bool, int8, *int8, int16, *int16, int32, *int32, int64, *int64,
+		uint8, *uint8, uint16, *uint16, uint32, *uint32, uint64, *uint64,
+		float32, *float32, float64, *float64:
 		err = binary.Write(buf, binary.BigEndian, v)
 	case uintptr:
 		err = binary.Write(buf, binary.BigEndian, uint64(v))
@@ -52,7 +54,7 @@ func Bytes(data any) []byte {
 			kind = rv.Kind()
 		)
 
-		for kind == reflect.Ptr {
+		for kind == reflect.Pointer {
 			rv = rv.Elem()
 			kind = rv.Kind()
 		}
@@ -85,8 +87,8 @@ func Bytes(data any) []byte {
 		case reflect.Complex64, reflect.Complex128:
 			return nil
 		default:
-			b, err := json.Marshal(data)
-			if err != nil {
+			b, marshalErr := json.Marshal(data)
+			if marshalErr != nil {
 				return nil
 			}
 			return b

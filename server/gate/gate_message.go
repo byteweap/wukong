@@ -25,7 +25,7 @@ func (g *Gate) handleRequestReplyMessage(msg *broker.Message) {
 // handlerPubSubMessage 来自Mesh服务的(pub-sub)消息
 func (g *Gate) handlePubSubMessage(msg *broker.Message) {
 	// 2. 直接回复给玩家的消息
-	uid := cluster.GetUidBy(msg.Header)
+	uid := cluster.GetUIDBy(msg.Header)
 	if uid <= 0 {
 		log.Errorf("[websocket] reply2player get uid error, uid: %v", uid)
 		return
@@ -91,14 +91,14 @@ func (g *Gate) dispatch(uid int64, e *envelope.IMessage) {
 	}
 	nodeID := curNodeID
 	if curNodeID == "" {
-		sel, err := g.ensure(toService)
-		if err != nil {
-			log.Errorf("[websocket] dispatch | get mesh node error, uid: %v, toService: %v, err: %v", uid, toService, err)
+		sel, ensureErr := g.ensure(toService)
+		if ensureErr != nil {
+			log.Errorf("[websocket] dispatch | get mesh node error, uid: %v, toService: %v, err: %v", uid, toService, ensureErr)
 			return
 		}
-		node, err := sel.Select("")
-		if err != nil {
-			log.Errorf("[websocket] dispatch | select mesh node error, uid: %v, toService: %v, err: %v", uid, toService, err)
+		node, selectErr := sel.Select("")
+		if selectErr != nil {
+			log.Errorf("[websocket] dispatch | select mesh node error, uid: %v, toService: %v, err: %v", uid, toService, selectErr)
 			return
 		}
 		nodeID = node.ID()
@@ -106,7 +106,7 @@ func (g *Gate) dispatch(uid int64, e *envelope.IMessage) {
 	// 构建消息头
 	var (
 		reply  = g.Subject(toService) // 回复主题
-		header = cluster.BuildHeader(uid, cluster.Event_Business, reply, g.appName, toService)
+		header = cluster.BuildHeader(uid, cluster.EventBusiness, reply, g.appName, toService)
 	)
 	// 发布消息到 Mesh
 	subject := cluster.Subject(g.opts.prefix, g.appName, toService, nodeID)

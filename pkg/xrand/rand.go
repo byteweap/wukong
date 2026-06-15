@@ -5,22 +5,22 @@ import (
 	"math/big"
 )
 
-// Int [min, max) 随机数生成
+// Int [minValue, maxValue) 随机数生成
 // crypto/rand 生成安全的随机数,相比math/rand性能更好，推荐使用
-func Int(min, max int) int {
-	if min >= max || max == 0 {
-		return max
+func Int(minValue, maxValue int) int {
+	if minValue >= maxValue || maxValue == 0 {
+		return maxValue
 	}
-	result, _ := rand.Int(rand.Reader, big.NewInt(int64(max-min)))
-	return int(result.Int64()) + min
+	result, _ := rand.Int(rand.Reader, big.NewInt(int64(maxValue-minValue)))
+	return int(result.Int64()) + minValue
 }
 
-// Int64 [min, max) 随机数生成
+// Int64 [minValue, maxValue) 随机数生成
 // crypto/rand 生成安全的随机数,相比math/rand性能更好，推荐使用
-func Int64(min, max int64) int64 {
-	if min >= max || max == 0 {
-		return max
+func Int64(minValue, maxValue int64) int64 {
+	if minValue >= maxValue || maxValue == 0 {
+		return maxValue
 	}
-	result, _ := rand.Int(rand.Reader, big.NewInt(max-min))
-	return result.Int64() + min
+	result, _ := rand.Int(rand.Reader, big.NewInt(maxValue-minValue))
+	return result.Int64() + minValue
 }

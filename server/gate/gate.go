@@ -85,7 +85,7 @@ func (g *Gate) validate() error {
 	return nil
 }
 
-func (g *Gate) setup(name, appID string, ctx context.Context) error {
+func (g *Gate) setup(ctx context.Context, name, appID string) error {
 	// base
 	g.appID = appID
 	g.appName = name
@@ -135,7 +135,7 @@ func (g *Gate) Start(ctx context.Context) error {
 		return err
 	}
 	// 启动前设置
-	if err := g.setup(app.Name(), app.ID(), ctx); err != nil {
+	if err := g.setup(ctx, app.Name(), app.ID()); err != nil {
 		return fmt.Errorf("setup failed: %w", err)
 	}
 	// 循环(常驻协程)

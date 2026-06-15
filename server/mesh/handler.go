@@ -60,7 +60,7 @@ func adaptMessageHandler(handler any) (MessageHandler, error) {
 		return nil, fmt.Errorf("mesh: handler first arg must be *mesh.Context, got %s", rt.In(0).String())
 	}
 	argType := rt.In(1)
-	if argType.Kind() != reflect.Ptr {
+	if argType.Kind() != reflect.Pointer {
 		return nil, fmt.Errorf("mesh: handler second arg must be pointer type, got %s", argType.String())
 	}
 	return func(m *Mesh, msg *broker.Message, e *envelope.IMessage) {

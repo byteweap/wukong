@@ -6,45 +6,45 @@ import (
 )
 
 const (
-	FieldName_Uid         = "uid"
-	FieldName_Event       = "event"
-	FieldName_Reply       = "reply"
-	FieldName_FromService = "from_service"
-	FieldName_ToService   = "to_service"
+	FieldNameUID         = "uid"
+	FieldNameEvent       = "event"
+	FieldNameReply       = "reply"
+	FieldNameFromService = "from_service"
+	FieldNameToService   = "to_service"
 )
 
 // BuildHeader 构建必备请求头
 func BuildHeader(uid int64, event Event, reply, fromService, toService string) broker.Header {
 	return broker.Header{
-		FieldName_Uid:         []string{conv.String(uid)},
-		FieldName_Event:       []string{string(event)},
-		FieldName_Reply:       []string{reply},
-		FieldName_FromService: []string{fromService},
-		FieldName_ToService:   []string{toService},
+		FieldNameUID:         []string{conv.String(uid)},
+		FieldNameEvent:       []string{string(event)},
+		FieldNameReply:       []string{reply},
+		FieldNameFromService: []string{fromService},
+		FieldNameToService:   []string{toService},
 	}
 }
 
-// GetUidBy 从请求头中获取用户ID
-func GetUidBy(header broker.Header) int64 {
-	return conv.Int64(header.Get(FieldName_Uid))
+// GetUIDBy 从请求头中获取用户ID
+func GetUIDBy(header broker.Header) int64 {
+	return conv.Int64(header.Get(FieldNameUID))
 }
 
 // GetEventBy 从请求头中获取事件类型
 func GetEventBy(header broker.Header) Event {
-	return Event(header.Get(FieldName_Event))
+	return Event(header.Get(FieldNameEvent))
 }
 
 // GetReplyBy 从请求头中获取回复信息
 func GetReplyBy(header broker.Header) string {
-	return header.Get(FieldName_Reply)
+	return header.Get(FieldNameReply)
 }
 
 // GetFromServiceBy 从请求头中获取来源服务
 func GetFromServiceBy(header broker.Header) string {
-	return header.Get(FieldName_FromService)
+	return header.Get(FieldNameFromService)
 }
 
 // GetToServiceBy 从请求头中获取目标服务
 func GetToServiceBy(header broker.Header) string {
-	return header.Get(FieldName_ToService)
+	return header.Get(FieldNameToService)
 }

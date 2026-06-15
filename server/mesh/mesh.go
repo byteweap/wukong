@@ -28,7 +28,7 @@ type Mesh struct {
 
 	opts          *options
 	routes        sync.Map // key: cmd<<32|version (uint64), value: MessageHandler
-	requestRoutes sync.Map // key: cmd.version (string), value: RpcMessageHandler
+	requestRoutes sync.Map // key: cmd.version (string), value: RPCMessageHandler
 
 	onlineHandler    func(uid int64) // 玩家上线
 	offlineHandler   func(uid int64) // 玩家掉线
@@ -38,6 +38,8 @@ type Mesh struct {
 	done   chan struct{}
 	mu     sync.Mutex
 }
+
+const meshScheme = "mesh"
 
 var _ server.Server = (*Mesh)(nil)
 
@@ -132,7 +134,7 @@ func (m *Mesh) Endpoint(ctx context.Context) (*url.URL, error) {
 	}
 	host := app.Name() + "." + app.ID()
 	return &url.URL{
-		Scheme: "mesh",
+		Scheme: meshScheme,
 		Host:   host + ":0000",
 	}, nil
 }
@@ -204,22 +206,22 @@ func (m *Mesh) Route(cmd, version uint32, handler MessageHandler) {
 	m.routes.Store(key, handler)
 }
 
-// RpcRouteX 注册 request-reply 路由处理器
+// RPCRouteX 注册 request-reply 路由处理器
 // cmd/version 共同确定唯一路由
 // handler 支持两种写法，推荐直接传业务函数
 //
 // 1) 推荐写法
-// func(ctx *RpcContext, req *Request) ([]byte, string, int)
-// 示例: mesh.RpcRouteX(cmd, version, HandleRequest)
+// func(ctx *RPCContext, req *Request) ([]byte, string, int)
+// 示例: mesh.RPCRouteX(cmd, version, HandleRequest)
 //
 // 2) 兼容写法
-// RpcMessageHandler
-// 示例: mesh.RpcRouteX(cmd, version, mesh.WrapRpc(HandleRequest))
+// RPCMessageHandler
+// 示例: mesh.RPCRouteX(cmd, version, mesh.WrapRPC(HandleRequest))
 //
 // 如果 handler 签名不合法，函数会 panic
-// 注意: 使用反射, 热点路由请使用 RpcRoute
-func (m *Mesh) RpcRouteX(cmd, version string, handler any) {
-	mh, err := adaptRpcMessageHandler(handler)
+// 注意: 使用反射, 热点路由请使用 RPCRoute
+func (m *Mesh) RPCRouteX(cmd, version string, handler any) {
+	mh, err := adaptRPCMessageHandler(handler)
 	if err != nil {
 		panic(err)
 	}
@@ -227,10 +229,10 @@ func (m *Mesh) RpcRouteX(cmd, version string, handler any) {
 	m.requestRoutes.Store(key, mh)
 }
 
-// RpcRoute 注册 request-reply 路由处理器
-// 该方法要求显式传入 RpcMessageHandler（通常通过 mesh.WrapRpc 构造）
+// RPCRoute 注册 request-reply 路由处理器
+// 该方法要求显式传入 RPCMessageHandler（通常通过 mesh.WrapRPC 构造）
 // 运行期不经过反射调用，适合高频热点路由
-func (m *Mesh) RpcRoute(cmd, version string, handler RpcMessageHandler) {
+func (m *Mesh) RPCRoute(cmd, version string, handler RPCMessageHandler) {
 	if handler == nil {
 		panic("mesh: request-reply handler is nil")
 	}
@@ -311,7 +313,7 @@ func (m *Mesh) Request(subject, cmd, version string, data []byte) ([]byte, strin
 func (m *Mesh) sendMessage(subject, toService string, bytes []byte, uids ...int64) error {
 	var err error
 	for _, uid := range uids {
-		header := cluster.BuildHeader(uid, cluster.Event_Business, "", m.appName, toService)
+		header := cluster.BuildHeader(uid, cluster.EventBusiness, "", m.appName, toService)
 		if e := m.opts.broker.Pub(m.ctx, subject, bytes, broker.PubHeader(header)); e != nil {
 			err = errors.Join(err, e)
 		}
@@ -367,7 +369,7 @@ func (m *Mesh) handlerRequestReplyMessage(msg *broker.Message) {
 	}
 	cmd, version := header.Get("cmd"), header.Get("version")
 	if handler, ok := m.requestRoutes.Load(requestRouteKey(cmd, version)); ok {
-		data, tip, code := handler.(RpcMessageHandler)(m, msg)
+		data, tip, code := handler.(RPCMessageHandler)(m, msg)
 		m.replyRequestResult(msg, data, tip, code)
 	} else {
 		if err := m.errReply(msg, 404, fmt.Sprintf("cmd:%s version:%s not found", cmd, version)); err != nil {
@@ -397,20 +399,20 @@ func (m *Mesh) replyRequestResult(msg *broker.Message, data []byte, tip string, 
 // handlerPubSubMessage 来自Gate的(pub-sub)消息
 func (m *Mesh) handlerPubSubMessage(msg *broker.Message) {
 	var (
-		uid   = cluster.GetUidBy(msg.Header)
+		uid   = cluster.GetUIDBy(msg.Header)
 		event = cluster.GetEventBy(msg.Header)
 	)
 
 	switch event {
-	case cluster.Event_Online:
+	case cluster.EventOnline:
 		if m.onlineHandler != nil {
 			m.onlineHandler(uid)
 		}
-	case cluster.Event_Offline:
+	case cluster.EventOffline:
 		if m.offlineHandler != nil {
 			m.offlineHandler(uid)
 		}
-	case cluster.Event_Reconnect:
+	case cluster.EventReconnect:
 		if m.reconnectHandler != nil {
 			m.reconnectHandler(uid)
 		}

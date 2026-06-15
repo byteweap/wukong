@@ -16,7 +16,7 @@ import (
 func (g *Gate) handleConnect(s *melody.Session) {
 	req := s.Request
 
-	uid := g.opts.userIdExtractor(req)
+	uid := g.opts.userIDExtractor(req)
 	if uid <= 0 {
 		_ = s.Write([]byte("uid is required"))
 		_ = s.Close()
@@ -45,9 +45,9 @@ func (g *Gate) handleConnect(s *melody.Session) {
 	}
 
 	// 广播 上线、重连 事件到上游服务
-	event := cluster.Event_Online
+	event := cluster.EventOnline
 	if ok {
-		event = cluster.Event_Reconnect
+		event = cluster.EventReconnect
 	}
 	g.broadcastEvent(uid, event)
 }
@@ -81,11 +81,11 @@ func (g *Gate) handleDisconnect(s *melody.Session) {
 	}
 
 	// 广播掉线事件到上游服务
-	g.broadcastEvent(uid, cluster.Event_Offline)
+	g.broadcastEvent(uid, cluster.EventOffline)
 }
 
 // 接收到文本消息时调用
-func (g *Gate) handleTextMessage(s *melody.Session, msg []byte) {
+func (g *Gate) handleTextMessage(_ *melody.Session, _ []byte) {
 	// todo
 }
 
@@ -108,11 +108,11 @@ func (g *Gate) handleBinaryMessage(s *melody.Session, msg []byte) {
 }
 
 // 错误时调用
-func (g *Gate) handleError(s *melody.Session, err error) {
+func (g *Gate) handleError(_ *melody.Session, err error) {
 	log.Errorf("[websocket] error occurred, err: %v", err)
 }
 
-func (g *Gate) handleClose(s *melody.Session, code int, reason string) error {
+func (g *Gate) handleClose(_ *melody.Session, code int, reason string) error {
 	log.Infof("[websocket] connection closed, code: %v, reason: %v", code, reason)
 	return nil
 }

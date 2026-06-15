@@ -94,7 +94,7 @@ func TestRouteOnlineEventWithoutCallback(t *testing.T) {
 	})
 
 	m.handlerPubSubMessage(&broker.Message{
-		Header: cluster.BuildHeader(7, cluster.Event_Online, "", "gate", "mesh"),
+		Header: cluster.BuildHeader(7, cluster.EventOnline, "", "gate", "mesh"),
 		Data:   nil,
 	})
 	if called {

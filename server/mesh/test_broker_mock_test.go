@@ -19,19 +19,19 @@ type mockBroker struct {
 
 func (b *mockBroker) ID() string { return "mock" }
 
-func (b *mockBroker) Pub(ctx context.Context, subject string, data []byte, opts ...broker.PublishOption) error {
+func (b *mockBroker) Pub(_ context.Context, _ string, _ []byte, _ ...broker.PublishOption) error {
 	return nil
 }
 
-func (b *mockBroker) Sub(ctx context.Context, subject string, handler broker.Handler, opts ...broker.SubscribeOption) (broker.Subscription, error) {
+func (b *mockBroker) Sub(_ context.Context, _ string, _ broker.Handler, _ ...broker.SubscribeOption) (broker.Subscription, error) {
 	return &mockSubscription{}, nil
 }
 
-func (b *mockBroker) Request(ctx context.Context, subject string, data []byte, opts ...broker.RequestOption) (*broker.Message, error) {
+func (b *mockBroker) Request(_ context.Context, _ string, _ []byte, _ ...broker.RequestOption) (*broker.Message, error) {
 	return &broker.Message{}, nil
 }
 
-func (b *mockBroker) Reply(ctx context.Context, msg *broker.Message, data []byte, opts ...broker.ReplyOption) error {
+func (b *mockBroker) Reply(_ context.Context, _ *broker.Message, data []byte, opts ...broker.ReplyOption) error {
 	replyOpt := &broker.ReplyOptions{}
 	for _, opt := range opts {
 		opt(replyOpt)

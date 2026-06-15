@@ -271,7 +271,7 @@ func TestHandleConnectRollsBackSessionWhenBindFails(t *testing.T) {
 	)
 
 	ctx := meta.NewContext(context.Background(), testAppInfo{id: "gate-1", name: "gate"})
-	require.NoError(t, g.setup("gate", "gate-1", ctx))
+	require.NoError(t, g.setup(ctx, "gate", "gate-1"))
 	defer func() {
 		if g.ws != nil {
 			_ = g.ws.Close()
@@ -285,9 +285,12 @@ func TestHandleConnectRollsBackSessionWhenBindFails(t *testing.T) {
 	defer ts.Close()
 
 	wsURL := "ws" + strings.TrimPrefix(ts.URL, "http") + "/ws?uid=42"
-	conn, _, err := websocket.DefaultDialer.Dial(wsURL, nil)
+	conn, resp, err := websocket.DefaultDialer.Dial(wsURL, nil)
 	require.NoError(t, err)
 	defer conn.Close()
+	if resp != nil && resp.Body != nil {
+		defer resp.Body.Close()
+	}
 
 	require.Eventually(t, func() bool {
 		_, ok := g.sessions.get(42)

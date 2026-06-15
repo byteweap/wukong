@@ -15,11 +15,11 @@ func TestAdaptRequestAutoWrapPayload(t *testing.T) {
 	m := New()
 
 	called := false
-	var gotCtx *RpcContext
+	var gotCtx *RPCContext
 	var gotReq *envelope.IMessage
 
 	wantData := []byte("ok-data")
-	h := mustAdaptRequestHandler(t, func(ctx *RpcContext, req *envelope.IMessage) ([]byte, string, int) {
+	h := mustAdaptRequestHandler(t, func(ctx *RPCContext, req *envelope.IMessage) ([]byte, string, int) {
 		called = true
 		gotCtx = ctx
 		gotReq = req
@@ -69,23 +69,25 @@ func TestAdaptRequestAutoWrapEmptyPayloadPassNil(t *testing.T) {
 	m := New()
 
 	var gotReq *envelope.IMessage
-	h := mustAdaptRequestHandler(t, func(_ *RpcContext, req *envelope.IMessage) ([]byte, string, int) {
+	h := mustAdaptRequestHandler(t, func(_ *RPCContext, req *envelope.IMessage) ([]byte, string, int) {
 		gotReq = req
 		return nil, "ok", 200
 	})
 
-	_, _, _ = h(m, &broker.Message{Data: nil})
+	_, gotTip, gotCode := h(m, &broker.Message{Data: nil})
+	_ = gotTip
+	_ = gotCode
 	if gotReq != nil {
 		t.Fatalf("expected nil request for empty payload")
 	}
 }
 
-// TestAdaptRequestCompatibleWithRequestMessageHandler 验证兼容直接传 RpcMessageHandler
+// TestAdaptRequestCompatibleWithRequestMessageHandler 验证兼容直接传 RPCMessageHandler
 func TestAdaptRequestCompatibleWithRequestMessageHandler(t *testing.T) {
 	m := New()
 
 	called := false
-	h, err := adaptRpcMessageHandler(RpcMessageHandler(func(_ *Mesh, _ *broker.Message) ([]byte, string, int) {
+	h, err := adaptRPCMessageHandler(RPCMessageHandler(func(_ *Mesh, _ *broker.Message) ([]byte, string, int) {
 		called = true
 		return nil, "ok", 200
 	}))
@@ -93,7 +95,9 @@ func TestAdaptRequestCompatibleWithRequestMessageHandler(t *testing.T) {
 		t.Fatalf("adapt request handler: %v", err)
 	}
 
-	_, _, _ = h(m, &broker.Message{})
+	_, gotTip, gotCode := h(m, &broker.Message{})
+	_ = gotTip
+	_ = gotCode
 	if !called {
 		t.Fatalf("request message handler not called")
 	}
@@ -101,18 +105,18 @@ func TestAdaptRequestCompatibleWithRequestMessageHandler(t *testing.T) {
 
 // TestAdaptRequestInvalidHandlerError 验证非法签名会返回错误
 func TestAdaptRequestInvalidHandlerError(t *testing.T) {
-	_, err := adaptRpcMessageHandler(func() error { return nil })
+	_, err := adaptRPCMessageHandler(func() error { return nil })
 	if err == nil {
 		t.Fatalf("expected error for invalid request handler")
 	}
-	if !strings.Contains(err.Error(), "func(*RpcContext,*T)([]byte,string,int)") {
+	if !strings.Contains(err.Error(), "func(*RPCContext,*T)([]byte,string,int)") {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
-func mustAdaptRequestHandler(t *testing.T, handler any) RpcMessageHandler {
+func mustAdaptRequestHandler(t *testing.T, handler any) RPCMessageHandler {
 	t.Helper()
-	h, err := adaptRpcMessageHandler(handler)
+	h, err := adaptRPCMessageHandler(handler)
 	if err != nil {
 		t.Fatalf("adapt request handler: %v", err)
 	}
@@ -125,11 +129,11 @@ func TestRequestRouteDispatchByHeader(t *testing.T) {
 	m := New(Broker(mb))
 
 	called := false
-	var gotCtx *RpcContext
+	var gotCtx *RPCContext
 	var gotReq *envelope.IMessage
 
 	wantData := []byte("route-ok")
-	m.RpcRouteX("2001", "1", func(ctx *RpcContext, req *envelope.IMessage) ([]byte, string, int) {
+	m.RPCRouteX("2001", "1", func(ctx *RPCContext, req *envelope.IMessage) ([]byte, string, int) {
 		called = true
 		gotCtx = ctx
 		gotReq = req
@@ -187,7 +191,7 @@ func TestRequestRouteDispatchEmptyPayloadPassNil(t *testing.T) {
 	m := New(Broker(mb))
 
 	var gotReq *envelope.IMessage
-	m.RpcRouteX("2002", "1", func(_ *RpcContext, req *envelope.IMessage) ([]byte, string, int) {
+	m.RPCRouteX("2002", "1", func(_ *RPCContext, req *envelope.IMessage) ([]byte, string, int) {
 		gotReq = req
 		return nil, "ok", 200
 	})
@@ -210,7 +214,7 @@ func TestRequestRouteErrorReply(t *testing.T) {
 	mb := &mockBroker{}
 	m := New(Broker(mb))
 
-	m.RpcRouteX("2003", "1", func(_ *RpcContext, _ *envelope.IMessage) ([]byte, string, int) {
+	m.RPCRouteX("2003", "1", func(_ *RPCContext, _ *envelope.IMessage) ([]byte, string, int) {
 		return []byte("ignored"), "bad request", 400
 	})
 
@@ -234,7 +238,7 @@ func TestRequestRouteErrorReply(t *testing.T) {
 	}
 }
 
-// TestRequestRouteInvalidHandlerPanic 验证 RpcRouteX 对非法签名会 panic
+// TestRequestRouteInvalidHandlerPanic 验证 RPCRouteX 对非法签名会 panic
 func TestRequestRouteInvalidHandlerPanic(t *testing.T) {
 	m := New()
 
@@ -244,5 +248,5 @@ func TestRequestRouteInvalidHandlerPanic(t *testing.T) {
 		}
 	}()
 
-	m.RpcRouteX("9999", "1", func() error { return nil })
+	m.RPCRouteX("9999", "1", func() error { return nil })
 }

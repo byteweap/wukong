@@ -15,7 +15,7 @@ func TestGetSignalsForOS(t *testing.T) {
 	}
 
 	switch runtime.GOOS {
-	case "windows":
+	case windowsOS:
 		if len(signals) != 2 {
 			t.Errorf("getSignalsForOS() for windows returned %d signals, want 2", len(signals))
 		}
@@ -33,10 +33,16 @@ func TestSignal(t *testing.T) {
 	}
 
 	// Test that channel is of correct type
-	var _ <-chan os.Signal = ch
+	assertSignalChannel(ch)
 }
 
+func assertSignalChannel(_ <-chan os.Signal) {}
+
 func TestWaitSignal(t *testing.T) {
+	if runtime.GOOS == windowsOS {
+		t.Skip("os.Process.Signal does not support SIGINT on Windows")
+	}
+
 	done := make(chan struct{})
 	go func() {
 		WaitSignal()

@@ -12,17 +12,17 @@ type Params struct {
 
 // EnterGame 模拟业务处理函数
 // pub-sub
-func EnterGame(ctx *mesh.Context, req *Params) {
+func EnterGame(_ *mesh.Context, _ *Params) {
 }
 
 // FindUser 模拟业务处理函数
 // request-reply
-func FindUser(ctx *mesh.RpcContext, req *Params) ([]byte, string, int) {
+func FindUser(_ *mesh.RPCContext, _ *Params) ([]byte, string, int) {
 	return nil, "ok", 200
 }
 
 // TestMesh
-func TestMesh(t *testing.T) {
+func TestMesh(_ *testing.T) {
 	app := mesh.New()
 
 	// 1. Gate 消息路由
@@ -33,7 +33,7 @@ func TestMesh(t *testing.T) {
 
 	// 2. Request 消息路由
 	// 	2.1. 写法简单,但使用反射,有性能开销, 不推荐用于高频路由
-	app.RpcRouteX("findUser", "v1", FindUser)
+	app.RPCRouteX("findUser", "v1", FindUser)
 	// 	2.2. 推荐写法, 避免反射调用, 推荐用于高频路由
-	app.RpcRoute("findUser1", "v1", mesh.WrapRpc(FindUser))
+	app.RPCRoute("findUser1", "v1", mesh.WrapRPC(FindUser))
 }

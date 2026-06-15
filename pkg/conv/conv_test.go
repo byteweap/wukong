@@ -900,7 +900,7 @@ func TestPointerFunctions(t *testing.T) {
 		{"Float64Pointer", 42.5, float64(42.5)},
 		{"BoolPointer", true, true},
 		{"StringPointer", "hello", "hello"},
-		{"DurationPointer", time.Second, time.Duration(time.Second)},
+		{"DurationPointer", time.Second, time.Second},
 		{"BytePointer", 42, byte(42)},
 	}
 
@@ -987,98 +987,98 @@ func TestSlicePointerFunctions(t *testing.T) {
 	}
 }
 
-func TestJsonStruct(t *testing.T) {
+func TestJSONStruct(t *testing.T) {
 	type TestStruct struct {
 		Name string `json:"name"`
 		Age  int    `json:"age"`
 	}
 	input := TestStruct{Name: "test", Age: 25}
-	result := Json(input)
+	result := JSON(input)
 	if result == "" {
-		t.Error("Json() returned empty string")
+		t.Error("JSON() returned empty string")
 	}
 }
 
-func TestJsonInvalid(t *testing.T) {
-	result := Json(func() {})
+func TestJSONInvalid(t *testing.T) {
+	result := JSON(func() {})
 	if result != "" {
-		t.Errorf("Json() should return empty string for invalid input, got %q", result)
+		t.Errorf("JSON() should return empty string for invalid input, got %q", result)
 	}
 }
 
-func TestJsonString(t *testing.T) {
+func TestJSONString(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
-		result := Json(`{"name":"test"}`)
+		result := JSON(`{"name":"test"}`)
 		if result != `{"name":"test"}` {
-			t.Errorf("Json() = %q, want %q", result, `{"name":"test"}`)
+			t.Errorf("JSON() = %q, want %q", result, `{"name":"test"}`)
 		}
 	})
 	t.Run("invalid", func(t *testing.T) {
-		result := Json("not json")
+		result := JSON("not json")
 		if result != "" {
-			t.Errorf("Json() should return empty string for non-json, got %q", result)
+			t.Errorf("JSON() should return empty string for non-json, got %q", result)
 		}
 	})
 }
 
-func TestJsonBytes(t *testing.T) {
+func TestJSONBytes(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
-		result := Json([]byte(`{"name":"test"}`))
+		result := JSON([]byte(`{"name":"test"}`))
 		if result != `{"name":"test"}` {
-			t.Errorf("Json() = %q, want %q", result, `{"name":"test"}`)
+			t.Errorf("JSON() = %q, want %q", result, `{"name":"test"}`)
 		}
 	})
 	t.Run("invalid", func(t *testing.T) {
-		result := Json([]byte("not json"))
+		result := JSON([]byte("not json"))
 		if result != "" {
-			t.Errorf("Json() should return empty string for non-json bytes, got %q", result)
+			t.Errorf("JSON() should return empty string for non-json bytes, got %q", result)
 		}
 	})
 }
 
-func TestJsonPointers(t *testing.T) {
+func TestJSONPointers(t *testing.T) {
 	t.Run("string valid", func(t *testing.T) {
 		s := `{"name":"test"}`
-		result := Json(&s)
+		result := JSON(&s)
 		if result != `{"name":"test"}` {
-			t.Errorf("Json() = %q, want %q", result, `{"name":"test"}`)
+			t.Errorf("JSON() = %q, want %q", result, `{"name":"test"}`)
 		}
 	})
 	t.Run("string nil", func(t *testing.T) {
 		var s *string
-		result := Json(s)
+		result := JSON(s)
 		if result != "" {
-			t.Errorf("Json() should return empty string for nil *string, got %q", result)
+			t.Errorf("JSON() should return empty string for nil *string, got %q", result)
 		}
 	})
 	t.Run("bytes valid", func(t *testing.T) {
 		b := []byte(`{"name":"test"}`)
-		result := Json(&b)
+		result := JSON(&b)
 		if result != `{"name":"test"}` {
-			t.Errorf("Json() = %q, want %q", result, `{"name":"test"}`)
+			t.Errorf("JSON() = %q, want %q", result, `{"name":"test"}`)
 		}
 	})
 	t.Run("bytes nil", func(t *testing.T) {
 		var b *[]byte
-		result := Json(b)
+		result := JSON(b)
 		if result != "" {
-			t.Errorf("Json() should return empty string for nil *[]byte, got %q", result)
+			t.Errorf("JSON() should return empty string for nil *[]byte, got %q", result)
 		}
 	})
 }
 
-func TestJsonNilAndMap(t *testing.T) {
+func TestJSONNilAndMap(t *testing.T) {
 	t.Run("nil", func(t *testing.T) {
-		result := Json(nil)
+		result := JSON(nil)
 		if result != "" {
-			t.Errorf("Json() should return empty string for nil, got %q", result)
+			t.Errorf("JSON() should return empty string for nil, got %q", result)
 		}
 	})
 	t.Run("map", func(t *testing.T) {
 		m := map[string]int{"a": 1}
-		result := Json(m)
+		result := JSON(m)
 		if result == "" {
-			t.Error("Json() returned empty string for map")
+			t.Error("JSON() returned empty string for map")
 		}
 	})
 }

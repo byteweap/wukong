@@ -5,7 +5,7 @@ import (
 	"reflect"
 )
 
-func Json(data any) string {
+func JSON(data any) string {
 	switch v := data.(type) {
 	case string:
 		if isRawJSON(v) {

@@ -74,7 +74,7 @@ func (c *Context) reset(mesh *Mesh, msg *broker.Message, e *envelope.IMessage) {
 	c.fromService = cluster.GetFromServiceBy(msg.Header)
 	c.toApp = cluster.GetToServiceBy(msg.Header)
 	c.event = cluster.GetEventBy(msg.Header)
-	c.uid = cluster.GetUidBy(msg.Header)
+	c.uid = cluster.GetUIDBy(msg.Header)
 
 	if e == nil || e.GetHeader() == nil {
 		c.seq = 0
@@ -90,8 +90,8 @@ func (c *Context) reset(mesh *Mesh, msg *broker.Message, e *envelope.IMessage) {
 	c.timestamp = header.GetTimestamp()
 }
 
-// Uid 返回用户 ID
-func (c *Context) Uid() int64 {
+// UID 返回用户 ID
+func (c *Context) UID() int64 {
 	return c.uid
 }
 

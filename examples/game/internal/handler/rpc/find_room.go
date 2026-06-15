@@ -8,6 +8,6 @@ import (
 )
 
 // Hello RPC示例接口
-func (h *RpcHandler) Hello(ctx *mesh.RpcContext, req *pb.FindRoomRequest) ([]byte, string, int) {
+func (h *RpcHandler) Hello(ctx *mesh.RPCContext, req *pb.FindRoomRequest) ([]byte, string, int) {
 	return []byte("Hello RPC"), "", http.StatusOK
 }

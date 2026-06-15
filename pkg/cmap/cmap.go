@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-var SHARD_COUNT = 32
+var ShardCount = 32
 
 type Stringer interface {
 	fmt.Stringer
@@ -28,9 +28,9 @@ type shardMap[K comparable, V any] struct {
 func create[K comparable, V any](sharding func(key K) uint32) *ConcurrentMap[K, V] {
 	m := &ConcurrentMap[K, V]{
 		sharding: sharding,
-		shards:   make([]*shardMap[K, V], SHARD_COUNT),
+		shards:   make([]*shardMap[K, V], ShardCount),
 	}
-	for i := 0; i < SHARD_COUNT; i++ {
+	for i := 0; i < ShardCount; i++ {
 		m.shards[i] = &shardMap[K, V]{items: make(map[K]V)}
 	}
 	return m
@@ -44,7 +44,7 @@ func New[K comparable, V any](sharding func(key K) uint32) *ConcurrentMap[K, V] 
 
 // getShard 根据 key 返回对应分片
 func (m *ConcurrentMap[K, V]) getShard(key K) *shardMap[K, V] {
-	return m.shards[uint(m.sharding(key))%uint(SHARD_COUNT)]
+	return m.shards[uint(m.sharding(key))%uint(ShardCount)]
 }
 
 // MSet 批量设置键值
@@ -107,7 +107,7 @@ func (m *ConcurrentMap[K, V]) Get(key K) (V, bool) {
 // Count 返回元素数量
 func (m *ConcurrentMap[K, V]) Count() int {
 	count := 0
-	for i := 0; i < SHARD_COUNT; i++ {
+	for i := 0; i < ShardCount; i++ {
 		shard := m.shards[i]
 		shard.RLock()
 		count += len(shard.items)
@@ -201,9 +201,9 @@ func snapshot[K comparable, V any](m *ConcurrentMap[K, V]) (cs []chan Tuple[K, V
 	if len(m.shards) == 0 {
 		panic(`cmap.ConcurrentMap is not initialized. Should run New() before usage.`)
 	}
-	cs = make([]chan Tuple[K, V], SHARD_COUNT)
+	cs = make([]chan Tuple[K, V], ShardCount)
 	wg := sync.WaitGroup{}
-	wg.Add(SHARD_COUNT)
+	wg.Add(ShardCount)
 	// 遍历分片
 	for index, shard := range m.shards {
 		go func(index int, shard *shardMap[K, V]) {
@@ -273,7 +273,7 @@ func (m *ConcurrentMap[K, V]) Keys() []K {
 	go func() {
 		// 遍历分片
 		wg := sync.WaitGroup{}
-		wg.Add(SHARD_COUNT)
+		wg.Add(ShardCount)
 		for _, shard := range m.shards {
 			go func(shard *shardMap[K, V]) {
 				// 遍历键

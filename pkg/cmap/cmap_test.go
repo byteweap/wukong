@@ -337,7 +337,7 @@ func TestIterCb(t *testing.T) {
 
 	counter := 0
 	// Iterate over elements.
-	m.IterCb(func(key string, v Animal) {
+	m.IterCb(func(_ string, _ Animal) {
 		counter++
 	})
 	if counter != 100 {
@@ -420,9 +420,9 @@ func TestConcurrent(t *testing.T) {
 }
 
 func TestJsonMarshal(t *testing.T) {
-	SHARD_COUNT = 2
+	ShardCount = 2
 	defer func() {
-		SHARD_COUNT = 32
+		ShardCount = 32
 	}()
 	expected := "{\"a\":1,\"b\":2}"
 	m := New[string, int](FNV1a)

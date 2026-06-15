@@ -22,15 +22,15 @@ const (
 	defaultMessageBufferSize = 256
 )
 
-// IdExtractor 用户id提取器
+// IDExtractor 用户id提取器
 // gate 会在建立连接时调用此函数获取用户id
-type IdExtractor func(r *http.Request) int64
+type IDExtractor func(r *http.Request) int64
 
 // options 选项
 type options struct {
 	// app
 	prefix          string      // subject / redis key 前缀
-	userIdExtractor IdExtractor // 用户 id 提取器
+	userIDExtractor IDExtractor // 用户 id 提取器
 
 	// websocket
 	path              string        // ws 路径
@@ -60,7 +60,7 @@ func defaultOptions() *options {
 		pingInterval:      defaultPingInterval,
 		maxMessageSize:    defaultMaxMessageSize, // 2k
 		messageBufferSize: defaultMessageBufferSize,
-		userIdExtractor: func(r *http.Request) int64 {
+		userIDExtractor: func(r *http.Request) int64 {
 			return conv.Int64(r.FormValue("uid"))
 		},
 	}
@@ -138,12 +138,12 @@ func MessageBufferSize(size int) Option {
 	}
 }
 
-// UserIdExtractor 设置用户 id 提取器
+// UserIDExtractor 设置用户 id 提取器
 // gate 会在建立连接时调用此函数获取用户id, 默认: func(r *http.Request) int64 { return conv.Int64(r.FormValue("uid")) }
-func UserIdExtractor(extractor IdExtractor) Option {
+func UserIDExtractor(extractor IDExtractor) Option {
 	return func(o *options) {
 		if extractor != nil {
-			o.userIdExtractor = extractor
+			o.userIDExtractor = extractor
 		}
 	}
 }

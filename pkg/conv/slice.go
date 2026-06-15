@@ -4,7 +4,7 @@ import "reflect"
 
 func indirectValue(data any) reflect.Value {
 	rv := reflect.ValueOf(data)
-	for rv.IsValid() && rv.Kind() == reflect.Ptr {
+	for rv.IsValid() && rv.Kind() == reflect.Pointer {
 		rv = rv.Elem()
 	}
 	return rv

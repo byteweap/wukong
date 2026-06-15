@@ -12,7 +12,7 @@ func Interfaces(data any) (slice []any) {
 		kind = rv.Kind()
 	)
 
-	for kind == reflect.Ptr {
+	for kind == reflect.Pointer {
 		rv = rv.Elem()
 		kind = rv.Kind()
 	}

@@ -7,6 +7,8 @@ import (
 	"unsafe"
 )
 
+const falseString = "false"
+
 func Bool(data any) bool {
 	if data == nil {
 		return false
@@ -27,7 +29,7 @@ func Bool(data any) bool {
 }
 
 func stringToBool(v string) bool {
-	return v != "" && v != "0" && strings.ToLower(v) != "false"
+	return v != "" && v != "0" && strings.ToLower(v) != falseString
 }
 
 func reflectBool(rv reflect.Value) bool {
@@ -69,12 +71,12 @@ func Bools(data any) []bool {
 	return convertSlice(data, Bool)
 }
 
-func BoolPointer(any any) *bool {
-	v := Bool(any)
+func BoolPointer(data any) *bool {
+	v := Bool(data)
 	return &v
 }
 
-func BoolsPointer(any any) *[]bool {
-	v := Bools(any)
+func BoolsPointer(data any) *[]bool {
+	v := Bools(data)
 	return &v
 }

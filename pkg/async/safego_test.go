@@ -19,7 +19,7 @@ func TestGo_NormalExecution(t *testing.T) {
 	}
 }
 
-func TestGo_NilFunction(t *testing.T) {
+func TestGo_NilFunction(_ *testing.T) {
 	// Should not panic
 	Go(nil, nil)
 }
@@ -80,7 +80,7 @@ func TestRecover_WithPanicAndHandler(t *testing.T) {
 	}
 }
 
-func TestRecover_WithPanicAndNilHandler(t *testing.T) {
+func TestRecover_WithPanicAndNilHandler(_ *testing.T) {
 	// Should not call handler, but also should not crash
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -95,7 +95,7 @@ func TestRecover_WithPanicAndNilHandler(t *testing.T) {
 
 func TestRecover_NoPanic(t *testing.T) {
 	var called bool
-	Recover(func(r any) {
+	Recover(func(_ any) {
 		called = true
 	})
 	if called {

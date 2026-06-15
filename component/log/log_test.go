@@ -22,16 +22,16 @@ func TestStdLogger_Close(t *testing.T) {
 	}
 }
 
-func TestHelper_WithSprint(t *testing.T) {
-	customSprint := func(a ...any) string {
+func TestHelper_WithSprint(_ *testing.T) {
+	customSprint := func(_ ...any) string {
 		return "custom"
 	}
 	log := NewHelper(DefaultLogger, WithSprint(customSprint))
 	log.Debug("test")
 }
 
-func TestHelper_WithSprintf(t *testing.T) {
-	customSprintf := func(format string, a ...any) string {
+func TestHelper_WithSprintf(_ *testing.T) {
+	customSprintf := func(_ string, _ ...any) string {
 		return "custom"
 	}
 	log := NewHelper(DefaultLogger, WithSprintf(customSprintf))
@@ -45,27 +45,27 @@ func TestHelper_Logger(t *testing.T) {
 	}
 }
 
-func TestHelper_Log(t *testing.T) {
+func TestHelper_Log(_ *testing.T) {
 	log := NewHelper(DefaultLogger)
 	log.Log(LevelInfo, "key", "value")
 }
 
-func TestHelper_Infow(t *testing.T) {
+func TestHelper_Infow(_ *testing.T) {
 	log := NewHelper(DefaultLogger)
 	log.Infow("key", "value")
 }
 
-func TestHelper_Warnw(t *testing.T) {
+func TestHelper_Warnw(_ *testing.T) {
 	log := NewHelper(DefaultLogger)
 	log.Warnw("key", "value")
 }
 
-func TestHelper_Error(t *testing.T) {
+func TestHelper_Error(_ *testing.T) {
 	log := NewHelper(DefaultLogger)
 	log.Error("test error")
 }
 
-func TestHelper_Errorw(t *testing.T) {
+func TestHelper_Errorw(_ *testing.T) {
 	log := NewHelper(DefaultLogger)
 	log.Errorw("key", "value")
 }
@@ -91,7 +91,7 @@ func TestHelper_Enabled(t *testing.T) {
 	}
 }
 
-func TestHelper_Info_Disabled(t *testing.T) {
+func TestHelper_Info_Disabled(_ *testing.T) {
 	filter := NewFilter(DefaultLogger, FilterLevel(LevelWarn))
 	log := NewHelper(filter)
 	// Should not log because level is below threshold
@@ -99,7 +99,7 @@ func TestHelper_Info_Disabled(t *testing.T) {
 	log.Infof("should not be logged %s", "test")
 }
 
-func TestHelper_Warn_Disabled(t *testing.T) {
+func TestHelper_Warn_Disabled(_ *testing.T) {
 	filter := NewFilter(DefaultLogger, FilterLevel(LevelError))
 	log := NewHelper(filter)
 	// Should not log because level is below threshold
@@ -107,7 +107,7 @@ func TestHelper_Warn_Disabled(t *testing.T) {
 	log.Warnf("should not be logged %s", "test")
 }
 
-func TestHelper_Error_Disabled(t *testing.T) {
+func TestHelper_Error_Disabled(_ *testing.T) {
 	filter := NewFilter(DefaultLogger, FilterLevel(LevelFatal))
 	log := NewHelper(filter)
 	// Should not log because level is below threshold

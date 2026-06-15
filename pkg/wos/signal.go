@@ -7,10 +7,12 @@ import (
 	"syscall"
 )
 
+const windowsOS = "windows"
+
 // getSignalsForOS 根据操作系统返回需要监听的信号
 func getSignalsForOS() []os.Signal {
 	switch runtime.GOOS {
-	case "windows":
+	case windowsOS:
 		// Windows 支持的信号
 		return []os.Signal{syscall.SIGINT, syscall.SIGTERM}
 	default:
