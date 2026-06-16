@@ -4,6 +4,12 @@
   <img src="assets/logo.svg" alt="Meta logo" width="560">
 </p>
 
+<p align="center">
+  <a href="https://go.dev/"><img src="https://img.shields.io/github/go-mod/go-version/byteweap/meta" alt="Go version"></a>
+  <a href="https://codecov.io/gh/byteweap/meta"><img src="https://codecov.io/gh/byteweap/meta/branch/master/graph/badge.svg" alt="Codecov"></a>
+  <a href="https://goreportcard.com/report/github.com/byteweap/meta"><img src="https://goreportcard.com/badge/github.com/byteweap/meta" alt="Go Report Card"></a>
+</p>
+
 Meta 是一个轻量、可插拔、面向长连接游戏/实时业务的 Go 服务框架。它把网关接入、业务逻辑、服务发现、消息通信、玩家位置定位和节点选择拆成清晰的工程边界，让游戏服可以按服务横向扩展，同时保留足够薄的核心运行时。
 
 ## 设计目标
